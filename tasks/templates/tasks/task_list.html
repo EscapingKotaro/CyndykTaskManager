@@ -1,0 +1,15 @@
+{% extends 'tasks/base.html' %}
+{% block content %}
+
+<h1>Мои задачи</h1>
+<ul>
+{% for task in tasks %}
+    <li>
+        <strong>{{ task.title }}</strong> (до {{ task.due_date }}) - {{ task.get_status_display }}
+        {% if task.status == 'created' %}
+        <a href="{% url 'submit_task' task.id %}">Сдать на отчет</a>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

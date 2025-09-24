@@ -1,0 +1,24 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Мои задачи - Менеджер задач{% endblock %}
+{% block header %}Мои задачи{% endblock %}
+
+{% block content %}
+<p><strong>Текущий баланс:</strong> {{ request.user.balance }} руб.</p>
+
+<h2>Задачи ({{ tasks.count }})</h2>
+<ul>
+{% for task in tasks %}
+    <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
+        <strong>{{ task.title }}</strong> 
+        <br>Срок: до {{ task.due_date }}
+        <br>Статус: {{ task.get_status_display }}
+        <br>Вознаграждение: {{ task.payment_amount }} руб.
+        <br>Описание: {{ task.description }}
+        {% if task.status == 'created' %}
+            <br><a href="{% url 'submit_task' task.id %}" style="color: blue;">Сдать на отчет</a>
+        {% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}
