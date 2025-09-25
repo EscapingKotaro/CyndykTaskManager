@@ -630,14 +630,7 @@ textarea.form-control {
                 <a href="{% url 'login' %}">🔑 Войти</a>
             {% endif %}
 
-                {% load navigation_tags %}
-                {% get_navigation_buttons as nav_buttons %}
-                {% for button in nav_buttons %}
-                    <a href="{{ button.url }}" class="nav-custom-button" 
-                    style="background: {{ button.color }}; border-color: {{ button.color }};">
-                        {{ button.icon }} {{ button.title }}
-                    </a>
-                {% endfor %}
+                
         </div>
             </nav>
         </div>
