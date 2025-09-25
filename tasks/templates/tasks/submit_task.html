@@ -1,0 +1,43 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Сдать задачу на отчет - TaskManager{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <h2>📤 Сдать задачу на отчет</h2>
+        
+        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h3 style="color: var(--primary); margin-bottom: 1rem;">{{ task.title }}</h3>
+            <p style="margin-bottom: 0.5rem;"><strong>📝 Описание:</strong></p>
+            <p style="color: var(--secondary);">{{ task.description }}</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <div>
+                    <strong>💰 Вознаграждение:</strong><br>
+                    <span style="color: var(--success); font-weight: bold;">{{ task.payment_amount }} руб.</span>
+                </div>
+                <div>
+                    <strong>📅 Срок выполнения:</strong><br>
+                    {{ task.due_date }}
+                </div>
+            </div>
+        </div>
+
+        <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <p style="margin: 0; color: #856404;">⚠️ После отправки на отчет вы не сможете изменить задачу. Ожидайте проверки руководителем.</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    ✅ Подтвердить сдачу
+                </button>
+                <a href="{% url 'dashboard' %}" class="btn" style="flex: 1; background: var(--border); text-align: center;">
+                    ❌ Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

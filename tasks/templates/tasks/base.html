@@ -3,121 +3,682 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Менеджер задач{% endblock %}</title>
+    <title>{% block title %}TaskManager{% endblock %}</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --border: #e2e8f0;
+        }
+
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #f5f5f5;
+            padding: 0;
+            box-sizing: border-box;
         }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
         .header {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
+
         .nav {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 1rem 0;
         }
-        .nav-links a {
-            color: white;
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
             text-decoration: none;
-            margin-left: 15px;
-            padding: 5px 10px;
-            border: 1px solid white;
-            border-radius: 3px;
         }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--dark);
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
         .nav-links a:hover {
-            background: white;
-            color: #2c3e50;
-        }
-        .content {
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        .messages {
-            margin-bottom: 20px;
-        }
-        .message {
-            padding: 10px;
-            border-radius: 3px;
-            margin-bottom: 10px;
-        }
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        form {
-            max-width: 500px;
-        }
-        form p {
-            margin-bottom: 15px;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-        }
-        button {
-            background: #2c3e50;
+            background: var(--primary);
             color: white;
-            padding: 10px 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .balance {
+            background: var(--success);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* Main content */
+        .main {
+            padding: 2rem 0;
+            min-height: calc(100vh - 120px);
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-block;
+            padding: 0.7rem 1.5rem;
             border: none;
-            border-radius: 3px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Tables */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .table th {
+            background: var(--light);
+            font-weight: 600;
+        }
+
+        .table tr:hover {
+            background: var(--light);
+        }
+
+        /* Task status badges */
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-created { background: #dbeafe; color: #1e40af; }
+        .status-submitted { background: #fef3c7; color: #92400e; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+
+        /* Mobile menu */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
             cursor: pointer;
         }
-        button:hover {
-            background: #34495e;
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: white;
+                flex-direction: column;
+                padding: 1rem;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .menu-toggle {
+                display: block;
+            }
+
+            .user-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .card {
+                padding: 1rem;
+                margin: 1rem 0;
+            }
+
+            .table {
+                font-size: 0.9rem;
+            }
+
+            .table th,
+            .table td {
+                padding: 0.5rem;
+            }
         }
+
+        /* Messages */
+        .messages {
+            margin-bottom: 1rem;
+        }
+
+        .message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+        }
+
+        .message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        /* Improved Form Styles */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+    font-family: inherit;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    transform: translateY(-2px);
+}
+
+.form-control:hover {
+    border-color: #cbd5e1;
+}
+
+/* Select styles */
+select.form-control {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px;
+    padding-right: 3rem;
+}
+
+/* Textarea styles */
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* Checkbox and radio styles */
+.form-check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-check-input {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    appearance: none;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-check-input:checked {
+    background: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-check-input:checked::after {
+    content: '✓';
+    position: absolute;
+    color: white;
+    font-size: 12px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.form-check-label {
+    font-weight: normal;
+    text-transform: none;
+    letter-spacing: normal;
+    cursor: pointer;
+}
+
+/* Form layouts */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.form-actions .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+/* Tag input styles */
+.tags-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: white;
+}
+
+.tag {
+    background: var(--primary);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tag-remove {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+/* Улучшенные стили форм */
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    margin-bottom: 2rem;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.form-header h2 {
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+}
+
+.form-section {
+    background: #f8fafc;
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+}
+
+.form-section h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Улучшенные инпуты */
+.enhanced-input {
+    position: relative;
+    margin-bottom: 1.5rem;
+}
+
+.enhanced-input label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--dark);
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.enhanced-input .input-wrapper {
+    position: relative;
+}
+
+.enhanced-input .form-control {
+    width: 100%;
+    padding: 1rem 1rem 1rem 3rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.enhanced-input .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    transform: translateY(-2px);
+}
+
+.enhanced-input .icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary);
+    z-index: 2;
+}
+
+/* Специфичные иконки для разных полей */
+.input-username .icon::before { content: "👤"; }
+.input-email .icon::before { content: "📧"; }
+.input-password .icon::before { content: "🔒"; }
+.input-title .icon::before { content: "📝"; }
+.input-description .icon::before { content: "📄"; }
+.input-assigned .icon::before { content: "👥"; }
+.input-date .icon::before { content: "📅"; }
+.input-amount .icon::before { content: "💰"; }
+.input-tags .icon::before { content: "🏷️"; }
+
+/* Кнопки форм */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+}
+
+.form-actions .btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 1rem 2rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary), #1d4ed8);
+    color: white;
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3);
+}
+
+.btn-secondary {
+    background: var(--border);
+    color: var(--dark);
+    border: none;
+}
+
+/* Анимации */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.form-card {
+    animation: slideIn 0.5s ease-out;
+}
+
+/* Ховер эффекты для карточек */
+.form-section:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="nav">
-            <h1>{% block header %}Менеджер задач{% endblock %}</h1>
-            <div class="nav-links">
-                {% if user.is_authenticated %}
-                    {% if user.is_staff %}
-                        <a href="{% url 'dashboard' %}">Панель управления</a>
-                        <a href="{% url 'create_employee' %}">Добавить сотрудника</a>
-                        <a href="{% url 'create_task' %}">Создать задачу</a>
+    <header class="header">
+        <div class="container">
+            <nav class="nav">
+                <a href="{% url 'dashboard' %}" class="logo">📊 TaskManager</a>
+                
+                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+                
+                <div class="nav-links" id="navLinks">
+                    {% if user.is_authenticated %}
+                        <div class="user-info">
+                            <span>{{ user.first_name|default:user.username }}</span>
+                            {% if not user.is_staff %}
+                                <span class="balance">💰 {{ user.balance }} руб.</span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if user.is_staff %}
+                            <a href="{% url 'dashboard' %}">📋 Панель управления</a>
+                            <a href="{% url 'create_employee' %}">👥 Добавить сотрудника</a>
+                            <a href="{% url 'create_task' %}">➕ Создать задачу</a>
+                        {% else %}
+                            <a href="{% url 'dashboard' %}">📋 Мои задачи</a>
+                        {% endif %}
+                        
+                        <a href="{% url 'change_password' %}">🔐 Сменить пароль</a>
+                        <a href="{% url 'logout' %}">🚪 Выйти</a>
                     {% else %}
-                        <a href="{% url 'dashboard' %}">Мои задачи</a>
+                        <a href="{% url 'login' %}">🔑 Войти</a>
                     {% endif %}
-                    <a href="{% url 'change_password' %}">Сменить пароль</a>
-                    <a href="{% url 'logout' %}">Выйти</a>
-                {% else %}
-                    <a href="{% url 'login' %}">Войти</a>
-                {% endif %}
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
             </div>
-        </div>
-    </div>
+            {% endif %}
 
-    <div class="content">
-        {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="message {{ message.tags }}">{{ message }}</div>
-            {% endfor %}
+            {% block content %}
+            {% endblock %}
         </div>
-        {% endif %}
+    </main>
 
-        {% block content %}
-        {% endblock %}
-    </div>
+    <script>
+        function toggleMenu() {
+            const navLinks = document.getElementById('navLinks');
+            navLinks.classList.toggle('active');
+        }
+
+        // Закрываем меню при клике на ссылку
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                const navLinks = document.getElementById('navLinks');
+                navLinks.classList.remove('active');
+            });
+        });
+    </script>
+
+<script>
+// Автоматическое форматирование тегов
+function formatTags(input) {
+    input.addEventListener('input', function() {
+        // Убираем лишние пробелы и приводим к нижнему регистру
+        this.value = this.value.replace(/\s*,\s*/g, ',').toLowerCase();
+    });
+}
+
+// Инициализация для всех полей с тегами
+document.querySelectorAll('input[name="tags"]').forEach(formatTags);
+
+// Подсказка для тегов при фокусе
+document.querySelectorAll('input[name="tags"]').forEach(input => {
+    input.addEventListener('focus', function() {
+        this.placeholder = 'дизайн, верстка, копирайтинг...';
+    });
+    
+    input.addEventListener('blur', function() {
+        this.placeholder = '';
+    });
+});
+</script>
 </body>
 </html>

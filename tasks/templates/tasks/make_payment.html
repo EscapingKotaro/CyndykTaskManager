@@ -1,0 +1,48 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Выплата - TaskManager{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 0 auto;">
+    <div class="card">
+        <h2>💸 Выплата сотруднику</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_employee">Сотрудник:</label>
+                {{ form.employee }}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_amount">Сумма выплаты (руб.):</label>
+                {{ form.amount }}
+                <small style="color: var(--secondary);">Текущий баланс сотрудника: <span id="employee-balance">0</span> руб.</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_description">Описание (необязательно):</label>
+                {{ form.description }}
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">💳 Выполнить выплату</button>
+            <a href="{% url 'dashboard' %}" class="btn" style="width: 100%; margin-top: 0.5rem; background: var(--border);">Отмена</a>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Обновляем баланс при выборе сотрудника
+    document.getElementById('id_employee').addEventListener('change', function() {
+        const employeeId = this.value;
+        if (employeeId) {
+            fetch(`/api/employee-balance/${employeeId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('employee-balance').textContent = data.balance;
+                });
+        }
+    });
+</script>
+{% endblock %}

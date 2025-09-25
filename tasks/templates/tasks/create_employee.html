@@ -1,10 +1,60 @@
 {% extends 'tasks/base.html' %}
-{% block content %}
 
-<h2>Добавить сотрудника</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Создать</button>
-</form>
+{% block title %}Добавить сотрудника - TaskManager{% endblock %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card">
+        <h2>👥 Добавить нового сотрудника</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_username">👤 Логин:</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}
+                    <div style="color: var(--danger); font-size: 0.8rem; margin-top: 0.5rem;">
+                        {{ form.username.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password">🔒 Пароль:</label>
+                    {{ form.password }}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_first_name">👤 Имя:</label>
+                    {{ form.first_name }}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_last_name">👤 Фамилия:</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_email">📧 Email:</label>
+                {{ form.email }}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_tags">🏷️ Ярлыки (через запятую):</label>
+                {{ form.tags }}
+                <small style="color: var(--secondary);">Пример: дизайн, верстка, копирайтинг, seo</small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">👥 Добавить сотрудника</button>
+                <a href="{% url 'dashboard' %}" class="btn" style="background: var(--border);">Отмена</a>
+            </div>
+        </form>
+    </div>
+</div>
 {% endblock %}

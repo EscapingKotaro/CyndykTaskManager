@@ -1,10 +1,29 @@
 {% extends 'tasks/base.html' %}
 
+{% block title %}Вход - TaskManager{% endblock %}
+
 {% block content %}
-<h2>Вход</h2>
-<form method="post">
-  {% csrf_token %}
-  {{ form.as_p }}
-  <button type="submit">Войти</button>
-</form>
+<div style="max-width: 400px; margin: 0 auto;">
+    <div class="card">
+        <h2 style="text-align: center; margin-bottom: 2rem;">🔑 Вход в систему</h2>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="id_username">👤 Логин:</label>
+                <input type="text" name="username" id="id_username" class="form-control" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password">🔒 Пароль:</label>
+                <input type="password" name="password" id="id_password" class="form-control" required>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">
+                Войти
+            </button>
+        </form>
+    </div>
+</div>
 {% endblock %}

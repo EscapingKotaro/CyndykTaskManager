@@ -1,0 +1,61 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Таймлайн задач - TaskManager{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>📅 Таймлайн задач</h1>
+    
+    <!-- Фильтр по тегам -->
+    <div style="margin: 1rem 0;">
+        <form method="get" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <label><strong>Фильтр по ярлыкам:</strong></label>
+            {% for tag in all_tags %}
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                <input type="checkbox" name="tags" value="{{ tag }}" 
+                       {% if tag in selected_tags %}checked{% endif %}>
+                <span class="status-badge" style="background: #e2e8f0;">{{ tag }}</span>
+            </label>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">Применить</button>
+            <a href="{% url 'timeline' %}" class="btn btn-secondary">Сбросить</a>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="timeline">
+        {% for task in tasks %}
+        <div class="timeline-item" style="border-left: 3px solid #2563eb; padding-left: 1rem; margin-bottom: 2rem; position: relative;">
+            <div style="position: absolute; left: -8px; top: 0; width: 14px; height: 14px; background: #2563eb; border-radius: 50%;"></div>
+            
+            <div style="display: flex; justify-content: between; align-items: start; gap: 1rem; flex-wrap: wrap;">
+                <div style="flex: 1;">
+                    <h3 style="margin-bottom: 0.5rem;">{{ task.title }}</h3>
+                    <p style="color: var(--secondary); margin-bottom: 0.5rem;">{{ task.description }}</p>
+                    
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem;">
+                        <span>👤 <strong>Сотрудник:</strong> {{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</span>
+                        <span>📅 <strong>Срок:</strong> {{ task.due_date }}</span>
+                        <span>💰 <strong>Сумма:</strong> {{ task.payment_amount }} руб.</span>
+                        <span class="status-badge status-{{ task.status }}">{{ task.get_status_display }}</span>
+                    </div>
+                    
+                    {% if task.tags %}
+                    <div style="margin-top: 0.5rem;">
+                        {% for tag in task.tags.split %}
+                        <span class="status-badge" style="background: #e2e8f0; margin-right: 0.5rem;">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 2rem; color: var(--secondary);">
+            <p>📭 Нет задач по выбранным фильтрам</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}История выплат - TaskManager{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>📊 История выплат</h1>
+    
+    {% if user.is_staff %}
+    <a href="{% url 'make_payment' %}" class="btn btn-primary">💳 Новая выплата</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    {% if user.is_staff %}
+                    <th>Сотрудник</th>
+                    {% else %}
+                    <th>От</th>
+                    {% endif %}
+                    <th>Сумма</th>
+                    <th>Дата</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payment in payments %}
+                <tr>
+                    {% if user.is_staff %}
+                    <td>{{ payment.employee.get_full_name|default:payment.employee.username }}</td>
+                    {% else %}
+                    <td>{{ payment.manager.get_full_name|default:payment.manager.username }}</td>
+                    {% endif %}
+                    <td style="color: var(--success); font-weight: bold;">-{{ payment.amount }} руб.</td>
+                    <td>{{ payment.payment_date|date:"d.m.Y H:i" }}</td>
+                    <td>{{ payment.description|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" style="text-align: center; color: var(--secondary); padding: 2rem;">
+                        📭 Нет данных о выплатах
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

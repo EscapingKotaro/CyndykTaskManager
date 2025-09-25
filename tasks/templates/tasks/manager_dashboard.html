@@ -1,42 +1,116 @@
 {% extends 'tasks/base.html' %}
 
-{% block title %}Панель управляющего - Менеджер задач{% endblock %}
-{% block header %}Панель управляющего{% endblock %}
+{% block title %}Панель управляющего - TaskManager{% endblock %}
 
 {% block content %}
-<h2>Мои сотрудники ({{ subordinates.count }})</h2>
-<table style="width: 100%; border-collapse: collapse;">
-    <thead>
-        <tr style="background: #f8f9fa;">
-            <th style="padding: 10px; border: 1px solid #ddd;">Сотрудник</th>
-            <th style="padding: 10px; border: 1px solid #ddd;">Баланс</th>
-            <th style="padding: 10px; border: 1px solid #ddd;">Действия</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for emp in subordinates %}
-        <tr>
-            <td style="padding: 10px; border: 1px solid #ddd;">{{ emp.get_full_name|default:emp.username }}</td>
-            <td style="padding: 10px; border: 1px solid #ddd;">{{ emp.balance }} руб.</td>
-            <td style="padding: 10px; border: 1px solid #ddd;">
-                <a href="{% url 'change_employee_password' emp.id %}">Сменить пароль</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="card">
+    <h1>👨‍💼 Панель управляющего</h1>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 2rem 0;">
+        <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 1.5rem; border-radius: 10px;">
+            <h3>👥 Сотрудники</h3>
+            <p style="font-size: 2rem; margin: 0.5rem 0;">{{ subordinates.count }}</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 1.5rem; border-radius: 10px;">
+            <h3>📋 Всего задач</h3>
+            <p style="font-size: 2rem; margin: 0.5rem 0;">{{ tasks.count }}</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 1.5rem; border-radius: 10px;">
+            <h3>⏳ На проверке</h3>
+            <p style="font-size: 2rem; margin: 0.5rem 0;">{{ tasks|length }}</p>
+        </div>
+         <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 1.5rem; border-radius: 10px;">
+            <h3>💸 Общий долг</h3>
+        <p style="font-size: 2rem; margin: 0.5rem 0;">{{ total_debt }} руб.</p>
+    </div>
+    </div>
 
-<h2>Все задачи ({{ tasks.count }})</h2>
-<ul>
-{% for task in tasks %}
-    <li style="margin-bottom: 10px; padding: 10px; background: #f8f9fa; border-radius: 3px;">
-        <strong>{{ task.title }}</strong> - {{ task.assigned_to.get_full_name|default:task.assigned_to.username }} 
-        (до {{ task.due_date }}) - {{ task.get_status_display }}
-        - {{ task.payment_amount }} руб.
-        {% if task.status == 'submitted' %}
-            <a href="{% url 'complete_task' task.id %}" style="color: green;">Подтвердить выполнение</a>
-        {% endif %}
-    </li>
-{% endfor %}
-</ul>
+    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+        <a href="{% url 'create_employee' %}" class="btn btn-primary">👥 Добавить сотрудника</a>
+        <a href="{% url 'create_task' %}" class="btn btn-primary">➕ Создать задачу</a>   
+        <a href="{% url 'make_payment' %}" class="btn btn-success">💳 Выплата</a>
+        <a href="{% url 'payment_history' %}" class="btn btn-secondary">📊 История выплат</a>
+        <a href="{% url 'calendar' %}"  class="btn btn-secondary">📅 Календарь</a>
+        </div>
+</div>
+
+<div class="card">
+    <h2>👥 Мои сотрудники</h2>
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Сотрудник</th>
+                    <th>Email</th>
+                    <th>Баланс</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in subordinates %}
+                <tr>
+                    <td>
+                        <strong>{{ emp.get_full_name|default:emp.username }}</strong>
+                    </td>
+                    <td>{{ emp.email }}</td>
+                    <td>
+                        <span class="balance">{{ emp.balance }} руб.</span>
+                    </td>
+                    <td>
+                        
+                        <a href="{% url 'delete_employee' emp.id %}" class="btn btn-danger" style="padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+                            🗑️ Удалить
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <h2>📋 Все задачи</h2>
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Задача</th>
+                    <th>Сотрудник</th>
+                    <th>Срок</th>
+                    <th>Вознаграждение</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>
+                        <strong>{{ task.title }}</strong>
+                        <br><small style="color: var(--secondary);">{{ task.description|truncatewords:10 }}</small>
+                    </td>
+                    <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</td>
+                    <td>{{ task.due_date }}</td>
+                    <td>{{ task.payment_amount }} руб.</td>
+                    <td>
+                        <span class="status-badge status-{{ task.status }}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if task.status == 'submitted' %}
+                            <a href="{% url 'complete_task' task.id %}" class="btn btn-success" style="padding: 0.3rem 0.8rem; font-size: 0.9rem;">
+                                ✅ Подтвердить
+                            </a>
+                        {% else %}
+                            <span style="color: var(--secondary);">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}

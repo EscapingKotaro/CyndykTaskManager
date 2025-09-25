@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import Task, CustomUser
+from .models import *
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -18,6 +18,15 @@ class UserForm(forms.ModelForm):
         widgets = {
             'password': forms.PasswordInput(),
         }
+
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ['employee', 'amount', 'description']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
+
 
 class CustomPasswordChangeForm(PasswordChangeForm):
     def __init__(self, *args, **kwargs):
