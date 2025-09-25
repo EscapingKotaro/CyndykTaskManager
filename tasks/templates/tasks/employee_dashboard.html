@@ -28,7 +28,12 @@
                         <span>📅 <strong>Срок:</strong> {{ task.due_date }}</span>
                         {% if task.payment_amount == 0 %}
                         {% else %}
-                    <span class="task-amount"> 💰{{ task.payment_amount }} руб.</span>
+                    
+                    {% endif %}
+                    {% if task.payment_amount == 0 %}
+                        <span style="color: var(--secondary);">—</span>
+                    {% else %}
+                        <span class="task-amount"> 💰{{ task.payment_amount }} руб.</span>
                     {% endif %}
                         <span class="status-badge status-{{ task.status }}">
                             {{ task.get_status_display }}

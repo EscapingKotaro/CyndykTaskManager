@@ -73,7 +73,13 @@
                     </td>
                     <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</td>
                     <td>{{ task.due_date }}</td>
-                    <td>{%if task.payment_amount==0 %} {% else %} {{ task.payment_amount }} руб. {% endif %}</td>
+                    <td>
+    {% if task.payment_amount == 0 %}
+        <span style="color: var(--secondary);">—</span>
+    {% else %}
+        {{ task.payment_amount }} руб.
+    {% endif %}
+</td>
                     <td>
                         <span class="status-badge status-{{ task.status }}">
                             {{ task.get_status_display }}
