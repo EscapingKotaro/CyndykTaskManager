@@ -1,0 +1,178 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Сотрудники - TaskManager{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap;">
+        <h1>👥 Управление сотрудниками</h1>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'create_invitation' %}" class="btn btn-primary">📨 Пригласить</a>
+            <a href="{% url 'create_employee' %}" class="btn btn-primary">👥 Добавить</a>
+        </div>
+    </div>
+
+    <!-- Поиск -->
+    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <form method="get" style="display: flex; gap: 1rem; align-items: center;">
+            <div class="enhanced-input" style="flex: 1;">
+                <label for="search">🔍 Поиск сотрудников</label>
+                <div class="input-wrapper">
+                    <span class="icon">🔍</span>
+                    <input type="text" name="search" id="search" class="form-control" 
+                           placeholder="Поиск по имени, email, telegram..." value="{{ search_query }}">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top: 1.5rem;">Найти</button>
+            {% if search_query %}
+            <a href="{% url 'employee_list' %}" class="btn btn-secondary" style="margin-top: 1.5rem;">Сбросить</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Список сотрудников ({{ subordinates.count }})</h2>
+    
+    <div class="employee-grid">
+        {% for emp in subordinates %}
+        <div class="employee-card">
+            <div class="employee-avatar">
+                {% if emp.avatar %}
+                    <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}">
+                {% else %}
+                    <div class="avatar-placeholder">👤</div>
+                {% endif %}
+            </div>
+            
+            <div class="employee-info">
+                <h3>{{ emp.get_display_name }}</h3>
+                <p class="employee-username">@{{ emp.username }}</p>
+                
+                {% if emp.email %}
+                <p class="employee-email">📧 {{ emp.email }}</p>
+                {% endif %}
+                
+                {% if emp.telegram_username %}
+                <p class="employee-telegram">💬 {{ emp.telegram_username }}</p>
+                {% endif %}
+                
+                <p class="employee-balance">💰 Баланс: <strong>{{ emp.balance }} руб.</strong></p>
+                
+                {% if emp.tags %}
+                <div class="employee-tags">
+                    {% for tag in emp.get_tags_list %}
+                    <span class="tag">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="employee-actions">
+                <a href="{% url 'delete_employee' emp.id %}" class="btn btn-sm btn-danger">🗑️ Удалить</a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align: center; padding: 3rem; color: var(--secondary);">
+            <p style="font-size: 1.2rem;">👥 Сотрудники не найдены</p>
+            <p>Пригласите первого сотрудника или добавьте его вручную</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.employee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.employee-card {
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.employee-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.employee-avatar {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.employee-avatar img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto;
+}
+
+.employee-info h3 {
+    margin: 0 0 0.5rem 0;
+    color: var(--dark);
+}
+
+.employee-username {
+    color: var(--secondary);
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.employee-email, .employee-telegram, .employee-balance {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.employee-tags {
+    margin-top: 1rem;
+}
+
+.tag {
+    display: inline-block;
+    background: var(--light);
+    color: var(--dark);
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    margin: 0.2rem;
+}
+
+.employee-actions {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .employee-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}

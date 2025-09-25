@@ -6,25 +6,6 @@
 <div class="card">
     <h1>👨‍💼 Панель управляющего</h1>
     
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin: 2rem 0;">
-        <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 1.5rem; border-radius: 10px;">
-            <h3>👥 Сотрудники</h3>
-            <p style="font-size: 2rem; margin: 0.5rem 0;">{{ subordinates.count }}</p>
-        </div>
-        <div style="background: linear-gradient(135deg, #f093fb, #f5576c); color: white; padding: 1.5rem; border-radius: 10px;">
-            <h3>📋 Всего задач</h3>
-            <p style="font-size: 2rem; margin: 0.5rem 0;">{{ tasks.count }}</p>
-        </div>
-        <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; padding: 1.5rem; border-radius: 10px;">
-            <h3>⏳ На проверке</h3>
-            <p style="font-size: 2rem; margin: 0.5rem 0;">{{ tasks|length }}</p>
-        </div>
-         <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 1.5rem; border-radius: 10px;">
-            <h3>💸 Общий долг</h3>
-        <p style="font-size: 2rem; margin: 0.5rem 0;">{{ total_debt }} руб.</p>
-    </div>
-    </div>
-
     <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
         <a href="{% url 'create_employee' %}" class="btn btn-primary">👥 Добавить сотрудника</a>
         <a href="{% url 'create_task' %}" class="btn btn-primary">➕ Создать задачу</a>   
@@ -92,7 +73,7 @@
                     </td>
                     <td>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</td>
                     <td>{{ task.due_date }}</td>
-                    <td>{{ task.payment_amount }} руб.</td>
+                    <td>{%if task.payment_amount>0 %} {{ task.payment_amount }} руб. {% endif %}</td>
                     <td>
                         <span class="status-badge status-{{ task.status }}">
                             {{ task.get_status_display }}

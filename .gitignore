@@ -1,3 +1,37 @@
-core/settings.py
-
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
 db.sqlite3
+db.sqlite3-journal
+#core/settings.py
+
+# Static files
+/staticfiles/
+/media/
+
+# Environment
+.env
+.venv
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backups
+*.backup
+*.sql.bak
+
+# Logs
+logs/
+*.log

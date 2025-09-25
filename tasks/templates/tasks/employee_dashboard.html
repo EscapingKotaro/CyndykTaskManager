@@ -26,7 +26,9 @@
                     
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem;">
                         <span>📅 <strong>Срок:</strong> {{ task.due_date }}</span>
-                        <span>💰 <strong>Вознаграждение:</strong> {{ task.payment_amount }} руб.</span>
+                        {% if task.payment_amount > 0 %}
+                    <span class="task-amount"> 💰{{ task.payment_amount }} руб.</span>
+                    {% endif %}
                         <span class="status-badge status-{{ task.status }}">
                             {{ task.get_status_display }}
                         </span>

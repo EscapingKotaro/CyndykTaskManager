@@ -1,0 +1,27 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Недействительное приглашение - TaskManager{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>❌ Недействительное приглашение</h2>
+        </div>
+
+        <div style="text-align: center; padding: 2rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">❌</div>
+            <h3 style="color: var(--danger); margin-bottom: 1rem;">Ссылка недействительна</h3>
+            <p style="color: var(--secondary); margin-bottom: 2rem;">
+                Возможно, приглашение было уже использовано или отозвано.
+            </p>
+            
+            <p>Обратитесь к вашему руководителю для получения новой ссылки.</p>
+            
+            <a href="{% url 'login' %}" class="btn btn-primary" style="margin-top: 2rem;">
+                🔑 Перейти к входу
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -18,5 +18,15 @@ urlpatterns = [
     path('api/employee-balance/<int:employee_id>/', views.get_employee_balance, name='employee_balance'),
     path('delete-employee/<int:user_id>/', views.delete_employee, name='delete_employee'),
     path('calendar/', views.calendar_view, name='calendar'),
-path('api/task-details/<int:task_id>/', views.task_details_api, name='task_details_api'),
+    path('api/task-details/<int:task_id>/', views.task_details_api, name='task_details_api'),
+    path('invitations/', views.invitation_list, name='invitation_list'),
+    path('invitations/create/', views.create_invitation, name='create_invitation'),
+    path('register/<str:token>/', views.register_with_invitation, name='register_with_invitation'),
+    path('profile/', views.profile, name='profile'),
+    path('employees/', views.employee_list, name='employee_list'),
+    path('tasks/manage/', views.task_management, name='task_management'),
+    path('tasks/<int:task_id>/edit/', views.edit_task, name='edit_task'),
+    path('tasks/<int:task_id>/delete/', views.delete_task, name='delete_task'),
+    path('navigation-buttons/', views.navigation_buttons, name='navigation_buttons'),
 ]
+

@@ -23,10 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-iz%ko0xt%^fsp0d255m3*!=fbo0r%cqi$8yi4niilgj0pv8)t*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
+STATIC_URL = '/static/'
+STATIC_ROOT = '/opt/task_managet/static/'
 
 # Application definition
 AUTH_USER_MODEL = 'tasks.CustomUser'  # Добавь эту строку

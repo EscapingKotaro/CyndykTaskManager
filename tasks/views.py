@@ -10,6 +10,202 @@ from .forms import *
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import logout as auth_logout
 from django.http import JsonResponse
+import secrets
+from datetime import timedelta
+from django.utils import timezone
+
+@login_required
+def navigation_buttons(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    buttons = NavigationButton.objects.all()
+    
+    if request.method == 'POST':
+        # Обработка сохранения кнопок
+        pass
+    
+    return render(request, 'tasks/navigation_buttons.html', {'buttons': buttons})
+
+@login_required
+def task_management(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    tasks = Task.objects.filter(created_by=request.user).order_by('-created_date')
+    search_query = request.GET.get('search', '')
+    status_filter = request.GET.get('status', '')
+    
+    if search_query:
+        tasks = tasks.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query) |
+            Q(assigned_to__username__icontains=search_query) |
+            Q(assigned_to__first_name__icontains=search_query)
+        )
+    
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+    
+    return render(request, 'tasks/task_management.html', {
+        'tasks': tasks,
+        'search_query': search_query,
+        'status_filter': status_filter
+    })
+
+@login_required
+def edit_task(request, task_id):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    task = get_object_or_404(Task, id=task_id, created_by=request.user)
+    
+    if request.method == 'POST':
+        form = TaskForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Задача "{task.title}" обновлена!')
+            return redirect('task_management')
+    else:
+        form = TaskForm(instance=task)
+        form.fields['assigned_to'].queryset = CustomUser.objects.filter(manager=request.user)
+    
+    return render(request, 'tasks/edit_task.html', {
+        'form': form,
+        'task': task
+    })
+
+@login_required
+def delete_task(request, task_id):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    task = get_object_or_404(Task, id=task_id, created_by=request.user)
+    
+    if request.method == 'POST':
+        task_title = task.title
+        task.delete()
+        messages.success(request, f'Задача "{task_title}" удалена!')
+        return redirect('task_management')
+    
+    return render(request, 'tasks/delete_task.html', {'task': task})
+
+
+@login_required
+def employee_list(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    subordinates = CustomUser.objects.filter(manager=request.user)
+    search_query = request.GET.get('search', '')
+    
+    if search_query:
+        subordinates = subordinates.filter(
+            Q(username__icontains=search_query) |
+            Q(first_name__icontains=search_query) |
+            Q(email__icontains=search_query) |
+            Q(telegram_username__icontains=search_query) |
+            Q(tags__icontains=search_query)
+        )
+    
+    return render(request, 'tasks/employee_list.html', {
+        'subordinates': subordinates,
+        'search_query': search_query
+    })
+
+
+@login_required
+def create_invitation(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    if request.method == 'POST':
+        form = InvitationForm(request.POST)
+        if form.is_valid():
+            # Создаем токен
+            token = secrets.token_urlsafe(32)
+            expires_at = timezone.now() + timedelta(days=7)
+            
+            invitation = Invitation(
+                token=token,
+                email=form.cleaned_data['email'],
+                created_by=request.user,
+                expires_at=expires_at,
+            )
+            invitation.save()
+            
+            # Генерируем ссылку
+            invitation_url = request.build_absolute_uri(
+                f'/register/{token}/'
+            )
+            
+            messages.success(request, f'Приглашение создано! Ссылка: {invitation_url}')
+            return redirect('invitation_list')
+    else:
+        form = InvitationForm()
+    
+    return render(request, 'tasks/create_invitation.html', {'form': form})
+
+@login_required
+def invitation_list(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    invitations = Invitation.objects.filter(created_by=request.user).order_by('-created_at')
+    return render(request, 'tasks/invitation_list.html', {'invitations': invitations})
+
+def register_with_invitation(request, token):
+    try:
+        invitation = Invitation.objects.get(token=token, status='pending')
+        
+        if invitation.is_expired():
+            invitation.status = 'expired'
+            invitation.save()
+            return render(request, 'tasks/invitation_expired.html')
+        
+        if request.method == 'POST':
+            form = UserRegistrationForm(request.POST)
+            if form.is_valid():
+                user = form.save(commit=False)
+                user.set_password(form.cleaned_data['password1'])
+                user.email = invitation.email
+                user.manager = invitation.created_by
+                user.is_staff = False
+                user.save()
+                
+                # Обновляем приглашение
+                invitation.status = 'accepted'
+                invitation.accepted_by = user
+                invitation.save()
+                
+                # Автоматически логиним пользователя
+                login(request, user)
+                messages.success(request, 'Регистрация завершена! Добро пожаловать!')
+                return redirect('dashboard')
+        else:
+            form = UserRegistrationForm()
+        
+        return render(request, 'tasks/register.html', {
+            'form': form,
+            'invitation': invitation
+        })
+    
+    except Invitation.DoesNotExist:
+        return render(request, 'tasks/invitation_invalid.html')
+
+@login_required
+def profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Профиль успешно обновлен!')
+            return redirect('profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+    
+    return render(request, 'tasks/profile.html', {'form': form})
+
 
 @login_required
 def get_employee_balance(request, employee_id):
