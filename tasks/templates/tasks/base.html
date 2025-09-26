@@ -958,60 +958,7 @@ textarea.form-control {
             </nav>
 
             <!-- Мобильное меню -->
-            <div class="nav-mobile" id="navMobile">
-                {% if user.is_authenticated and user.is_staff %}
-                <div class="nav-dropdown">
-                    <button class="nav-dropdown-toggle" onclick="toggleMobileDropdown(this)">
-                        📋 Управление
-                    </button>
-                    <div class="nav-dropdown-content">
-                        <a href="{% url 'dashboard' %}" class="nav-dropdown-item">📊 Панель управления</a>
-                        <a href="{% url 'employee_list' %}" class="nav-dropdown-item">👥 Сотрудники</a>
-                        <a href="{% url 'task_management' %}" class="nav-dropdown-item">📋 Задачи</a>
-                        <a href="{% url 'invitation_list' %}" class="nav-dropdown-item">📨 Приглашения</a>
-                    </div>
-                </div>
-
-                <div class="nav-dropdown">
-                    <button class="nav-dropdown-toggle" onclick="toggleMobileDropdown(this)">
-                        📅 Планирование
-                    </button>
-                    <div class="nav-dropdown-content">
-                        <a href="{% url 'calendar' %}" class="nav-dropdown-item">📅 Календарь</a>
-                        <a href="{% url 'create_task' %}" class="nav-dropdown-item">➕ Новая задача</a>
-                    </div>
-                </div>
-
-                {% if nav_buttons %}
-                <div class="nav-dropdown">
-                    <button class="nav-dropdown-toggle" onclick="toggleMobileDropdown(this)">
-                        🔗 Быстрые ссылки
-                    </button>
-                    <div class="nav-dropdown-content">
-                        {% for button in nav_buttons %}
-                        <a href="{{ button.url }}" class="nav-dropdown-item" target="_blank">
-                            {{ button.icon }} {{ button.title }}
-                        </a>
-                        {% endfor %}
-                        <a href="{% url 'navigation_buttons' %}" class="nav-dropdown-item">⚙️ Управление</a>
-                    </div>
-                </div>
-                {% endif %}
-
-                {% elif user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="nav-dropdown-item">📋 Мои задачи</a>
-                {% endif %}
-
-                <div style="border-top: 1px solid var(--border); margin: 1rem 0; padding-top: 1rem;">
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'profile' %}" class="nav-dropdown-item">👤 Профиль</a>
-                    <a href="{% url 'change_password' %}" class="nav-dropdown-item">🔐 Сменить пароль</a>
-                    <a href="{% url 'logout' %}" class="nav-dropdown-item" style="color: var(--danger);">🚪 Выйти</a>
-                    {% else %}
-                    <a href="{% url 'login' %}" class="nav-dropdown-item">🔑 Войти</a>
-                    {% endif %}
-                </div>
-            </div>
+            
         </div>
     </header>
 
