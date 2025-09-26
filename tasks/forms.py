@@ -12,12 +12,90 @@ class TaskForm(forms.ModelForm):
         }
 
 class UserForm(forms.ModelForm):
+    password = forms.CharField(
+        label='Пароль',
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Введите пароль'
+        }),
+        help_text='Пароль должен содержать минимум 8 символов'
+    )
+    
+    telegram_username = forms.CharField(
+        label='Ник в Telegram',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': '@username'
+        }),
+        help_text='Необязательное поле'
+    )
+    
+    tags = forms.CharField(
+        label='Теги и навыки',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'дизайн, верстка, копирайтинг...'
+        }),
+        help_text='Укажите через запятую'
+    )
+
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'last_name', 'email', 'password']
+        fields = ['username', 'first_name', 'email', 'telegram_username', 'tags', 'password']
         widgets = {
-            'password': forms.PasswordInput(),
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите логин'
+            }),
+            'first_name': forms.TextInput(attrs={
+                'class': 'form-control', 
+                'placeholder': 'Введите имя'
+            }),
+            'email': forms.EmailInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'email@example.com'
+            }),
         }
+        help_texts = {
+            'username': 'Только английские буквы, цифры и символы @/./+/-/_',
+            'email': 'На этот email будут отправляться уведомления',
+        }
+
+    def clean_telegram_username(self):
+        telegram_username = self.cleaned_data.get('telegram_username', '').strip()
+        if telegram_username:
+            # Убираем @ если пользователь его ввел
+            if telegram_username.startswith('@'):
+                telegram_username = telegram_username[1:]
+            # Проверяем формат
+            if not re.match(r'^[a-zA-Z0-9_]{5,32}$', telegram_username):
+                raise forms.ValidationError('Некорректный формат Telegram username')
+        return telegram_username
+
+    def clean_tags(self):
+        tags = self.cleaned_data.get('tags', '').strip()
+        if tags:
+            # Очищаем и форматируем теги
+            tags_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+            if len(tags_list) > 10:
+                raise forms.ValidationError('Не более 10 тегов')
+            return ', '.join(tags_list)
+        return tags
+
+    def clean_password(self):
+        password = self.cleaned_data.get('password')
+        if len(password) < 8:
+            raise forms.ValidationError('Пароль должен содержать минимум 8 символов')
+        return password
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password'])
+        if commit:
+            user.save()
+        return user
 
 class PaymentForm(forms.ModelForm):
     class Meta:
@@ -45,6 +123,8 @@ class CustomPasswordChangeForm(PasswordChangeForm):
                 'class': 'form-control',
                 'placeholder': f'Введите {field.label.lower()}'
             })
+
+            
 class InvitationForm(forms.Form):
     email = forms.EmailField(label='Email сотрудника')
     tags = forms.CharField(label='Ярлыки (через запятую)', required=False, 
