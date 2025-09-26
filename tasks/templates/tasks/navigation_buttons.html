@@ -1,0 +1,146 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Управление кнопками навигации - TaskManager{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1>⚙️ Управление кнопками навигации</h1>
+    <p>Добавляйте быстрые ссылки на часто используемые ресурсы</p>
+</div>
+
+<div class="card">
+    <h2>➕ Добавить новую кнопку</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-grid">
+            <div class="enhanced-input">
+                <label for="id_title">📝 Название кнопки</label>
+                {{ form.title }}
+            </div>
+            
+            <div class="enhanced-input">
+                <label for="id_icon">🎨 Иконка</label>
+                {{ form.icon }}
+                <small>Можно использовать эмодзи: 🚀, 📁, 📊, 🔗, 🌐</small>
+            </div>
+        </div>
+
+        <div class="enhanced-input">
+            <label for="id_url">🔗 URL ссылка</label>
+            {{ form.url }}
+        </div>
+
+        <div class="form-grid">
+            <div class="enhanced-input">
+                <label for="id_color">🎨 Цвет кнопки</label>
+                {{ form.color }}
+            </div>
+            
+            <div class="enhanced-input">
+                <label for="id_order">🔢 Порядок</label>
+                {{ form.order }}
+            </div>
+        </div>
+
+        <div class="enhanced-checkbox">
+            {{ form.is_active }}
+            <label for="id_is_active" class="form-check-label">Активная кнопка</label>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">➕ Добавить кнопку</button>
+        </div>
+    </form>
+</div>
+
+<div class="card">
+    <h2>📋 Список кнопок ({{ buttons.count }})</h2>
+    
+    {% if buttons %}
+    <div class="buttons-grid">
+        {% for button in buttons %}
+        <div class="button-card" style="border-left: 4px solid {{ button.color }};">
+            <div class="button-preview">
+                <a href="{{ button.url }}" class="btn-preview" 
+                   style="background: {{ button.color }};" target="_blank">
+                    {{ button.icon }} {{ button.title }}
+                </a>
+            </div>
+            
+            <div class="button-info">
+                <p><strong>URL:</strong> {{ button.url|truncatechars:30 }}</p>
+                <p><strong>Порядок:</strong> {{ button.order }}</p>
+                <p><strong>Статус:</strong> 
+                    <span class="status-badge {% if button.is_active %}status-completed{% else %}status-created{% endif %}">
+                        {% if button.is_active %}Активна{% else %}Неактивна{% endif %}
+                    </span>
+                </p>
+            </div>
+            
+            <div class="button-actions">
+                <a href="{% url 'edit_navigation_button' button.id %}" class="btn btn-sm btn-warning">✏️</a>
+                <a href="{% url 'delete_navigation_button' button.id %}" class="btn btn-sm btn-danger">🗑️</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 2rem; color: var(--secondary);">
+        <p>🚀 Кнопок пока нет. Добавьте первую!</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.buttons-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.button-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.button-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.button-preview {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.btn-preview {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.button-info {
+    margin-bottom: 1rem;
+}
+
+.button-info p {
+    margin: 0.3rem 0;
+    font-size: 0.9rem;
+}
+
+.button-actions {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+</style>
+{% endblock %}

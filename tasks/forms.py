@@ -158,3 +158,20 @@ class UserProfileForm(forms.ModelForm):
             'telegram_username': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '@username'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
         }
+
+class NavigationButtonForm(forms.ModelForm):
+    class Meta:
+        model = NavigationButton
+        fields = ['title', 'url', 'icon', 'color', 'order', 'is_active']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: Google Диск'}),
+            'url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://drive.google.com/'}),
+            'icon': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '🚀 или 📁 или 🔗'}),
+            'color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
+            'order': forms.NumberInput(attrs={'class': 'form-control'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        }
+        help_texts = {
+            'icon': 'Можно использовать эмодзи или текст',
+            'color': 'Выберите цвет кнопки',
+        }

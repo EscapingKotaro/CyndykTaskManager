@@ -12,21 +12,79 @@ from django.contrib.auth import logout as auth_logout
 from django.http import JsonResponse
 import secrets
 from datetime import timedelta
-from django.utils import timezone
+from django.contrib.auth import login  # ← Добавляем этот импорт
 
 @login_required
 def navigation_buttons(request):
+    """
+    Управление кастомными кнопками навигации
+    """
     if not request.user.is_staff:
+        messages.error(request, 'У вас нет прав для управления навигацией.')
         return redirect('dashboard')
     
-    buttons = NavigationButton.objects.all()
+    buttons = NavigationButton.objects.filter(created_by=request.user).order_by('order')
     
     if request.method == 'POST':
-        # Обработка сохранения кнопок
-        pass
+        # Обработка создания новой кнопки
+        form = NavigationButtonForm(request.POST)
+        if form.is_valid():
+            button = form.save(commit=False)
+            button.created_by = request.user
+            button.save()
+            messages.success(request, f'Кнопка "{button.title}" успешно создана!')
+            return redirect('navigation_buttons')
+    else:
+        form = NavigationButtonForm()
     
-    return render(request, 'tasks/navigation_buttons.html', {'buttons': buttons})
+    return render(request, 'tasks/navigation_buttons.html', {
+        'buttons': buttons,
+        'form': form
+    })
 
+@login_required
+def edit_navigation_button(request, button_id):
+    """
+    Редактирование кнопки навигации
+    """
+    if not request.user.is_staff:
+        messages.error(request, 'У вас нет прав для редактирования кнопок.')
+        return redirect('dashboard')
+    
+    button = get_object_or_404(NavigationButton, id=button_id, created_by=request.user)
+    
+    if request.method == 'POST':
+        form = NavigationButtonForm(request.POST, instance=button)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Кнопка "{button.title}" успешно обновлена!')
+            return redirect('navigation_buttons')
+    else:
+        form = NavigationButtonForm(instance=button)
+    
+    return render(request, 'tasks/edit_navigation_button.html', {
+        'form': form,
+        'button': button
+    })
+
+@login_required
+def delete_navigation_button(request, button_id):
+    """
+    Удаление кнопки навигации
+    """
+    if not request.user.is_staff:
+        messages.error(request, 'У вас нет прав для удаления кнопок.')
+        return redirect('dashboard')
+    
+    button = get_object_or_404(NavigationButton, id=button_id, created_by=request.user)
+    
+    if request.method == 'POST':
+        button_title = button.title
+        button.delete()
+        messages.success(request, f'Кнопка "{button_title}" успешно удалена!')
+        return redirect('navigation_buttons')
+    
+    return render(request, 'tasks/delete_navigation_button.html', {'button': button})
 @login_required
 def task_management(request):
     if not request.user.is_staff:
@@ -54,8 +112,52 @@ def task_management(request):
     })
 
 @login_required
-def edit_task(request, task_id):
+def task_management(request):
+    """
+    Страница управления задачами для админа
+    """
     if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    tasks = Task.objects.filter(created_by=request.user).order_by('-created_date')
+    search_query = request.GET.get('search', '')
+    status_filter = request.GET.get('status', '')
+    employee_filter = request.GET.get('employee', '')
+    
+    # Фильтрация по поиску
+    if search_query:
+        tasks = tasks.filter(
+            Q(title__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Фильтрация по статусу
+    if status_filter:
+        tasks = tasks.filter(status=status_filter)
+    
+    # Фильтрация по сотруднику
+    if employee_filter:
+        tasks = tasks.filter(assigned_to_id=employee_filter)
+    
+    # Сотрудники для фильтра
+    employees = CustomUser.objects.filter(manager=request.user)
+    
+    return render(request, 'tasks/task_management.html', {
+        'tasks': tasks,
+        'search_query': search_query,
+        'status_filter': status_filter,
+        'employee_filter': employee_filter,
+        'employees': employees,
+        'status_choices': Task.STATUS_CHOICES
+    })
+
+@login_required
+def edit_task(request, task_id):
+    """
+    Редактирование задачи админом
+    """
+    if not request.user.is_staff:
+        messages.error(request, 'У вас нет прав для редактирования задач.')
         return redirect('dashboard')
     
     task = get_object_or_404(Task, id=task_id, created_by=request.user)
@@ -63,9 +165,11 @@ def edit_task(request, task_id):
     if request.method == 'POST':
         form = TaskForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
-            messages.success(request, f'Задача "{task.title}" обновлена!')
+            updated_task = form.save()
+            messages.success(request, f'✅ Задача "{updated_task.title}" успешно обновлена!')
             return redirect('task_management')
+        else:
+            messages.error(request, '❌ Пожалуйста, исправьте ошибки в форме.')
     else:
         form = TaskForm(instance=task)
         form.fields['assigned_to'].queryset = CustomUser.objects.filter(manager=request.user)
@@ -77,7 +181,11 @@ def edit_task(request, task_id):
 
 @login_required
 def delete_task(request, task_id):
+    """
+    Удаление задачи админом
+    """
     if not request.user.is_staff:
+        messages.error(request, 'У вас нет прав для удаления задач.')
         return redirect('dashboard')
     
     task = get_object_or_404(Task, id=task_id, created_by=request.user)
@@ -85,11 +193,24 @@ def delete_task(request, task_id):
     if request.method == 'POST':
         task_title = task.title
         task.delete()
-        messages.success(request, f'Задача "{task_title}" удалена!')
+        messages.success(request, f'✅ Задача "{task_title}" успешно удалена!')
         return redirect('task_management')
     
     return render(request, 'tasks/delete_task.html', {'task': task})
 
+@login_required
+def task_detail(request, task_id):
+    """
+    Детальная страница задачи для админа
+    """
+    if not request.user.is_staff:
+        return redirect('dashboard')
+    
+    task = get_object_or_404(Task, id=task_id, created_by=request.user)
+    
+    return render(request, 'tasks/task_detail.html', {
+        'task': task
+    })
 
 @login_required
 def employee_list(request):

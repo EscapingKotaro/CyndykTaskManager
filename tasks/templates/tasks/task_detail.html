@@ -1,0 +1,79 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Задача: {{ task.title }} - TaskManager{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem;">
+        <h1>📋 Задача: {{ task.title }}</h1>
+        <div style="display: flex; gap: 1rem;">
+            <a href="{% url 'edit_task' task.id %}" class="btn btn-warning">✏️ Редактировать</a>
+            <a href="{% url 'task_management' %}" class="btn btn-secondary">← Назад к списку</a>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+        <!-- Основная информация -->
+        <div>
+            <div style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <h3>📝 Описание</h3>
+                <p style="white-space: pre-wrap; color: var(--dark);">{{ task.description }}</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <strong>👤 Сотрудник</strong>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem;">{{ task.assigned_to.get_display_name }}</p>
+                </div>
+                
+                <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <strong>📅 Срок выполнения</strong>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem;">{{ task.due_date }}</p>
+                </div>
+                
+                <div style="background: white; padding: 1rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <strong>💰 Вознаграждение</strong>
+                    <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem; color: var(--success);">
+                        {% if task.payment_amount == 0 %}
+                            —
+                        {% else %}
+                            {{ task.payment_amount }} руб.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статус и действия -->
+        <div>
+            <div style="background: #f0f9ff; padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                <h3>📊 Статус задачи</h3>
+                <div style="text-align: center; padding: 1rem;">
+                    <span class="status-badge status-{{ task.status }}" style="font-size: 1.2rem; padding: 0.8rem 1.5rem;">
+                        {{ task.get_status_display }}
+                    </span>
+                </div>
+                
+                {% if task.status == 'submitted' %}
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="{% url 'complete_task' task.id %}" class="btn btn-success" style="width: 100%;">
+                        ✅ Подтвердить выполнение
+                    </a>
+                    <small style="color: var(--secondary); display: block; margin-top: 0.5rem;">
+                        Сдана на отчет: {{ task.submitted_date|date:"d.m.Y H:i" }}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+
+            <div style="background: #fff3cd; padding: 1.5rem; border-radius: 12px;">
+                <h3>⚡ Быстрые действия</h3>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="{% url 'edit_task' task.id %}" class="btn btn-warning">✏️ Редактировать</a>
+                    <a href="{% url 'delete_task' task.id %}" class="btn btn-danger">🗑️ Удалить задачу</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

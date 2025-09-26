@@ -590,6 +590,34 @@ textarea.form-control {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
+.nav-custom-button {
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    border: 2px solid var(--primary);
+}
+
+.nav-custom-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    color: white;
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .nav-links {
+        flex-direction: column;
+    }
+    
+    .nav-custom-button {
+        margin: 0.2rem 0;
+        text-align: center;
+    }
+}
     </style>
 
     {% block style %}
@@ -607,7 +635,7 @@ textarea.form-control {
                 <div class="nav-links" id="navLinks">
     {% if user.is_authenticated %}
         <div class="user-info">
-            <span>👋 Привет, {{ user.get_display_name }}</span>
+            <span>{{ user.get_display_name }}</span>
                     {% if not user.is_staff %}
                         <span class="balance">💰 {{ user.balance }} руб.</span>
                     {% endif %}
@@ -615,16 +643,30 @@ textarea.form-control {
                 
                 {% if user.is_staff %}
                     <a href="{% url 'dashboard' %}">📋 Панель управления</a>
+                    <a href="{% url 'employee_list' %}">👥 Сотрудники</a>  
                     <a href="{% url 'invitation_list' %}">📨 Приглашения</a>
                     <a href="{% url 'create_employee' %}">👥 Добавить сотрудника</a>
                     <a href="{% url 'create_task' %}">➕ Создать задачу</a>
+                    <a href="{% url 'task_management' %}">📋 Управление задачами</a>
                     <a href="{% url 'calendar' %}">📅 Календарь</a>
+                    <a href="{% url 'navigation_buttons' %}" style="background: #6b7280; border-color: #6b7280;">
+                ⚙️ Настройки кнопок
+            </a>
                 {% else %}
                     <a href="{% url 'dashboard' %}">📋 Мои задачи</a>
                 {% endif %}
                 
                 <a href="{% url 'profile' %}">👤 Профиль</a>
                 <a href="{% url 'change_password' %}">🔐 Сменить пароль</a>
+                {% get_navigation_buttons user as nav_buttons %}
+            {% for button in nav_buttons %}
+                <a href="{{ button.url }}" 
+                   class="nav-custom-button" 
+                   style="background: {{ button.color }}; border-color: {{ button.color }};"
+                   target="_blank">
+                    {{ button.icon }} {{ button.title }}
+                </a>
+            {% endfor %}
                 <a href="{% url 'logout' %}">🚪 Выйти</a>
             {% else %}
                 <a href="{% url 'login' %}">🔑 Войти</a>

@@ -1,0 +1,63 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Редактирование задачи - TaskManager{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-card">
+        <div class="form-header">
+            <h2>✏️ Редактирование задачи</h2>
+            <p>Изменение задачи "{{ task.title }}"</p>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3>📋 Основная информация</h3>
+                
+                <div class="enhanced-input">
+                    <label for="id_title">📝 Название задачи</label>
+                    {{ form.title }}
+                </div>
+
+                <div class="enhanced-input">
+                    <label for="id_description">📄 Описание задачи</label>
+                    {{ form.description }}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>👥 Назначение</h3>
+                
+                <div class="enhanced-input">
+                    <label for="id_assigned_to">👤 Исполнитель</label>
+                    {{ form.assigned_to }}
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>⏰ Сроки и бюджет</h3>
+                
+                <div class="form-grid">
+                    <div class="enhanced-input">
+                        <label for="id_due_date">📅 Срок выполнения</label>
+                        {{ form.due_date }}
+                    </div>
+
+                    <div class="enhanced-input">
+                        <label for="id_payment_amount">💰 Вознаграждение</label>
+                        {{ form.payment_amount }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">💾 Сохранить изменения</button>
+                <a href="{% url 'task_management' %}" class="btn btn-secondary">❌ Отмена</a>
+                <a href="{% url 'delete_task' task.id %}" class="btn btn-danger">🗑️ Удалить задачу</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

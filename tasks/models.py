@@ -3,15 +3,18 @@ from django.db import models
 from django.utils import timezone
 
 class NavigationButton(models.Model):
-    title = models.CharField(max_length=100, verbose_name='Название')
-    url = models.CharField(max_length=500, verbose_name='Ссылка')
-    color = models.CharField(max_length=7, default='#2563eb', verbose_name='Цвет')
+    title = models.CharField(max_length=100, verbose_name='Название кнопки')
+    url = models.CharField(max_length=500, verbose_name='URL ссылка')
     icon = models.CharField(max_length=50, default='🔗', verbose_name='Иконка')
-    order = models.IntegerField(default=0, verbose_name='Порядок')
+    color = models.CharField(max_length=7, default='#2563eb', verbose_name='Цвет кнопки')
+    order = models.IntegerField(default=0, verbose_name='Порядок отображения')
     is_active = models.BooleanField(default=True, verbose_name='Активна')
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Кем создана')
     
     class Meta:
-        ordering = ['order']
+        ordering = ['order', 'title']
+        verbose_name = 'Кнопка навигации'
+        verbose_name_plural = 'Кнопки навигации'
     
     def __str__(self):
         return self.title

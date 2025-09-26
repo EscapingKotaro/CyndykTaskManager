@@ -1,0 +1,120 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Управление задачами - TaskManager{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap;">
+        <h1>📋 Управление задачами</h1>
+        <a href="{% url 'create_task' %}" class="btn btn-primary">➕ Создать задачу</a>
+    </div>
+
+    <!-- Фильтры -->
+    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            <div class="enhanced-input">
+                <label for="search">🔍 Поиск</label>
+                <input type="text" name="search" id="search" class="form-control" 
+                       placeholder="Поиск по названию..." value="{{ search_query }}">
+            </div>
+            
+            <div class="enhanced-input">
+                <label for="status">📊 Статус</label>
+                <select name="status" id="status" class="form-control">
+                    <option value="">Все статусы</option>
+                    {% for status_code, status_name in status_choices %}
+                    <option value="{{ status_code }}" {% if status_filter == status_code %}selected{% endif %}>
+                        {{ status_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="enhanced-input">
+                <label for="employee">👤 Сотрудник</label>
+                <select name="employee" id="employee" class="form-control">
+                    <option value="">Все сотрудники</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" {% if employee_filter == emp.id|stringformat:"s" %}selected{% endif %}>
+                        {{ emp.get_display_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; align-items: end;">
+                <button type="submit" class="btn btn-primary">Применить</button>
+                <a href="{% url 'task_management' %}" class="btn btn-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Список задач ({{ tasks.count }})</h2>
+    
+    {% if tasks %}
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Сотрудник</th>
+                    <th>Срок</th>
+                    <th>Стоимость</th>
+                    <th>Статус</th>
+                    <th>Создана</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in tasks %}
+                <tr>
+                    <td>
+                        <strong>{{ task.title }}</strong>
+                        <br><small style="color: var(--secondary);">{{ task.description|truncatewords:5 }}</small>
+                    </td>
+                    <td>{{ task.assigned_to.get_display_name }}</td>
+                    <td>{{ task.due_date }}</td>
+                    <td>
+                        {% if task.payment_amount == 0 %}
+                            <span style="color: var(--secondary);">—</span>
+                        {% else %}
+                            {{ task.payment_amount }} руб.
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ task.status }}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ task.created_date|date:"d.m.Y" }}</td>
+                    <td>
+                        <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+                            <a href="{% url 'task_detail' task.id %}" class="btn btn-sm btn-primary" 
+                               title="Просмотр">👁️</a>
+                            <a href="{% url 'edit_task' task.id %}" class="btn btn-sm btn-warning"
+                               title="Редактировать">✏️</a>
+                            
+                            {% if task.status == 'submitted' %}
+                            <a href="{% url 'complete_task' task.id %}" class="btn btn-sm btn-success"
+                               title="Подтвердить выполнение">✅</a>
+                            {% endif %}
+                            
+                            <a href="{% url 'delete_task' task.id %}" class="btn btn-sm btn-danger"
+                               title="Удалить">🗑️</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--secondary);">
+        <p style="font-size: 1.2rem;">📭 Задачи не найдены</p>
+        <p>Создайте первую задачу или измените параметры фильтра</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

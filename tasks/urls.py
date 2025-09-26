@@ -23,10 +23,13 @@ urlpatterns = [
     path('invitations/create/', views.create_invitation, name='create_invitation'),
     path('register/<str:token>/', views.register_with_invitation, name='register_with_invitation'),
     path('profile/', views.profile, name='profile'),
-    path('employees/', views.employee_list, name='employee_list'),
+    path('employees/', views.employee_list, name='employee_list'),.
     path('tasks/manage/', views.task_management, name='task_management'),
+    path('tasks/<int:task_id>/', views.task_detail, name='task_detail'),
     path('tasks/<int:task_id>/edit/', views.edit_task, name='edit_task'),
     path('tasks/<int:task_id>/delete/', views.delete_task, name='delete_task'),
     path('navigation-buttons/', views.navigation_buttons, name='navigation_buttons'),
+    path('navigation-buttons/<int:button_id>/edit/', views.edit_navigation_button, name='edit_navigation_button'),
+    path('navigation-buttons/<int:button_id>/delete/', views.delete_navigation_button, name='delete_navigation_button'),
 ]
 
