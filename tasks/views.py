@@ -23,14 +23,13 @@ def navigation_buttons(request):
         messages.error(request, 'У вас нет прав для управления навигацией.')
         return redirect('dashboard')
     
-    buttons = NavigationButton.objects.filter(created_by=request.user).order_by('order')
+    buttons = NavigationButton.objects.order_by('order')
     
     if request.method == 'POST':
         # Обработка создания новой кнопки
         form = NavigationButtonForm(request.POST)
         if form.is_valid():
             button = form.save(commit=False)
-            button.created_by = request.user
             button.save()
             messages.success(request, f'Кнопка "{button.title}" успешно создана!')
             return redirect('navigation_buttons')
@@ -51,7 +50,7 @@ def edit_navigation_button(request, button_id):
         messages.error(request, 'У вас нет прав для редактирования кнопок.')
         return redirect('dashboard')
     
-    button = get_object_or_404(NavigationButton, id=button_id, created_by=request.user)
+    button = get_object_or_404(NavigationButton, id=button_id)
     
     if request.method == 'POST':
         form = NavigationButtonForm(request.POST, instance=button)
@@ -76,7 +75,7 @@ def delete_navigation_button(request, button_id):
         messages.error(request, 'У вас нет прав для удаления кнопок.')
         return redirect('dashboard')
     
-    button = get_object_or_404(NavigationButton, id=button_id, created_by=request.user)
+    button = get_object_or_404(NavigationButton, id=button_id)
     
     if request.method == 'POST':
         button_title = button.title
