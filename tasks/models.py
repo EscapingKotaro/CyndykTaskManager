@@ -95,7 +95,6 @@ class NavigationButton(models.Model):
     color = models.CharField(max_length=7, default='#2563eb', verbose_name='Цвет кнопки')
     order = models.IntegerField(default=0, verbose_name='Порядок отображения')
     is_active = models.BooleanField(default=True, verbose_name='Активна')
-    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Кем создана')
     
     class Meta:
         ordering = ['order', 'title']
