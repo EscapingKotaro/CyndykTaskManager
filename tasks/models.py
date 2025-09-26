@@ -2,23 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 
-class NavigationButton(models.Model):
-    title = models.CharField(max_length=100, verbose_name='Название кнопки')
-    url = models.CharField(max_length=500, verbose_name='URL ссылка')
-    icon = models.CharField(max_length=50, default='🔗', verbose_name='Иконка')
-    color = models.CharField(max_length=7, default='#2563eb', verbose_name='Цвет кнопки')
-    order = models.IntegerField(default=0, verbose_name='Порядок отображения')
-    is_active = models.BooleanField(default=True, verbose_name='Активна')
-    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Кем создана')
-    
-    class Meta:
-        ordering = ['order', 'title']
-        verbose_name = 'Кнопка навигации'
-        verbose_name_plural = 'Кнопки навигации'
-    
-    def __str__(self):
-        return self.title
-
 class CustomUser(AbstractUser):
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, 
                                limit_choices_to={'is_staff': True}, related_name='subordinates')
@@ -102,3 +85,22 @@ class Invitation(models.Model):
 
     def __str__(self):
         return f"Приглашение для {self.email}"
+
+
+
+class NavigationButton(models.Model):
+    title = models.CharField(max_length=100, verbose_name='Название кнопки')
+    url = models.CharField(max_length=500, verbose_name='URL ссылка')
+    icon = models.CharField(max_length=50, default='🔗', verbose_name='Иконка')
+    color = models.CharField(max_length=7, default='#2563eb', verbose_name='Цвет кнопки')
+    order = models.IntegerField(default=0, verbose_name='Порядок отображения')
+    is_active = models.BooleanField(default=True, verbose_name='Активна')
+    created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Кем создана')
+    
+    class Meta:
+        ordering = ['order', 'title']
+        verbose_name = 'Кнопка навигации'
+        verbose_name_plural = 'Кнопки навигации'
+    
+    def __str__(self):
+        return self.title
