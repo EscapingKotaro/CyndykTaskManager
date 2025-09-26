@@ -9,5 +9,5 @@ def get_navigation_buttons(user):
     Возвращает активные кнопки навигации для пользователя
     """
     if user.is_authenticated and user.is_staff:
-        return NavigationButton.objects.filter(created_by=user, is_active=True).order_by('order')
+        return NavigationButton.objects.filter(is_active=True).order_by('order')
     return NavigationButton.objects.none()
