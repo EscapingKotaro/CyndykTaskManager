@@ -620,63 +620,398 @@ textarea.form-control {
         text-align: center;
     }
 }
+.header {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.8rem 0;
+        }
+
+        .logo {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-main {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .nav-dropdown {
+            position: relative;
+        }
+
+        .nav-dropdown-toggle {
+            background: none;
+            border: 2px solid transparent;
+            padding: 0.6rem 1rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            color: var(--dark);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-dropdown-toggle:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            min-width: 220px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 0.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .nav-dropdown:hover .nav-dropdown-content {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .nav-dropdown-item {
+            display: block;
+            padding: 0.8rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin: 0.2rem 0;
+        }
+
+        .nav-dropdown-item:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .user-menu-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .user-menu-toggle:hover {
+            background: var(--light);
+        }
+
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 0.5rem;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .user-menu:hover .user-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .custom-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 0.5rem 0;
+        }
+
+        .custom-button {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .custom-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Мобильная навигация */
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+        }
+
+        @media (max-width: 1024px) {
+            .nav-main {
+                display: none;
+            }
+            
+            .mobile-menu-toggle {
+                display: block;
+            }
+            
+            .nav-mobile {
+                position: fixed;
+                top: 70px;
+                left: 0;
+                right: 0;
+                background: white;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                padding: 1rem;
+                border-radius: 0 0 15px 15px;
+                display: none;
+                z-index: 999;
+            }
+            
+            .nav-mobile.active {
+                display: block;
+            }
+            
+            .nav-mobile .nav-dropdown {
+                margin: 0.5rem 0;
+            }
+            
+            .nav-mobile .nav-dropdown-content {
+                position: static;
+                box-shadow: none;
+                background: var(--light);
+                margin: 0.5rem 0;
+                display: none;
+            }
+            
+            .nav-mobile .nav-dropdown.active .nav-dropdown-content {
+                display: block;
+            }
+        }
     </style>
-
-    {% block style %}
-
-    {% endblock %}
 </head>
 <body>
     <header class="header">
         <div class="container">
             <nav class="nav">
-                <a href="{% url 'dashboard' %}" class="logo">📊 TaskManager</a>
-                
-                <button class="menu-toggle" onclick="toggleMenu()">☰</button>
-                
-                <div class="nav-links" id="navLinks">
-    {% if user.is_authenticated %}
-        <div class="user-info">
-            <span>{{ user.get_display_name }}</span>
-                    {% if not user.is_staff %}
-                        <span class="balance">💰 {{ user.balance }} руб.</span>
+                <!-- Логотип -->
+                <a href="{% url 'dashboard' %}" class="logo">
+                    📊 TaskManager
+                </a>
+
+                <!-- Основное меню (десктоп) -->
+                <div class="nav-main">
+                    {% if user.is_authenticated and user.is_staff %}
+                    <!-- Меню админа -->
+                    <div class="nav-dropdown">
+                        <button class="nav-dropdown-toggle">
+                            📋 Управление
+                        </button>
+                        <div class="nav-dropdown-content">
+                            <a href="{% url 'dashboard' %}" class="nav-dropdown-item">📊 Панель управления</a>
+                            <a href="{% url 'employee_list' %}" class="nav-dropdown-item">👥 Сотрудники</a>
+                            <a href="{% url 'task_management' %}" class="nav-dropdown-item">📋 Задачи</a>
+                            <a href="{% url 'invitation_list' %}" class="nav-dropdown-item">📨 Приглашения</a>
+                        </div>
+                    </div>
+
+                    <div class="nav-dropdown">
+                        <button class="nav-dropdown-toggle">
+                            📅 Планирование
+                        </button>
+                        <div class="nav-dropdown-content">
+                            <a href="{% url 'calendar' %}" class="nav-dropdown-item">📅 Календарь</a>
+                            <a href="{% url 'create_task' %}" class="nav-dropdown-item">➕ Новая задача</a>
+                        </div>
+                    </div>
+
+                    <!-- Кастомные кнопки -->
+                    {% load navigation_tags %}
+                    {% get_navigation_buttons user as nav_buttons %}
+                    {% if nav_buttons %}
+                    <div class="nav-dropdown">
+                        <button class="nav-dropdown-toggle">
+                            🔗 Быстрые ссылки
+                        </button>
+                        <div class="nav-dropdown-content">
+                            {% for button in nav_buttons %}
+                            <a href="{{ button.url }}" class="nav-dropdown-item" target="_blank">
+                                {{ button.icon }} {{ button.title }}
+                            </a>
+                            {% endfor %}
+                            <div style="border-top: 1px solid var(--border); margin: 0.5rem 0; padding-top: 0.5rem;">
+                                <a href="{% url 'navigation_buttons' %}" class="nav-dropdown-item">
+                                    ⚙️ Управление ссылками
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% elif user.is_authenticated %}
+                    <!-- Меню сотрудника -->
+                    <a href="{% url 'dashboard' %}" class="nav-dropdown-toggle" style="text-decoration: none;">
+                        📋 Мои задачи
+                    </a>
                     {% endif %}
                 </div>
-                
-                {% if user.is_staff %}
-                    <a href="{% url 'dashboard' %}">📋 Панель управления</a>
-                    <a href="{% url 'employee_list' %}">👥 Сотрудники</a>  
-                    <a href="{% url 'invitation_list' %}">📨 Приглашения</a>
-                    <a href="{% url 'create_employee' %}">👥 Добавить сотрудника</a>
-                    <a href="{% url 'create_task' %}">➕ Создать задачу</a>
-                    <a href="{% url 'task_management' %}">📋 Управление задачами</a>
-                    <a href="{% url 'calendar' %}">📅 Календарь</a>
-                    <a href="{% url 'navigation_buttons' %}" style="background: #6b7280; border-color: #6b7280;">
-                ⚙️ Настройки кнопок
-            </a>
-                {% else %}
-                    <a href="{% url 'dashboard' %}">📋 Мои задачи</a>
-                {% endif %}
-                
-                <a href="{% url 'profile' %}">👤 Профиль</a>
-                <a href="{% url 'change_password' %}">🔐 Сменить пароль</a>
-                {% get_navigation_buttons user as nav_buttons %}
-            {% for button in nav_buttons %}
-                <a href="{{ button.url }}" 
-                   class="nav-custom-button" 
-                   style="background: {{ button.color }}; border-color: {{ button.color }};"
-                   target="_blank">
-                    {{ button.icon }} {{ button.title }}
-                </a>
-            {% endfor %}
-                <a href="{% url 'logout' %}">🚪 Выйти</a>
-            {% else %}
-                <a href="{% url 'login' %}">🔑 Войти</a>
-            {% endif %}
 
-                
-        </div>
+                <!-- Правая часть - пользователь -->
+                <div class="nav-user">
+                    {% if user.is_authenticated %}
+                    <div class="user-info" style="display: flex; align-items: center; gap: 0.5rem;">
+                        {% if not user.is_staff %}
+                        <span class="balance" style="background: var(--success); color: white; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem;">
+                            💰 {{ user.balance }} руб.
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <div class="user-menu">
+                        <button class="user-menu-toggle">
+                            <div class="user-avatar">
+                                {{ user.get_display_name|first|upper }}
+                            </div>
+                        </button>
+                        <div class="user-dropdown">
+                            <div style="padding: 0.8rem 1rem; border-bottom: 1px solid var(--border);">
+                                <strong>{{ user.get_display_name }}</strong>
+                                <div style="font-size: 0.8rem; color: var(--secondary);">
+                                    {% if user.is_staff %}👑 Администратор{% else %}👤 Сотрудник{% endif %}
+                                </div>
+                            </div>
+                            <a href="{% url 'profile' %}" class="nav-dropdown-item">👤 Профиль</a>
+                            <a href="{% url 'change_password' %}" class="nav-dropdown-item">🔐 Сменить пароль</a>
+                            <div style="border-top: 1px solid var(--border); margin: 0.5rem 0; padding-top: 0.5rem;">
+                                <a href="{% url 'logout' %}" class="nav-dropdown-item" style="color: var(--danger);">🚪 Выйти</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary">🔑 Войти</a>
+                    {% endif %}
+
+                    <!-- Кнопка мобильного меню -->
+                    <button class="mobile-menu-toggle" onclick="toggleMobileMenu()">☰</button>
+                </div>
             </nav>
+
+            <!-- Мобильное меню -->
+            <div class="nav-mobile" id="navMobile">
+                {% if user.is_authenticated and user.is_staff %}
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" onclick="toggleMobileDropdown(this)">
+                        📋 Управление
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{% url 'dashboard' %}" class="nav-dropdown-item">📊 Панель управления</a>
+                        <a href="{% url 'employee_list' %}" class="nav-dropdown-item">👥 Сотрудники</a>
+                        <a href="{% url 'task_management' %}" class="nav-dropdown-item">📋 Задачи</a>
+                        <a href="{% url 'invitation_list' %}" class="nav-dropdown-item">📨 Приглашения</a>
+                    </div>
+                </div>
+
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" onclick="toggleMobileDropdown(this)">
+                        📅 Планирование
+                    </button>
+                    <div class="nav-dropdown-content">
+                        <a href="{% url 'calendar' %}" class="nav-dropdown-item">📅 Календарь</a>
+                        <a href="{% url 'create_task' %}" class="nav-dropdown-item">➕ Новая задача</a>
+                    </div>
+                </div>
+
+                {% if nav_buttons %}
+                <div class="nav-dropdown">
+                    <button class="nav-dropdown-toggle" onclick="toggleMobileDropdown(this)">
+                        🔗 Быстрые ссылки
+                    </button>
+                    <div class="nav-dropdown-content">
+                        {% for button in nav_buttons %}
+                        <a href="{{ button.url }}" class="nav-dropdown-item" target="_blank">
+                            {{ button.icon }} {{ button.title }}
+                        </a>
+                        {% endfor %}
+                        <a href="{% url 'navigation_buttons' %}" class="nav-dropdown-item">⚙️ Управление</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% elif user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="nav-dropdown-item">📋 Мои задачи</a>
+                {% endif %}
+
+                <div style="border-top: 1px solid var(--border); margin: 1rem 0; padding-top: 1rem;">
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="nav-dropdown-item">👤 Профиль</a>
+                    <a href="{% url 'change_password' %}" class="nav-dropdown-item">🔐 Сменить пароль</a>
+                    <a href="{% url 'logout' %}" class="nav-dropdown-item" style="color: var(--danger);">🚪 Выйти</a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="nav-dropdown-item">🔑 Войти</a>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </header>
 
@@ -733,5 +1068,35 @@ document.querySelectorAll('input[name="tags"]').forEach(input => {
     });
 });
 </script>
+
+<script>
+        // Мобильное меню
+        function toggleMobileMenu() {
+            const mobileMenu = document.getElementById('navMobile');
+            mobileMenu.classList.toggle('active');
+        }
+
+        function toggleMobileDropdown(button) {
+            const dropdown = button.parentElement;
+            dropdown.classList.toggle('active');
+        }
+
+        // Закрытие меню при клике вне его
+        document.addEventListener('click', function(event) {
+            const mobileMenu = document.getElementById('navMobile');
+            const toggleButton = document.querySelector('.mobile-menu-toggle');
+            
+            if (!mobileMenu.contains(event.target) && !toggleButton.contains(event.target)) {
+                mobileMenu.classList.remove('active');
+            }
+        });
+
+        // Закрытие dropdown при клике на ссылку (мобильная версия)
+        document.querySelectorAll('.nav-mobile .nav-dropdown-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.getElementById('navMobile').classList.remove('active');
+            });
+        });
+    </script>
 </body>
 </html>
