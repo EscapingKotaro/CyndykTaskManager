@@ -22,6 +22,10 @@ class CustomUser(AbstractUser):
     
     def __str__(self):
         return self.get_display_name()
+    def get_avatar_url(self):
+        if self.avatar and hasattr(self.avatar, 'url'):
+            return self.avatar.url
+        return None
 class Task(models.Model):
     STATUS_CHOICES = [
         ('created', 'Создана'),
