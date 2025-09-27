@@ -166,7 +166,7 @@ class NavigationButtonForm(forms.ModelForm):
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Например: Google Диск'}),
             'url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://drive.google.com/'}),
-            'icon': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '🚀 или 📁 или 🔗'}),
+            'icon': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'например, 🚀 или 📁 или 🔗'}),
             'color': forms.TextInput(attrs={'class': 'form-control', 'type': 'color'}),
             'order': forms.NumberInput(attrs={'class': 'form-control'}),
             'is_active': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
