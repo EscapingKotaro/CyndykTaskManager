@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">Редактирование кнопки</h2>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Название кнопки</label>
+            {{ form.title }}
+            {% if form.title.help_text %}
+                <small class="form-help">{{ form.title.help_text }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.url.id_for_label }}">URL ссылка</label>
+            {{ form.url }}
+            {% if form.url.help_text %}
+                <small class="form-help">{{ form.url.help_text }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.icon.id_for_label }}">Иконка</label>
+            {{ form.icon }}
+            {% if form.icon.help_text %}
+                <small class="form-help">{{ form.icon.help_text }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.color.id_for_label }}">Цвет кнопки</label>
+            {{ form.color }}
+            {% if form.color.help_text %}
+                <small class="form-help">{{ form.color.help_text }}</small>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="{{ form.order.id_for_label }}">Порядок отображения</label>
+            {{ form.order }}
+            <small class="form-help">Чем меньше число, тем выше кнопка в списке</small>
+        </div>
+        
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                {{ form.is_active }}
+                <span>Активная кнопка</span>
+            </label>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'navigation_buttons' %}" class="btn btn-outline">Отмена</a>
+            <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

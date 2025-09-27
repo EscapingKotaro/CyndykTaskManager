@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="form-container">
+    <h2 class="form-title">Удаление кнопки навигации</h2>
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <p>Вы уверены, что хотите удалить кнопку?</p>
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+            <strong>{{ button.title }}</strong><br>
+            <small style="color: #64748b;">{{ button.url }}</small>
+        </div>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions" style="justify-content: center;">
+            <a href="{% url 'navigation_buttons' %}" class="btn btn-outline">Отмена</a>
+            <button type="submit" class="btn btn-danger">Удалить кнопку</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
