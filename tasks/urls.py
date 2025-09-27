@@ -8,6 +8,7 @@ urlpatterns = [
     path('logout/', views.custom_logout, name='logout'),  
     path('create-employee/', views.create_employee, name='create_employee'),
     path('create-task/', views.create_task, name='create_task'),
+    path('task/<int:task_id>/start/', views.start_task, name='start_task'),
     path('task/<int:task_id>/submit/', views.submit_task, name='submit_task'),
     path('task/<int:task_id>/complete/', views.complete_task, name='complete_task'),
     path('change-password/', views.change_password, name='change_password'),

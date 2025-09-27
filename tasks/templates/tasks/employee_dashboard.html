@@ -43,13 +43,23 @@
                     </div>
                 </div>
                 
-                <div>
+                <div style="display: flex; gap: 0.5rem; flex-direction: column;">
                     {% if task.status == 'created' %}
-                        <a href="{% url 'submit_task' task.id %}" class="btn btn-primary">
+                        <a href="{% url 'start_task' task.id %}" class="btn btn-primary">
+                            🚀 Начать работу
+                        </a>
+                    {% elif task.status == 'in_progress' %}
+                        <a href="{% url 'submit_task' task.id %}" class="btn btn-success">
                             📤 Сдать на отчет
                         </a>
+                        <small style="color: var(--secondary); text-align: center;">
+                            Работа начата: {{ task.started_date|timesince }} назад
+                        </small>
                     {% elif task.status == 'submitted' %}
                         <span style="color: var(--warning); font-weight: 600;">⏳ На проверке</span>
+                        <small style="color: var(--secondary);">
+                            Сдана: {{ task.submitted_date|date:"d.m.Y H:i" }}
+                        </small>
                     {% else %}
                         <span style="color: var(--success); font-weight: 600;">✅ Выполнено</span>
                     {% endif %}
@@ -65,4 +75,33 @@
     </div>
     {% endif %}
 </div>
+
+<style>
+.status-badge {
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-created {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-in_progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.status-submitted {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+</style>
 {% endblock %}

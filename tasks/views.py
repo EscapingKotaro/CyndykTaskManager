@@ -401,6 +401,18 @@ def create_task(request):
     
     return render(request, 'tasks/create_task.html', {'form': form})
 
+
+@login_required
+def start_task(request, task_id):
+    """Сотрудник начинает работу над задачей"""
+    task = get_object_or_404(Task, id=task_id, assigned_to=request.user)
+    
+    if task.status == 'created':
+        task.status = 'in_progress'
+        task.started_date = timezone.now()
+        task.save()
+        
+    return redirect('dashboard')
 # Сотрудник сдает задачу на отчет
 @login_required
 def submit_task(request, task_id):

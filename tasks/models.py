@@ -29,6 +29,7 @@ class CustomUser(AbstractUser):
 class Task(models.Model):
     STATUS_CHOICES = [
         ('created', 'Создана'),
+        ('in_progress', 'В исполнении'),  # НОВЫЙ СТАТУС
         ('submitted', 'Сдана на отчет'),
         ('completed', 'Выполнена'),
     ]
@@ -76,7 +77,6 @@ class Invitation(models.Model):
     ]
 
     token = models.CharField(max_length=100, unique=True, verbose_name='Токен')
-    email = models.EmailField(verbose_name='Email приглашенного')
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Кем создано')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')
     expires_at = models.DateTimeField(verbose_name='Действительно до')

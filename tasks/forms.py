@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
 from .models import *
+import re
 
 class TaskForm(forms.ModelForm):
     class Meta:
@@ -126,7 +127,6 @@ class CustomPasswordChangeForm(PasswordChangeForm):
 
             
 class InvitationForm(forms.Form):
-    email = forms.EmailField(label='Email сотрудника')
     tags = forms.CharField(label='Ярлыки (через запятую)', required=False, 
                           widget=forms.TextInput(attrs={'placeholder': 'дизайн, верстка, копирайтинг...'}))
     
@@ -137,7 +137,7 @@ class UserRegistrationForm(forms.ModelForm):
     
     class Meta:
         model = CustomUser
-        fields = ['username', 'first_name', 'telegram_username', 'tags']
+        fields = ['username', 'first_name', 'telegram_username']
     
     def clean_password2(self):
         password1 = self.cleaned_data.get("password1")
