@@ -248,7 +248,7 @@ def create_invitation(request):
             
             invitation = Invitation(
                 token=token,
-                email=form.cleaned_data['email'],
+            #    email=form.cleaned_data['email'],
                 created_by=request.user,
                 expires_at=expires_at,
             )
