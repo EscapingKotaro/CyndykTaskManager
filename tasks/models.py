@@ -84,6 +84,7 @@ class Invitation(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', verbose_name='Статус')
     accepted_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True, 
                                    related_name='accepted_invitations', verbose_name='Кем принято')
+    tags = models.CharField(max_length=500, blank=True, verbose_name='Ярлыки (через запятую)')
 
     def is_expired(self):
         return timezone.now() > self.expires_at

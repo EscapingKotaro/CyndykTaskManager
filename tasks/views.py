@@ -248,7 +248,7 @@ def create_invitation(request):
             
             invitation = Invitation(
                 token=token,
-            #    email=form.cleaned_data['email'],
+                tags=form.cleaned_data['tags'],
                 created_by=request.user,
                 expires_at=expires_at,
             )
@@ -288,7 +288,7 @@ def register_with_invitation(request, token):
             if form.is_valid():
                 user = form.save(commit=False)
                 user.set_password(form.cleaned_data['password1'])
-                user.email = invitation.email
+                user.tags = invitation.tags
                 user.manager = invitation.created_by
                 user.is_staff = False
                 user.save()
