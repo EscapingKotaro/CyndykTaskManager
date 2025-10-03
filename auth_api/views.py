@@ -12,7 +12,7 @@ def verify_user(request):
     password = request.data.get('password')
     
     # Получаем кастомную модель пользователя
-    CustomUser = apps.get_model('users', 'CustomUser')
+    CustomUser = apps.get_model('tasks', 'CustomUser')
     
     user = authenticate(username=username, password=password)
     
