@@ -15,57 +15,75 @@
 </div>
 
 <div class="card">
-    <h2>📋 Активные задачи ({{ tasks.count }})</h2>
+    <h2>📋 Активные задачи ({{ total_tasks }})</h2>
     
-    {% if tasks %}
-    <div style="display: grid; gap: 1rem;">
-        {% for task in tasks %}
-        <div style="border: 2px solid var(--border); border-radius: 10px; padding: 1.5rem; position: relative;">
-            <div style="display: flex; justify-content: between; align-items: start; gap: 1rem; flex-wrap: wrap;">
-                <div style="flex: 1;">
-                    <h3 style="margin-bottom: 0.5rem; color: var(--primary);">{{ task.title }}</h3>
-                    <p style="color: var(--secondary); margin-bottom: 1rem;">{{ task.description }}</p>
-                    
-                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem;">
-                        <span>📅 <strong>Срок:</strong> {{ task.due_date }}</span>
-                        {% if task.payment_amount == 0 %}
-                        {% else %}
-                    
-                    {% endif %}
-                    {% if task.payment_amount == 0 %}
-                        <span style="color: var(--secondary);">—</span>
-                    {% else %}
-                        <span class="task-amount"> 💰{{ task.payment_amount }} руб.</span>
-                    {% endif %}
-                        <span class="status-badge status-{{ task.status }}">
-                            {{ task.get_status_display }}
-                        </span>
+    {% if total_tasks > 0 %}
+    <div style="display: grid; gap: 1.5rem;">
+        {% for status_code, group in status_groups.items %}
+        {% if group.count > 0 %}
+        <div class="status-group">
+            <details class="status-details" {% if group.tasks.first.status == 'in_progress' or group.tasks.first.status == 'submitted' %}open{% endif %}>
+                <summary class="status-summary">
+                    <div class="status-header">
+                        <span class="status-title">{{ group.name }}</span>
+                        <div class="status-stats">
+                            <span class="task-count">{{ group.count }} задач</span>
+                            {% if group.total_payment > 0 %}
+                            <span class="payment-amount">💰 {{ group.total_payment }} руб.</span>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
+                </summary>
                 
-                <div style="display: flex; gap: 0.5rem; flex-direction: column;">
-                    {% if task.status == 'created' %}
-                        <a href="{% url 'start_task' task.id %}" class="btn btn-primary">
-                            🚀 Начать работу
-                        </a>
-                    {% elif task.status == 'in_progress' %}
-                        <a href="{% url 'submit_task' task.id %}" class="btn btn-success">
-                            📤 Сдать на отчет
-                        </a>
-                        <small style="color: var(--secondary); text-align: center;">
-                            Работа начата: {{ task.started_date|timesince }} назад
-                        </small>
-                    {% elif task.status == 'submitted' %}
-                        <span style="color: var(--warning); font-weight: 600;">⏳ На проверке</span>
-                        <small style="color: var(--secondary);">
-                            Сдана: {{ task.submitted_date|date:"d.m.Y H:i" }}
-                        </small>
-                    {% else %}
-                        <span style="color: var(--success); font-weight: 600;">✅ Выполнено</span>
-                    {% endif %}
+                <div class="tasks-list" style="margin-top: 1rem;">
+                    {% for task in group.tasks %}
+                    <div class="task-card">
+                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem; flex-wrap: wrap;">
+                            <div style="flex: 1;">
+                                <h3 style="margin-bottom: 0.5rem; color: var(--primary);">{{ task.title }}</h3>
+                                <p style="color: var(--secondary); margin-bottom: 1rem;">{{ task.description }}</p>
+                                
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem;">
+                                    <span>📅 <strong>Срок:</strong> {{ task.due_date }}</span>
+                                    {% if task.payment_amount == 0 %}
+                                        <span style="color: var(--secondary);">—</span>
+                                    {% else %}
+                                        <span class="task-amount"> 💰{{ task.payment_amount }} руб.</span>
+                                    {% endif %}
+                                    {% if task.tags %}
+                                        <span>🏷️ {{ task.tags }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; gap: 0.5rem; flex-direction: column; min-width: 150px;">
+                                {% if task.status == 'created' %}
+                                    <a href="{% url 'start_task' task.id %}" class="btn btn-primary">
+                                        🚀 Начать работу
+                                    </a>
+                                {% elif task.status == 'in_progress' %}
+                                    <a href="{% url 'submit_task' task.id %}" class="btn btn-success">
+                                        📤 Сдать на отчет
+                                    </a>
+                                    <small style="color: var(--secondary); text-align: center;">
+                                        Работа начата: {{ task.started_date|timesince }} назад
+                                    </small>
+                                {% elif task.status == 'submitted' %}
+                                    <span style="color: var(--warning); font-weight: 600;">⏳ На проверке</span>
+                                    <small style="color: var(--secondary);">
+                                        Сдана: {{ task.submitted_date|date:"d.m.Y H:i" }}
+                                    </small>
+                                {% else %}
+                                    <span style="color: var(--success); font-weight: 600;">✅ Выполнено</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
                 </div>
-            </div>
+            </details>
         </div>
+        {% endif %}
         {% endfor %}
     </div>
     {% else %}
@@ -77,6 +95,82 @@
 </div>
 
 <style>
+.status-group {
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.status-details {
+    background: white;
+}
+
+.status-summary {
+    padding: 1.5rem;
+    cursor: pointer;
+    background: var(--background);
+    list-style: none;
+    transition: background-color 0.2s;
+}
+
+.status-summary:hover {
+    background: #f8f9fa;
+}
+
+.status-summary::-webkit-details-marker {
+    display: none;
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.status-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.status-stats {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.task-count {
+    background: var(--primary);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.payment-amount {
+    background: #10b981;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.task-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    background: white;
+}
+
+.task-card:last-child {
+    margin-bottom: 0;
+}
+
 .status-badge {
     padding: 0.3rem 0.8rem;
     border-radius: 15px;
@@ -102,6 +196,11 @@
 .status-completed {
     background: #d1fae5;
     color: #065f46;
+}
+
+/* Анимация для раскрывающихся списков */
+.status-details[open] .status-summary {
+    border-bottom: 2px solid var(--border);
 }
 </style>
 {% endblock %}

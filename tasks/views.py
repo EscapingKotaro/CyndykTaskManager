@@ -359,8 +359,26 @@ def dashboard(request):
         })
     else:
         tasks = Task.objects.filter(assigned_to=request.user)
-        return render(request, 'tasks/employee_dashboard.html', {'tasks': tasks})
+        
+        # Группируем задачи по статусам с подсчетом статистики
+        status_groups = {}
+        for status_code, status_name in Task.STATUS_CHOICES:
+            status_tasks = tasks.filter(status=status_code)
+            total_payment = status_tasks.aggregate(total=Sum('payment_amount'))['total'] or 0
+            
+            status_groups[status_code] = {
+                'name': status_name,
+                'tasks': status_tasks,
+                'count': status_tasks.count(),
+                'total_payment': total_payment
+            }
+        
+        return render(request, 'tasks/employee_dashboard.html', {
+            'status_groups': status_groups,
+            'total_tasks': tasks.count()
+        })
 
+        
 # Админ создает нового сотрудника
 @login_required
 def create_employee(request):
