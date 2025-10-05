@@ -9,4 +9,5 @@ urlpatterns = [
     path('game/create/', views.release_create, name='release_create'),
     path('game/<int:pk>/edit/', views.release_update, name='release_update'),
     path('game/<int:pk>/toggle-publish/', views.toggle_publish, name='toggle_publish'),
+    path('game/<int:pk>/modal/', views.release_modal, name='release_modal'),
 ]

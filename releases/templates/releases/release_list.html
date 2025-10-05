@@ -11,39 +11,6 @@
         </div>
         <a href="{% url 'releases:release_create' %}" class="btn btn-primary">➕ Добавить релиз</a>
     </div>
-
-    <!-- Статистика -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
-        <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 1.5rem; border-radius: 10px;">
-            <h3 style="margin: 0 0 0.5rem 0;">Всего игр</h3>
-            <p style="font-size: 2rem; margin: 0;">{{ total_games }}</p>
-        </div>
-        <div style="background: linear-gradient(135deg, #10b981, #047857); color: white; padding: 1.5rem; border-radius: 10px;">
-            <h3 style="margin: 0 0 0.5rem 0;">Опубликовано</h3>
-            <p style="font-size: 2rem; margin: 0;">{{ published_games }}</p>
-        </div>
-        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 1.5rem; border-radius: 10px;">
-            <h3 style="margin: 0 0 0.5rem 0;">Предстоящие</h3>
-            <p style="font-size: 2rem; margin: 0;">{{ upcoming_games }}</p>
-        </div>
-    </div>
-
-    <!-- Фильтры -->
-    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
-        <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-            {% for field in form %}
-            <div class="enhanced-input">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-            </div>
-            {% endfor %}
-            
-            <div style="display: flex; gap: 1rem; align-items: end;">
-                <button type="submit" class="btn btn-primary">Применить</button>
-                <a href="{% url 'releases:release_list' %}" class="btn btn-secondary">Сбросить</a>
-            </div>
-        </form>
-    </div>
 </div>
 
 <div class="card">
@@ -54,18 +21,25 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th>Игра</th>
                     <th>Дата релиза</th>
+                    <th>Название</th>
                     <th>Платформы</th>
                     <th>Площадки</th>
-                    <th>Языки</th>
-                    <th>Статус</th>
+                    <th>Локализация</th>
                     <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
                 {% for game in games %}
                 <tr>
+                    <td>
+                        <strong>{{ game.release_date }}</strong>
+                        {% if game.days_until_release > 0 %}
+                        <br><small style="color: var(--secondary);">через {{ game.days_until_release }} д.</small>
+                        {% else %}
+                        <br><small style="color: var(--success);">✅ Вышла</small>
+                        {% endif %}
+                    </td>
                     <td>
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             {% if game.icon %}
@@ -89,48 +63,44 @@
                         </div>
                     </td>
                     <td>
-                        {{ game.release_date }}
-                        {% if game.days_until_release > 0 %}
-                        <br><small style="color: var(--secondary);">через {{ game.days_until_release }} д.</small>
-                        {% else %}
-                        <br><small style="color: var(--success);">✅ Вышла</small>
-                        {% endif %}
-                    </td>
-                    <td>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 150px;">
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 200px;">
                             {% for platform in game.get_platforms_list %}
-                            <span class="platform-tag">{{ platform }}</span>
+                            <span class="platform-tag" title="{{ platform }}">
+                                {{ game.get_platform_icon }} {{ platform }}
+                            </span>
                             {% endfor %}
                         </div>
                     </td>
+                    <td>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 200px;">
+        {% for marketplace in game.get_marketplaces_list %}
+            {% if marketplace in game.get_marketplace_platforms_dict %}
+                <span class="marketplace-tag active" 
+                      title="{{ marketplace }}: {{ game.get_marketplace_platforms_dict|join:', ' }}">
+                    {{ game.get_marketplace_icon }} {{ marketplace }}
+                </span>
+            {% else %}
+                <span class="marketplace-tag inactive" title="{{ marketplace }}: не опубликовано">
+                    {{ game.get_marketplace_icon }} {{ marketplace }}
+                </span>
+            {% endif %}
+        {% empty %}
+            <span style="color: var(--secondary);">—</span>
+        {% endfor %}
+    </div>
+</td>
                     <td>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 150px;">
-                            {% for marketplace, platforms in game.get_marketplace_platforms_dict.items %}
-                            <span class="marketplace-tag" title="{{ platforms|join:', ' }}">{{ marketplace }}</span>
-                            {% empty %}
-                            <span style="color: var(--secondary);">—</span>
-                            {% endfor %}
-                        </div>
-                    </td>
-                    <td>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 120px;">
                             {% for lang in game.get_languages_list %}
                             <span class="language-tag">{{ lang }}</span>
                             {% endfor %}
                         </div>
                     </td>
                     <td>
-                        <form method="post" action="{% url 'releases:toggle_publish' game.id %}" style="display: inline;">
-                            {% csrf_token %}
-                            <button type="submit" class="status-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
-                                {% if game.is_published %}✅ Опубликовано{% else %}❌ Не опубликовано{% endif %}
-                            </button>
-                        </form>
-                    </td>
-                    <td>
                         <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
-                            <a href="{% url 'releases:release_detail' game.id %}" class="btn btn-sm btn-primary" 
-                               title="Просмотр">👁️</a>
+                            <button class="btn btn-sm btn-primary view-game" 
+                                    data-game-id="{{ game.id }}"
+                                    title="Просмотр">👁️</button>
                             <a href="{% url 'releases:release_update' game.id %}" class="btn btn-sm btn-warning"
                                title="Редактировать">✏️</a>
                         </div>
@@ -143,7 +113,7 @@
     {% else %}
     <div style="text-align: center; padding: 3rem; color: var(--secondary);">
         <p style="font-size: 1.2rem;">🎮 Релизы не найдены</p>
-        <p>Добавьте первый релиз или измените параметры фильтра</p>
+        <p>Добавьте первый релиз</p>
         <a href="{% url 'releases:release_create' %}" class="btn btn-primary" style="margin-top: 1rem;">
             ➕ Добавить первый релиз
         </a>
@@ -151,83 +121,228 @@
     {% endif %}
 </div>
 
+<!-- Модальное окно для просмотра игры -->
+<div id="gameModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>🎮 Детали релиза</h2>
+            <span class="close">&times;</span>
+        </div>
+        <div class="modal-body" id="modalBody">
+            <!-- Контент будет загружен через AJAX -->
+        </div>
+    </div>
+</div>
+
 <style>
 .platform-tag {
     background: #dbeafe;
     color: #1e40af;
-    padding: 0.2rem 0.5rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
 }
 
 .marketplace-tag {
-    background: #f3e8ff;
-    color: #7c3aed;
-    padding: 0.2rem 0.5rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.marketplace-tag.active {
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #10b981;
+}
+
+.marketplace-tag.inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 2px solid #d1d5db;
+    opacity: 0.6;
 }
 
 .language-tag {
     background: #fef3c7;
     color: #92400e;
-    padding: 0.2rem 0.5rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 600;
 }
 
-.status-toggle {
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
+/* Стили для модального окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
 }
 
-.status-toggle.published {
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    border-bottom: 2px solid #e5e7eb;
+    background: #f8fafc;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-header h2 {
+    margin: 0;
+    color: var(--primary);
+}
+
+.close {
+    color: #6b7280;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.close:hover {
+    color: var(--danger);
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+/* Таблица в модальном окне */
+.platform-marketplace-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.platform-marketplace-table th,
+.platform-marketplace-table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.platform-marketplace-table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.platform-check {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    font-weight: bold;
+    margin: 0 0.2rem;
+}
+
+.platform-check.available {
     background: #d1fae5;
     color: #065f46;
 }
 
-.status-toggle.not-published {
+.platform-check.not-available {
+    background: #f3f4f6;
+    color: #6b7280;
+}
+
+.publish-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.publish-toggle.published {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.publish-toggle.not-published {
     background: #fecaca;
     color: #b91c1c;
 }
 
-.status-toggle:hover {
+.publish-toggle:hover {
     transform: translateY(-1px);
-}
-
-.enhanced-input {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-}
-
-.enhanced-input label {
-    font-weight: 600;
-    color: var(--primary);
-    font-size: 0.9rem;
-}
-
-.enhanced-input select,
-.enhanced-input input {
-    padding: 0.75rem;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    transition: border-color 0.2s;
-}
-
-.enhanced-input select:focus,
-.enhanced-input input:focus {
-    outline: none;
-    border-color: var(--primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Модальное окно
+    const modal = document.getElementById('gameModal');
+    const closeBtn = document.querySelector('.close');
+    const modalBody = document.getElementById('modalBody');
+    
+    // Открытие модального окна
+    document.querySelectorAll('.view-game').forEach(button => {
+        button.addEventListener('click', function() {
+            const gameId = this.getAttribute('data-game-id');
+            loadGameDetails(gameId);
+        });
+    });
+    
+    // Закрытие модального окна
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+    });
+    
+    window.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    
+    // Загрузка данных игры через AJAX
+    function loadGameDetails(gameId) {
+        fetch(`/releases/game/${gameId}/modal/`)
+            .then(response => response.text())
+            .then(html => {
+                modalBody.innerHTML = html;
+                modal.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                modalBody.innerHTML = '<p>Ошибка загрузки данных</p>';
+                modal.style.display = 'block';
+            });
+    }
+});
+</script>
 {% endblock %}

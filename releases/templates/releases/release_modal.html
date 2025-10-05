@@ -1,0 +1,93 @@
+<div style="display: grid; grid-template-columns: 200px 1fr; gap: 2rem;">
+    <!-- Левая колонка -->
+    <div>
+        {% if game.icon %}
+            <img src="{{ game.icon.url }}" alt="{{ game.title }}" 
+                 style="width: 100%; border-radius: 12px; margin-bottom: 1rem;">
+        {% else %}
+            <div style="width: 100%; aspect-ratio: 1; background: #f1f5f9; border-radius: 12px; 
+                        display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                🎮
+            </div>
+        {% endif %}
+        
+        <!-- Переключатель публикации -->
+        <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
+              style="display: flex; flex-direction: column; gap: 1rem;">
+            {% csrf_token %}
+            <button type="submit" class="publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
+                {% if game.is_published %}✅ Опубликовано{% else %}❌ Не опубликовано{% endif %}
+            </button>
+        </form>
+        
+        <!-- Информация -->
+        <div style="margin-top: 1rem;">
+            <p><strong>Дата релиза:</strong><br>{{ game.release_date }}</p>
+            {% if game.price > 0 %}
+            <p><strong>Цена:</strong><br>{{ game.price }} руб.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Правая колонка -->
+    <div>
+        <h2 style="margin-top: 0; color: var(--primary);">{{ game.title }}</h2>
+        
+        {% if game.description %}
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <h4 style="margin: 0 0 0.5rem 0;">📝 Описание</h4>
+            <p style="margin: 0; line-height: 1.5;">{{ game.description|linebreaks }}</p>
+        </div>
+        {% endif %}
+
+        <!-- Таблица площадок и платформ -->
+<h4>🏪 Публикации по площадкам</h4>
+<table class="platform-marketplace-table">
+    <thead>
+        <tr>
+            <th>Площадка</th>
+            {% for platform in game.get_platforms_list %}
+            <th style="text-align: center;">{{ platform }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for marketplace in game.get_marketplaces_list %}
+        <tr>
+            <td>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span>{{ game.get_marketplace_icon }}</span>
+                    <span>{{ marketplace }}</span>
+                </div>
+            </td>
+            {% for platform in game.get_platforms_list %}
+            <td style="text-align: center;">
+                {% if marketplace in game.get_marketplace_platforms_dict and platform in game.get_marketplace_platforms_dict %}
+                <span class="platform-check available" title="Опубликовано">✓</span>
+                {% else %}
+                <span class="platform-check not-available" title="Не опубликовано">✗</span>
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="{{ game.get_platforms_list|length|add:1 }}" style="text-align: center; color: var(--secondary);">
+                📭 Площадки не выбраны
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+        <!-- Локализации -->
+        <div style="margin-top: 1.5rem;">
+            <h4>🌐 Локализации</h4>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                {% for lang in game.get_languages_list %}
+                <span class="language-tag">{{ lang }}</span>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

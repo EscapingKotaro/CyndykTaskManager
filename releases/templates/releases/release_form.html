@@ -78,22 +78,32 @@
         </div>
 
         <!-- Платформы и языки -->
-        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 12px;">
-            <h3 style="margin-bottom: 1rem; color: var(--primary);">⚙️ Платформы и локализации</h3>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                <div class="form-group">
-                    <label for="{{ form.platforms.id_for_label }}">Платформы *</label>
-                    {{ form.platforms }}
-                    <small style="color: var(--secondary); margin-top: 0.5rem; display: block;">
-                        💡 Пример: PS4, PS5, Switch, Xbox Series
-                    </small>
-                    {% if form.platforms.errors %}
-                    <div class="error-list">
-                        {{ form.platforms.errors }}
-                    </div>
-                    {% endif %}
-                </div>
+        <!-- Платформы и площадки -->
+<div style="background: #f8fafc; padding: 1.5rem; border-radius: 12px;">
+    <h3 style="margin-bottom: 1rem; color: var(--primary);">⚙️ Платформы и площадки</h3>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+        <div class="form-group">
+            <label>Платформы *</label>
+            {{ form.platforms }}
+            {% if form.platforms.errors %}
+            <div class="error-list">
+                {{ form.platforms.errors }}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label>Площадки *</label>
+            {{ form.marketplaces }}
+            {% if form.marketplaces.errors %}
+            <div class="error-list">
+                {{ form.marketplaces.errors }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
                 
                 <div class="form-group">
                     <label for="{{ form.languages.id_for_label }}">Локализации *</label>
