@@ -22,7 +22,7 @@
         {% for status_code, group in status_groups.items %}
         {% if group.count > 0 %}
         <div class="status-group">
-            <details class="status-details" {% if group.tasks.first.status == 'in_progress' or group.tasks.first.status == 'submitted' %}open{% endif %}>
+            <details class="status-details" {% if group.tasks.first.status == 'in_progress' or group.tasks.first.status == 'created' %}open{% endif %}>
                 <summary class="status-summary">
                     <div class="status-header">
                         <span class="status-title">{{ group.name }}</span>

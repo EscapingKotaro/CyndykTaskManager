@@ -1,0 +1,233 @@
+{% extends 'tasks/base.html' %}
+
+{% block title %}Календарь релизов - TaskManager{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap;">
+        <div>
+            <h1>🎮 Календарь релизов</h1>
+            <p style="color: var(--secondary); margin: 0;">Управление релизами игр и публикациями</p>
+        </div>
+        <a href="{% url 'releases:release_create' %}" class="btn btn-primary">➕ Добавить релиз</a>
+    </div>
+
+    <!-- Статистика -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+        <div style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white; padding: 1.5rem; border-radius: 10px;">
+            <h3 style="margin: 0 0 0.5rem 0;">Всего игр</h3>
+            <p style="font-size: 2rem; margin: 0;">{{ total_games }}</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #10b981, #047857); color: white; padding: 1.5rem; border-radius: 10px;">
+            <h3 style="margin: 0 0 0.5rem 0;">Опубликовано</h3>
+            <p style="font-size: 2rem; margin: 0;">{{ published_games }}</p>
+        </div>
+        <div style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 1.5rem; border-radius: 10px;">
+            <h3 style="margin: 0 0 0.5rem 0;">Предстоящие</h3>
+            <p style="font-size: 2rem; margin: 0;">{{ upcoming_games }}</p>
+        </div>
+    </div>
+
+    <!-- Фильтры -->
+    <div style="background: #f8fafc; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem;">
+        <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            {% for field in form %}
+            <div class="enhanced-input">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+            </div>
+            {% endfor %}
+            
+            <div style="display: flex; gap: 1rem; align-items: end;">
+                <button type="submit" class="btn btn-primary">Применить</button>
+                <a href="{% url 'releases:release_list' %}" class="btn btn-secondary">Сбросить</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <h2>Список релизов ({{ games.count }})</h2>
+    
+    {% if games %}
+    <div style="overflow-x: auto;">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Игра</th>
+                    <th>Дата релиза</th>
+                    <th>Платформы</th>
+                    <th>Площадки</th>
+                    <th>Языки</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for game in games %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            {% if game.icon %}
+                                <img src="{{ game.icon.url }}" alt="{{ game.title }}" 
+                                     style="width: 40px; height: 40px; border-radius: 8px; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 40px; height: 40px; border-radius: 8px; background: #f1f5f9; 
+                                            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                    🎮
+                                </div>
+                            {% endif %}
+                            <div>
+                                <strong>{{ game.title }}</strong>
+                                {% if game.days_until_release <= 7 and not game.is_released %}
+                                <span style="background: #fef3c7; color: #92400e; padding: 0.2rem 0.5rem; 
+                                            border-radius: 10px; font-size: 0.7rem; margin-left: 0.5rem;">
+                                    🔥 Скоро
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {{ game.release_date }}
+                        {% if game.days_until_release > 0 %}
+                        <br><small style="color: var(--secondary);">через {{ game.days_until_release }} д.</small>
+                        {% else %}
+                        <br><small style="color: var(--success);">✅ Вышла</small>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 150px;">
+                            {% for platform in game.get_platforms_list %}
+                            <span class="platform-tag">{{ platform }}</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 150px;">
+                            {% for marketplace, platforms in game.get_marketplace_platforms_dict.items %}
+                            <span class="marketplace-tag" title="{{ platforms|join:', ' }}">{{ marketplace }}</span>
+                            {% empty %}
+                            <span style="color: var(--secondary);">—</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 120px;">
+                            {% for lang in game.get_languages_list %}
+                            <span class="language-tag">{{ lang }}</span>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td>
+                        <form method="post" action="{% url 'releases:toggle_publish' game.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="status-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
+                                {% if game.is_published %}✅ Опубликовано{% else %}❌ Не опубликовано{% endif %}
+                            </button>
+                        </form>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+                            <a href="{% url 'releases:release_detail' game.id %}" class="btn btn-sm btn-primary" 
+                               title="Просмотр">👁️</a>
+                            <a href="{% url 'releases:release_update' game.id %}" class="btn btn-sm btn-warning"
+                               title="Редактировать">✏️</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--secondary);">
+        <p style="font-size: 1.2rem;">🎮 Релизы не найдены</p>
+        <p>Добавьте первый релиз или измените параметры фильтра</p>
+        <a href="{% url 'releases:release_create' %}" class="btn btn-primary" style="margin-top: 1rem;">
+            ➕ Добавить первый релиз
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.platform-tag {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.marketplace-tag {
+    background: #f3e8ff;
+    color: #7c3aed;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.language-tag {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 0.2rem 0.5rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.status-toggle {
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.status-toggle.published {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-toggle.not-published {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.status-toggle:hover {
+    transform: translateY(-1px);
+}
+
+.enhanced-input {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.enhanced-input label {
+    font-weight: 600;
+    color: var(--primary);
+    font-size: 0.9rem;
+}
+
+.enhanced-input select,
+.enhanced-input input {
+    padding: 0.75rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: border-color 0.2s;
+}
+
+.enhanced-input select:focus,
+.enhanced-input input:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+</style>
+{% endblock %}
