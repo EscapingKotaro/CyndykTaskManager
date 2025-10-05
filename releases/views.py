@@ -4,7 +4,14 @@ from django.db.models import Q
 from django.utils import timezone
 from .models import GameRelease
 from .forms import GameReleaseForm, GameReleaseFilterForm
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
 
+@login_required
+def release_modal(request, pk):
+    """Детальная информация для модального окна"""
+    game = get_object_or_404(GameRelease, pk=pk)
+    return render(request, 'releases/release_modal.html', {'game': game})
 @login_required
 def release_list(request):
     """Список релизов с фильтрами"""
