@@ -379,4 +379,123 @@ function togglePublishStatus(form) {
     });
 }
 </script>
+
+<script>
+// Функция для переключения площадки
+function toggleMarketplace(gameId, marketplace, element) {
+    const formData = new FormData();
+    formData.append('marketplace', marketplace);
+    
+    fetch(`/releases/game/${gameId}/toggle-marketplace/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Обновляем визуальное состояние
+            if (data.is_selected) {
+                element.classList.remove('not-selected');
+                element.classList.add('selected');
+                element.querySelector('div:last-child div:last-child').textContent = '✅ Активна';
+            } else {
+                element.classList.remove('selected');
+                element.classList.add('not-selected');
+                element.querySelector('div:last-child div:last-child').textContent = '❌ Не активна';
+            }
+            
+            // Перезагружаем модальное окно
+            setTimeout(() => {
+                // Находим модальное окно и перезагружаем его содержимое
+                const modalBody = document.getElementById('modalBody');
+                if (modalBody) {
+                    fetch(`/releases/game/${gameId}/modal/`)
+                        .then(response => response.text())
+                        .then(html => {
+                            modalBody.innerHTML = html;
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                }
+            }, 300);
+            
+        } else {
+            alert('Ошибка обновления площадки');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Ошибка сети');
+    });
+}
+
+// Функция для переключения статуса публикации без перезагрузки
+function togglePublishStatus(form) {
+    const button = form.querySelector('button');
+    const isCurrentlyPublished = button.classList.contains('published');
+    
+    // Меняем статус сразу визуально
+    if (isCurrentlyPublished) {
+        button.classList.remove('published');
+        button.classList.add('not-published');
+        button.innerHTML = '❌ Не опубликовано';
+    } else {
+        button.classList.remove('not-published');
+        button.classList.add('published');
+        button.innerHTML = '✅ Опубликовано';
+    }
+    
+    // Отправляем AJAX запрос
+    fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: {
+            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network error');
+        }
+        return response;
+    })
+    .then(() => {
+        console.log('Статус публикации обновлен');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Возвращаем предыдущее состояние при ошибке
+        if (isCurrentlyPublished) {
+            button.classList.remove('not-published');
+            button.classList.add('published');
+            button.innerHTML = '✅ Опубликовано';
+        } else {
+            button.classList.remove('published');
+            button.classList.add('not-published');
+            button.innerHTML = '❌ Не опубликовано';
+        }
+        alert('Ошибка обновления статуса');
+    });
+}
+
+// Функция для получения CSRF токена
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock %}

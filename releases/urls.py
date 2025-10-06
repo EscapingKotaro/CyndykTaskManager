@@ -11,4 +11,5 @@ urlpatterns = [
     path('game/<int:pk>/toggle-publish/', views.toggle_publish, name='toggle_publish'),
     path('game/<int:pk>/modal/', views.release_modal, name='release_modal'),
     path('game/<int:pk>/toggle-platform/', views.toggle_platform_publication, name='toggle_platform_publication'),
+    path('game/<int:pk>/toggle-marketplace/', views.toggle_marketplace, name='toggle_marketplace'),  # НОВЫЙ URL
 ]

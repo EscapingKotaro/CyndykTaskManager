@@ -9,6 +9,42 @@ from django.http import JsonResponse
 from django.http import JsonResponse
 
 @login_required
+def toggle_marketplace(request, pk):
+    """AJAX запрос для переключения площадки"""
+    if request.method == 'POST':
+        game = get_object_or_404(GameRelease, pk=pk)
+        marketplace = request.POST.get('marketplace')
+        
+        if marketplace:
+            # Получаем текущий список площадок
+            current_marketplaces = game.get_marketplaces_list()
+            
+            # Переключаем площадку
+            if marketplace in current_marketplaces:
+                # Убираем площадку
+                current_marketplaces.remove(marketplace)
+                # Также убираем все публикации для этой площадки
+                marketplace_platforms = game.get_marketplace_platforms_dict()
+                if marketplace in marketplace_platforms:
+                    del marketplace_platforms[marketplace]
+                game.marketplace_platforms = marketplace_platforms
+            else:
+                # Добавляем площадку
+                current_marketplaces.append(marketplace)
+            
+            # Сохраняем обновленный список
+            game.marketplaces = current_marketplaces
+            game.save()
+            
+            return JsonResponse({
+                'success': True,
+                'is_selected': marketplace in game.get_marketplaces_list(),
+                'marketplace': marketplace
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
 def toggle_platform_publication(request, pk):
     """AJAX запрос для переключения публикации платформы"""
     if request.method == 'POST':
