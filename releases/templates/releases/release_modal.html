@@ -165,7 +165,7 @@
 </td>
                     {% endfor %}
                     <td style="text-align: center;">
-    <span class="status-badge status-{{ game|get_marketplace_status_display:marketplace_data.code }}">
+    <span class="status-badge status-{{ game|get_marketplace_status:marketplace_data.code }}">
         {{ game|get_marketplace_status_display:marketplace_data.code }}
     </span>
 </td>
