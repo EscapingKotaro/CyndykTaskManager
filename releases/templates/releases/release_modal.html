@@ -1,14 +1,13 @@
-{% load release_tags %}
-
-<div style="display: grid; grid-template-columns: 200px 1fr; gap: 2rem;">
+<div style="display: grid; grid-template-columns: 200px 1fr; gap: 2rem; {% if not game.is_published %}opacity: 0.7;{% endif %}">
     <!-- Левая колонка -->
     <div>
         {% if game.icon %}
             <img src="{{ game.icon.url }}" alt="{{ game.title }}" 
-                 style="width: 100%; border-radius: 12px; margin-bottom: 1rem;">
+                 style="width: 100%; border-radius: 12px; margin-bottom: 1rem; {% if not game.is_published %}filter: grayscale(100%) opacity(0.7);{% endif %}">
         {% else %}
             <div style="width: 100%; aspect-ratio: 1; background: #f1f5f9; border-radius: 12px; 
-                        display: flex; align-items: center; justify-content: center; font-size: 3rem;">
+                        display: flex; align-items: center; justify-content: center; font-size: 3rem; margin-bottom: 1rem;
+                        {% if not game.is_published %}filter: grayscale(100%) opacity(0.7);{% endif %}">
                 🎮
             </div>
         {% endif %}
@@ -19,9 +18,18 @@
               onsubmit="event.preventDefault(); togglePublishStatus(this);">
             {% csrf_token %}
             <button type="submit" class="publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
-                {% if game.is_published %}✅ Опубликовано{% else %}❌ Не опубликовано{% endif %}
+                {% if game.is_published %}✅ Опубликовано{% else %}❌ Скрыта{% endif %}
             </button>
         </form>
+        
+        <!-- Баннер для скрытых игр -->
+        {% if not game.is_published %}
+        <div style="background: #6b7280; color: white; padding: 1rem; border-radius: 8px; margin-top: 1rem; text-align: center;">
+            <strong>⚫ Игра скрыта</strong>
+            <br>
+            <small>Все действия заблокированы</small>
+        </div>
+        {% endif %}
         
         <!-- Информация -->
         <div style="margin-top: 1rem;">
@@ -34,22 +42,29 @@
 
     <!-- Правая колонка -->
     <div>
-        <h2 style="margin-top: 0; color: var(--primary);">{{ game.title }}</h2>
+        <h2 style="margin-top: 0; color: var(--primary); {% if not game.is_published %}color: #6b7280;{% endif %}">
+            {{ game.title }}
+            {% if not game.is_published %}
+            <span style="background: #6b7280; color: white; padding: 0.3rem 0.7rem; border-radius: 12px; font-size: 0.8rem; margin-left: 0.5rem;">
+                ⚫ СКРЫТА
+            </span>
+            {% endif %}
+        </h2>
         
         {% if game.description %}
-        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; {% if not game.is_published %}opacity: 0.7;{% endif %}">
             <h4 style="margin: 0 0 0.5rem 0;">📝 Описание</h4>
             <p style="margin: 0; line-height: 1.5;">{{ game.description|linebreaks }}</p>
         </div>
         {% endif %}
 
         <!-- Карточки площадок -->
-        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <div style="background: #f8fafc; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; {% if not game.is_published %}opacity: 0.7;{% endif %}">
             <h4 style="margin: 0 0 1rem 0;">🏪 Площадки</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
                 {% for marketplace_data in game.get_all_marketplaces_display %}
-                <div class="marketplace-card {% if marketplace_data.is_selected %}selected{% else %}not-selected{% endif %}"
-                     onclick="toggleMarketplace({{ game.id }}, '{{ marketplace_data.code }}', this)">
+                <div class="marketplace-card {% if marketplace_data.is_selected %}selected{% else %}not-selected{% endif %} {% if not game.is_published %}disabled-card{% endif %}"
+                     {% if game.is_published %}onclick="toggleMarketplace({{ game.id }}, '{{ marketplace_data.code }}', this)"{% endif %}>
                     <div style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem;">
                         <div style="font-size: 1.5rem;">{{ marketplace_data.icon }}</div>
                         <div>
@@ -70,7 +85,7 @@
 
         <!-- Таблица публикаций по площадкам -->
         <h4>🎮 Публикации по платформам</h4>
-        <table class="platform-marketplace-table">
+        <table class="platform-marketplace-table {% if not game.is_published %}disabled-table{% endif %}">
             <thead>
                 <tr>
                     <th>Площадка</th>
@@ -82,7 +97,7 @@
             </thead>
             <tbody>
                 {% for marketplace_data in game.get_all_marketplaces_display %}
-                <tr class="{% if not marketplace_data.is_selected %}inactive-row{% endif %}">
+                <tr class="{% if not marketplace_data.is_selected %}inactive-row{% endif %} {% if not game.is_published %}disabled-row{% endif %}">
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
                             <span>{{ marketplace_data.icon }}</span>
@@ -91,7 +106,8 @@
                     </td>
                     {% for platform in game.get_platforms_list %}
                     <td style="text-align: center;">
-                        {% if marketplace_data.is_selected %}
+                        {% if marketplace_data.is_selected and game.is_published %}
+                            <!-- Активная ячейка для опубликованных игр -->
                             {% with marketplace_platform=marketplace_data.code|add:','|add:platform %}
                             {% with is_published=game|get_platform_status:marketplace_platform %}
                             <div class="platform-text {% if is_published %}published{% else %}not-published{% endif %}"
@@ -169,8 +185,9 @@
                             {% endwith %}
                             {% endwith %}
                         {% else %}
+                            <!-- Заблокированная ячейка -->
                             <div class="platform-text disabled">
-                                🔒
+                                {% if not game.is_published %}🔒{% else %}🔒{% endif %}
                             </div>
                         {% endif %}
                     </td>
@@ -186,7 +203,7 @@
         </table>
 
         <!-- Локализации -->
-        <div style="margin-top: 1.5rem;">
+        <div style="margin-top: 1.5rem; {% if not game.is_published %}opacity: 0.7;{% endif %}">
             <h4>🌐 Локализации</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
                 {% for lang in game.get_languages_list %}
@@ -196,6 +213,19 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <style>
 /* Стили для карточек площадок */
@@ -319,6 +349,30 @@
 .publish-toggle:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+/* Стили для заблокированных элементов */
+.disabled-card {
+    cursor: not-allowed !important;
+    opacity: 0.6 !important;
+}
+
+.disabled-card:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.disabled-table {
+    opacity: 0.7;
+}
+
+.disabled-row {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.platform-text.disabled {
+    cursor: not-allowed !important;
+    opacity: 0.5 !important;
 }
 </style>
 
