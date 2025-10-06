@@ -66,8 +66,7 @@
                         {% if marketplace_data.is_selected %}
                             <div class="platform-text clickable"
                                  data-marketplace="{{ marketplace_data.code }}"
-                                 data-platform="{{ platform }}"
-                                 onclick="togglePlatformPublication({{ game.id }}, '{{ marketplace_data.code }}', '{{ platform }}', this)">
+                                 data-platform="{{ platform }}">
                                 ❌ Не опубл.
                             </div>
                         {% else %}
@@ -156,8 +155,12 @@
 </style>
 
 <script>
-// Глобальная функция для дебага
-function togglePlatformPublication(gameId, marketplace, platform, element) {
+// Проверяем что скрипт загрузился
+console.log('Modal script loaded successfully');
+alert('Модальное окно загружено! Можно тестировать клики.');
+
+// Глобальные функции для дебага
+window.togglePlatformPublication = function(gameId, marketplace, platform, element) {
     alert('Клик обработан!\n' + 
           'Game ID: ' + gameId + '\n' + 
           'Marketplace: ' + marketplace + '\n' + 
@@ -187,7 +190,7 @@ function togglePlatformPublication(gameId, marketplace, platform, element) {
     testAjaxRequest(gameId, marketplace, platform);
 }
 
-function testAjaxRequest(gameId, marketplace, platform) {
+window.testAjaxRequest = function(gameId, marketplace, platform) {
     const formData = new FormData();
     formData.append('marketplace', marketplace);
     formData.append('platform', platform);
@@ -220,7 +223,7 @@ function testAjaxRequest(gameId, marketplace, platform) {
 }
 
 // Функция для получения CSRF токена
-function getCookie(name) {
+window.getCookie = function(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
@@ -235,7 +238,19 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Проверяем что скрипт загрузился
-console.log('Modal script loaded successfully');
-alert('Модальное окно загружено! Можно тестировать клики.');
+// Добавляем обработчики событий после загрузки DOM
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка кликов по платформам
+    document.querySelectorAll('.platform-text.clickable').forEach(element => {
+        element.addEventListener('click', function() {
+            const gameId = {{ game.id }};
+            const marketplace = this.getAttribute('data-marketplace');
+            const platform = this.getAttribute('data-platform');
+            
+            window.togglePlatformPublication(gameId, marketplace, platform, this);
+        });
+    });
+    
+    console.log('Event listeners added to', document.querySelectorAll('.platform-text.clickable').length, 'elements');
+});
 </script>
