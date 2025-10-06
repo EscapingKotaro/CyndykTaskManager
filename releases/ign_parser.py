@@ -2,7 +2,6 @@ import requests
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
 from bs4 import BeautifulSoup
 import time
 import re
@@ -15,7 +14,7 @@ from .models import GameRelease
 
 class IGNReleaseParser:
     """
-    Парсер релизов игр с IGN.com с использованием Selenium
+    Парсер релизов игр с IGN.com - только ближайшие 2 недели
     """
     
     BASE_URL = "https://www.ign.com/upcoming/games"
@@ -25,12 +24,15 @@ class IGNReleaseParser:
         self.stats = {
             'total_pages_loaded': 0,
             'game_links_found': 0,
-            'game_cards_found': 0,
             'games_parsed': 0,
             'games_saved': 0,
-            'pc_only_skipped': 0,
+            'invalid_platform_skipped': 0,
+            'too_far_skipped': 0,
             'errors': 0
         }
+        # Рассчитываем диапазон дат (ближайшие 2 недели)
+        self.today = timezone.now().date()
+        self.max_date = self.today + timedelta(days=14)
     
     def setup_driver(self):
         """Настраивает Chrome driver"""
@@ -46,9 +48,10 @@ class IGNReleaseParser:
     
     def parse_releases(self):
         """
-        Основной метод парсинга релизов
+        Основной метод парсинга релизов - только ближайшие 2 недели
         """
         print("🕷️ Запускаем Selenium парсер IGN...")
+        print(f"📅 Ищем игры с {self.today} по {self.max_date}")
         
         try:
             # Загружаем страницу
@@ -57,12 +60,6 @@ class IGNReleaseParser:
             
             # Ждем загрузки контента
             time.sleep(5)
-            
-            # Получаем HTML после полной загрузки
-            page_source = self.driver.page_source
-            
-            # Анализируем структуру страницы
-            self._analyze_page_structure(page_source)
             
             # Парсим игры
             games_data = self._parse_games_from_page()
@@ -84,27 +81,8 @@ class IGNReleaseParser:
         finally:
             self.driver.quit()
     
-    def _analyze_page_structure(self, page_source):
-        """Анализирует структуру страницы для дебага"""
-        soup = BeautifulSoup(page_source, 'html.parser')
-        
-        print("\n🔍 АНАЛИЗ СТРУКТУРЫ СТРАНИЦЫ:")
-        print(f"📄 Длина HTML: {len(page_source)} символов")
-        
-        # Ищем различные элементы
-        game_links = soup.find_all('a', href=re.compile(r'/games/'))
-        self.stats['game_links_found'] = len(game_links)
-        print(f"🔗 Найдено ссылок на игры: {len(game_links)}")
-        
-        # Выводим первые 5 ссылок для примера
-        print("\n📋 Примеры найденных ссылок:")
-        for i, link in enumerate(game_links[:5]):
-            href = link.get('href', '')
-            text = link.get_text(strip=True)
-            print(f"  {i+1}. {text} -> {href}")
-    
     def _parse_games_from_page(self):
-        """Парсит игры со страницы используя Selenium"""
+        """Парсит игры со страницы - только ближайшие 2 недели"""
         games_data = []
         
         print("\n🎯 ПАРСИНГ ИГР:")
@@ -116,13 +94,22 @@ class IGNReleaseParser:
             
             for i, element in enumerate(game_links):
                 try:
-                    if i >= 50:  # Ограничим количество для теста
-                        break
-                        
                     game_data = self._parse_game_element(element)
-                    if game_data and self._is_valid_game(game_data):
-                        games_data.append(game_data)
-                        self.stats['games_parsed'] += 1
+                    if not game_data:
+                        continue
+                        
+                    # Проверяем подходит ли игра по дате
+                    if self._is_game_in_time_range(game_data):
+                        if self._is_valid_game(game_data):
+                            games_data.append(game_data)
+                            self.stats['games_parsed'] += 1
+                            print(f"    ✅ {game_data['title']} - {game_data['release_date']} - {game_data['platforms']}")
+                        else:
+                            print(f"    ⏩ Пропускаем (неподходящие платформы): {game_data['title']} - {game_data.get('platforms', [])}")
+                            self.stats['invalid_platform_skipped'] += 1
+                    else:
+                        print(f"    ⏩ Пропускаем (дата вне диапазона): {game_data['title']} - {game_data['release_date']}")
+                        self.stats['too_far_skipped'] += 1
                         
                 except Exception as e:
                     print(f"  ❌ Ошибка парсинга элемента {i+1}: {e}")
@@ -134,8 +121,17 @@ class IGNReleaseParser:
         
         return games_data
     
+    def _is_game_in_time_range(self, game_data):
+        """Проверяет что игра выходит в ближайшие 2 недели"""
+        release_date = game_data.get('release_date')
+        if not release_date:
+            return False
+        
+        # Проверяем что дата в диапазоне сегодня + 14 дней
+        return self.today <= release_date <= self.max_date
+    
     def _parse_game_element(self, element):
-        """Парсит данные из элемента игры с учетом структуры IGN"""
+        """Парсит данные из элемента игры"""
         try:
             game_data = {}
             element_html = element.get_attribute('outerHTML')
@@ -165,7 +161,8 @@ class IGNReleaseParser:
                 if date_match:
                     game_data['release_date'] = self._parse_date(date_match.group(1))
                 else:
-                    game_data['release_date'] = timezone.now().date() + timedelta(days=60)
+                    # Если дату не нашли, пропускаем игру
+                    return None
             
             # Платформы
             platforms_elem = soup.find('div', class_=re.compile(r'platforms'))
@@ -173,13 +170,7 @@ class IGNReleaseParser:
                 platforms = self._parse_platforms_from_element(platforms_elem)
                 game_data['platforms'] = platforms
             else:
-                game_data['platforms'] = ['PC']
-            
-            # Пропускаем игры только с PC
-            if len(game_data['platforms']) == 1 and 'PC' in game_data['platforms']:
-                print(f"    ⏩ Пропускаем PC-only игру: {game_data['title']}")
-                self.stats['pc_only_skipped'] += 1
-                return None
+                game_data['platforms'] = []
             
             # Картинка
             img_elem = soup.find('img')
@@ -195,7 +186,6 @@ class IGNReleaseParser:
                     href = 'https://www.ign.com' + href
                 game_data['url'] = href
             
-            print(f"    ✅ {game_data['title']} - {game_data['release_date']} - {game_data['platforms']}")
             return game_data
             
         except Exception as e:
@@ -250,32 +240,20 @@ class IGNReleaseParser:
             date_formats = [
                 '%b %d, %Y',  # Oct 1, 2025
                 '%B %d, %Y',  # October 1, 2025
-                '%Y-%m-%d',   # 2025-10-01
-                '%m/%d/%Y',   # 10/01/2025
             ]
             
             for fmt in date_formats:
                 try:
                     parsed_date = datetime.strptime(clean_date, fmt).date()
-                    # Проверяем что дата реалистичная (не слишком в прошлом)
-                    if parsed_date > timezone.now().date() - timedelta(days=365):
-                        return parsed_date
+                    return parsed_date
                 except ValueError:
                     continue
             
-            # Если не распарсилось, ищем год в тексте
-            year_match = re.search(r'20[2-9][0-9]', clean_date)
-            if year_match:
-                year = int(year_match.group())
-                # Ставим 1 октября указанного года
-                return datetime(year, 10, 1).date()
-            
-            # Дефолтная дата если не удалось распарсить
-            return timezone.now().date() + timedelta(days=90)
+            return None
             
         except Exception as e:
             print(f"⚠️ Ошибка парсинга даты '{date_text}': {e}")
-            return timezone.now().date() + timedelta(days=90)
+            return None
     
     def _download_image(self, image_url, game_title):
         """Скачивает и сохраняет изображение игры"""
@@ -349,7 +327,6 @@ class IGNReleaseParser:
                     image_path = self._download_image(game_data['image_url'], game_data['title'])
                 
                 # Создаем новую игру
-                # Создаем новую игру
                 game = GameRelease(
                     title=game_data['title'][:200],
                     release_date=game_data['release_date'],
@@ -403,7 +380,8 @@ class IGNReleaseParser:
         print(f"   📄 Загружено страниц: {self.stats['total_pages_loaded']}")
         print(f"   🔗 Найдено ссылок на игры: {self.stats['game_links_found']}")
         print(f"   ✅ Успешно распарсено игр: {self.stats['games_parsed']}")
-        print(f"   ⏩ Пропущено PC-only игр: {self.stats['pc_only_skipped']}")
+        print(f"   ⏩ Пропущено игр с неподходящими платформами: {self.stats['invalid_platform_skipped']}")
+        print(f"   ⏩ Пропущено игр с датой вне диапазона: {self.stats['too_far_skipped']}")
         print(f"   💾 Сохранено в БД: {self.stats['games_saved']}")
         print(f"   ❌ Ошибок: {self.stats['errors']}")
 
@@ -422,15 +400,8 @@ def get_parser_stats():
     ).count()
     published_games = GameRelease.objects.filter(is_published=True).count()
     
-    # Статистика по платформам
-    platform_stats = {}
-    for game in GameRelease.objects.all():
-        for platform in game.get_platforms_list():
-            platform_stats[platform] = platform_stats.get(platform, 0) + 1
-    
     return {
         'total_games': total_games,
         'upcoming_games': upcoming_games,
-        'published_games': published_games,
-        'platform_stats': platform_stats
+        'published_games': published_games
     }

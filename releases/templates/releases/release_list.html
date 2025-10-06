@@ -121,12 +121,12 @@
 
 <!-- Модальное окно для просмотра игры -->
 <div id="gameModal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content" style="width: 95%; max-width: 1200px; height: 90vh;">
         <div class="modal-header">
             <h2>🎮 Детали релиза</h2>
             <span class="close">&times;</span>
         </div>
-        <div class="modal-body" id="modalBody">
+        <div class="modal-body" id="modalBody" style="max-height: calc(90vh - 80px); overflow-y: auto;">
             <!-- Контент будет загружен через AJAX -->
         </div>
     </div>
