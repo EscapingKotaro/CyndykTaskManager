@@ -65,12 +65,14 @@
                     {% for platform in game.get_platforms_list %}
                     <td style="text-align: center;">
                         {% if marketplace_data.is_selected %}
-                            <div class="platform-icon {% if game.get_platform_publication_status %}published{% else %}not-published{% endif %}"
+                            {% with is_published=game.get_platform_publication_status %}
+                            <div class="platform-icon {% if is_published %}published{% else %}not-published{% endif %}"
                                  data-marketplace="{{ marketplace_data.code }}"
                                  data-platform="{{ platform }}"
-                                 title="{% if game.get_platform_publication_status %}Опубликовано{% else %}Не опубликовано{% endif %} - кликните чтобы изменить">
+                                 title="{% if is_published %}Опубликовано{% else %}Не опубликовано{% endif %} - кликните чтобы изменить">
                                 {{ game.get_platform_icon }}
                             </div>
+                            {% endwith %}
                         {% else %}
                             <div class="platform-icon disabled" title="Площадка не выбрана">
                                 {{ game.get_platform_icon }}
@@ -79,9 +81,11 @@
                     </td>
                     {% endfor %}
                     <td style="text-align: center;">
-                        <span class="status-badge status-{{ marketplace_status }}">
+                        {% with status=game.get_marketplace_status %}
+                        <span class="status-badge status-{{ status }}">
                             {{ game.get_marketplace_status_display }}
                         </span>
+                        {% endwith %}
                     </td>
                 </tr>
                 {% endwith %}
@@ -171,45 +175,3 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-
-
-<style>
-    .inactive-row {
-    background-color: #f9fafb;
-    color: #6b7280;
-    opacity: 0.6;
-}
-
-.inactive-row td {
-    border-color: #e5e7eb;
-}
-
-.marketplace-tag.active {
-    background: #d1fae5;
-    color: #065f46;
-    border: 2px solid #10b981;
-}
-
-.marketplace-tag.inactive {
-    background: #f3f4f6;
-    color: #6b7280;
-    border: 2px solid #d1d5db;
-    opacity: 0.6;
-}
-
-.platform-check.available {
-    background: #d1fae5;
-    color: #065f46;
-    border-radius: 4px;
-    padding: 0.2rem 0.4rem;
-    font-weight: bold;
-}
-
-.platform-check.not-available {
-    background: #f3f4f6;
-    color: #6b7280;
-    border-radius: 4px;
-    padding: 0.2rem 0.4rem;
-    font-weight: bold;
-}
-</style>

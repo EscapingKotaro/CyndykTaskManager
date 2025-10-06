@@ -100,7 +100,7 @@ def release_create(request):
         form = GameReleaseForm(request.POST, request.FILES)
         if form.is_valid():
             game = form.save()
-            return redirect('release_list')
+            return redirect('releases:release_list')
     else:
         form = GameReleaseForm()
     
@@ -115,7 +115,7 @@ def release_update(request, pk):
         form = GameReleaseForm(request.POST, request.FILES, instance=game)
         if form.is_valid():
             form.save()
-            return redirect('release_list')
+            return redirect('releases:release_list')
     else:
         form = GameReleaseForm(instance=game)
     
@@ -127,4 +127,4 @@ def toggle_publish(request, pk):
     game = get_object_or_404(GameRelease, pk=pk)
     game.is_published = not game.is_published
     game.save()
-    return redirect('release_list')
+    return redirect('releases:release_list')
