@@ -30,6 +30,9 @@ ALLOWED_HOSTS = ['*']
 STATIC_URL = '/static/'
 STATIC_ROOT = '/opt/task_managet/static/'
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 # Application definition
 AUTH_USER_MODEL = 'tasks.CustomUser'  # Добавь эту строку
 LOGIN_REDIRECT_URL = '/'
