@@ -13,11 +13,18 @@ class Command(BaseCommand):
         # Показываем статистику
         stats = get_parser_stats()
         
+        self.stdout.write("\n📈 ФИНАЛЬНАЯ СТАТИСТИКА:")
+        self.stdout.write(f"   🎮 Всего игр в БД: {stats['total_games']}")
+        self.stdout.write(f"   📅 Предстоящих релизов: {stats['upcoming_games']}")
+        self.stdout.write(f"   ✅ Опубликовано: {stats['published_games']}")
+        
+        if stats['platform_stats']:
+            self.stdout.write("\n🎮 СТАТИСТИКА ПО ПЛАТФОРМАМ:")
+            for platform, count in stats['platform_stats'].items():
+                self.stdout.write(f"   {platform}: {count} игр")
+        
         self.stdout.write(
             self.style.SUCCESS(
-                f'✅ Парсинг завершен! '
-                f'Добавлено {len(new_games)} новых игр. '
-                f'Всего в БД: {stats["total_games"]}, '
-                f'Предстоящих: {stats["upcoming_games"]}'
+                f'\n✅ Парсинг завершен! Добавлено {len(new_games)} новых игр'
             )
         )
