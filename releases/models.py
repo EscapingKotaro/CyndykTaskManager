@@ -150,3 +150,47 @@ class GameRelease(models.Model):
                 'icon': self.get_marketplace_icon(marketplace)
             })
         return result
+    def toggle_platform_publication(self, marketplace, platform):
+        """Переключает публикацию платформы на площадке"""
+        publications = self.get_marketplace_platforms_dict()
+        
+        if marketplace not in publications:
+            publications[marketplace] = []
+        
+        if platform in publications[marketplace]:
+            publications[marketplace].remove(platform)
+            # Если массив пустой, удаляем площадку
+            if not publications[marketplace]:
+                del publications[marketplace]
+        else:
+            publications[marketplace].append(platform)
+        
+        self.marketplace_platforms = publications
+        self.save()
+        return platform in publications.get(marketplace, [])
+
+    def get_marketplace_status(self, marketplace):
+        """Возвращает статус площадки"""
+        publications = self.get_marketplace_platforms_dict()
+        marketplace_platforms = publications.get(marketplace, [])
+        all_platforms = self.get_platforms_list()
+        
+        if not marketplace_platforms:
+            return 'not_published'
+        elif len(marketplace_platforms) == len(all_platforms):
+            return 'fully_published'
+        else:
+            return 'partially_published'
+
+    def get_platform_publication_status(self, marketplace, platform):
+        """Возвращает статус публикации платформы на площадке"""
+        publications = self.get_marketplace_platforms_dict()
+        return platform in publications.get(marketplace, [])
+    def get_marketplace_status_display(self, status):
+        """Возвращает текстовое представление статуса"""
+        status_map = {
+            'not_published': 'Не опубликовано',
+            'partially_published': 'Частично опубликовано', 
+            'fully_published': 'Опубликовано'
+        }
+        return status_map.get(status, 'Не опубликовано')

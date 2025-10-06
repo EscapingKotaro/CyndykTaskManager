@@ -6,7 +6,28 @@ from .models import GameRelease
 from .forms import GameReleaseForm, GameReleaseFilterForm
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
+from django.http import JsonResponse
 
+@login_required
+def toggle_platform_publication(request, pk):
+    """AJAX запрос для переключения публикации платформы"""
+    if request.method == 'POST':
+        game = get_object_or_404(GameRelease, pk=pk)
+        marketplace = request.POST.get('marketplace')
+        platform = request.POST.get('platform')
+        
+        if marketplace and platform:
+            is_published = game.toggle_platform_publication(marketplace, platform)
+            status = game.get_marketplace_status(marketplace)
+            
+            return JsonResponse({
+                'success': True,
+                'is_published': is_published,
+                'marketplace_status': status,
+                'marketplace_status_display': game.get_marketplace_status_display(status)
+            })
+    
+    return JsonResponse({'success': False})
 @login_required
 def release_modal(request, pk):
     """Детальная информация для модального окна"""

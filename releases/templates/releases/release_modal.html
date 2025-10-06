@@ -41,38 +41,53 @@
         {% endif %}
 
         <!-- Таблица площадок и платформ -->
-<h4>🏪 Публикации по площадкам</h4>
-<table class="platform-marketplace-table">
-    <thead>
-        <tr>
-            <th>Площадка</th>
-            {% for platform in game.get_platforms_list %}
-            <th style="text-align: center;">{{ platform }}</th>
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for marketplace_data in game.get_all_marketplaces_display %}
-        <tr class="{% if not marketplace_data.is_selected %}inactive-row{% endif %}">
-            <td>
-                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span>{{ marketplace_data.icon }}</span>
-                    <span>{{ marketplace_data.name }}</span>
-                </div>
-            </td>
-            {% for platform in game.get_platforms_list %}
-            <td style="text-align: center;">
-                {% if marketplace_data.is_selected and marketplace_data.code in game.get_marketplace_platforms_dict and platform in game.get_marketplace_platforms_dict %}
-                <span class="platform-check available" title="Опубликовано">✓</span>
-                {% else %}
-                <span class="platform-check not-available" title="Не опубликовано">✗</span>
-                {% endif %}
-            </td>
-            {% endfor %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        <h4>🏪 Публикации по площадкам</h4>
+        <table class="platform-marketplace-table">
+            <thead>
+                <tr>
+                    <th>Площадка</th>
+                    {% for platform in game.get_platforms_list %}
+                    <th style="text-align: center;">{{ platform }}</th>
+                    {% endfor %}
+                    <th style="text-align: center;">Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for marketplace_data in game.get_all_marketplaces_display %}
+                {% with marketplace_status=game.get_marketplace_status %}
+                <tr class="{% if not marketplace_data.is_selected %}inactive-row{% endif %}">
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>{{ marketplace_data.icon }}</span>
+                            <span>{{ marketplace_data.name }}</span>
+                        </div>
+                    </td>
+                    {% for platform in game.get_platforms_list %}
+                    <td style="text-align: center;">
+                        {% if marketplace_data.is_selected %}
+                            <div class="platform-icon {% if game.get_platform_publication_status %}published{% else %}not-published{% endif %}"
+                                 data-marketplace="{{ marketplace_data.code }}"
+                                 data-platform="{{ platform }}"
+                                 title="{% if game.get_platform_publication_status %}Опубликовано{% else %}Не опубликовано{% endif %} - кликните чтобы изменить">
+                                {{ game.get_platform_icon }}
+                            </div>
+                        {% else %}
+                            <div class="platform-icon disabled" title="Площадка не выбрана">
+                                {{ game.get_platform_icon }}
+                            </div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td style="text-align: center;">
+                        <span class="status-badge status-{{ marketplace_status }}">
+                            {{ game.get_marketplace_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% endwith %}
+                {% endfor %}
+            </tbody>
+        </table>
 
         <!-- Локализации -->
         <div style="margin-top: 1.5rem;">
@@ -85,6 +100,77 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Обработка кликов по иконкам платформ
+    document.querySelectorAll('.platform-icon:not(.disabled)').forEach(icon => {
+        icon.addEventListener('click', function() {
+            const marketplace = this.getAttribute('data-marketplace');
+            const platform = this.getAttribute('data-platform');
+            const gameId = {{ game.id }};
+            
+            togglePlatformPublication(gameId, marketplace, platform, this);
+        });
+    });
+    
+    function togglePlatformPublication(gameId, marketplace, platform, iconElement) {
+        const formData = new FormData();
+        formData.append('marketplace', marketplace);
+        formData.append('platform', platform);
+        
+        fetch(`/releases/game/${gameId}/toggle-platform/`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Обновляем иконку
+                if (data.is_published) {
+                    iconElement.classList.remove('not-published');
+                    iconElement.classList.add('published');
+                    iconElement.title = 'Опубликовано - кликните чтобы изменить';
+                } else {
+                    iconElement.classList.remove('published');
+                    iconElement.classList.add('not-published');
+                    iconElement.title = 'Не опубликовано - кликните чтобы изменить';
+                }
+                
+                // Обновляем статус площадки
+                const row = iconElement.closest('tr');
+                const statusCell = row.querySelector('.status-badge');
+                if (statusCell) {
+                    statusCell.className = `status-badge status-${data.marketplace_status}`;
+                    statusCell.textContent = data.marketplace_status_display;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    
+    // Функция для получения CSRF токена
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
 
 
 <style>
