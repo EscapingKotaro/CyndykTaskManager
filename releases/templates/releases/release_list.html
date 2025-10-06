@@ -133,6 +133,38 @@
 </div>
 
 <style>
+/* Основные стили таблицы */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.table th,
+.table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    vertical-align: top;
+}
+
+.table th {
+    background: #f8fafc;
+    font-weight: 600;
+    color: var(--primary);
+    position: sticky;
+    top: 0;
+}
+
+.table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Стили для тегов */
 .platform-tag {
     background: #dbeafe;
     color: #1e40af;
@@ -143,6 +175,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
+    margin: 0.1rem;
 }
 
 .marketplace-tag {
@@ -153,6 +186,7 @@
     display: inline-flex;
     align-items: center;
     gap: 0.2rem;
+    margin: 0.1rem;
 }
 
 .marketplace-tag.active {
@@ -175,6 +209,7 @@
     border-radius: 8px;
     font-size: 0.7rem;
     font-weight: 600;
+    margin: 0.1rem;
 }
 
 /* Стили для модального окна */
@@ -232,74 +267,24 @@
     padding: 2rem;
 }
 
-/* Таблица в модальном окне */
-.platform-marketplace-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 1rem 0;
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.9rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.75rem 0.5rem;
+    }
+    
+    .platform-tag,
+    .marketplace-tag,
+    .language-tag {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.4rem;
+    }
 }
-
-.platform-marketplace-table th,
-.platform-marketplace-table td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #e5e7eb;
-}
-
-.platform-marketplace-table th {
-    background: #f8fafc;
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.platform-check {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
-    font-weight: bold;
-    margin: 0 0.2rem;
-}
-
-.platform-check.available {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.platform-check.not-available {
-    background: #f3f4f6;
-    color: #6b7280;
-}
-
-.publish-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-}
-
-.publish-toggle.published {
-    background: #d1fae5;
-    color: #065f46;
-}
-
-.publish-toggle.not-published {
-    background: #fecaca;
-    color: #b91c1c;
-}
-
-.publish-toggle:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
 </style>
 
 <script>
