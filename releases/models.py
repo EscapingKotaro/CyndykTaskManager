@@ -39,7 +39,7 @@ class GameRelease(models.Model):
     
     # Площадки (многие ко многим через JSON)
     marketplaces = models.JSONField(
-        default=list,
+        default=["Avito", "Difmark", "Wildberries", "Digiseller"],
         verbose_name='Площадки',
         help_text='Список площадок: ["Avito", "Digiseller"]'
     )
