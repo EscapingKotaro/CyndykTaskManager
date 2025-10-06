@@ -52,29 +52,23 @@
         </tr>
     </thead>
     <tbody>
-        {% for marketplace in game.get_marketplaces_list %}
-        <tr>
+        {% for marketplace_data in game.get_all_marketplaces_display %}
+        <tr class="{% if not marketplace_data.is_selected %}inactive-row{% endif %}">
             <td>
                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span>{{ game.get_marketplace_icon }}</span>
-                    <span>{{ marketplace }}</span>
+                    <span>{{ marketplace_data.icon }}</span>
+                    <span>{{ marketplace_data.name }}</span>
                 </div>
             </td>
             {% for platform in game.get_platforms_list %}
             <td style="text-align: center;">
-                {% if marketplace in game.get_marketplace_platforms_dict and platform in game.get_marketplace_platforms_dict %}
+                {% if marketplace_data.is_selected and marketplace_data.code in game.get_marketplace_platforms_dict and platform in game.get_marketplace_platforms_dict %}
                 <span class="platform-check available" title="Опубликовано">✓</span>
                 {% else %}
                 <span class="platform-check not-available" title="Не опубликовано">✗</span>
                 {% endif %}
             </td>
             {% endfor %}
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="{{ game.get_platforms_list|length|add:1 }}" style="text-align: center; color: var(--secondary);">
-                📭 Площадки не выбраны
-            </td>
         </tr>
         {% endfor %}
     </tbody>
@@ -91,3 +85,45 @@
         </div>
     </div>
 </div>
+
+
+<style>
+    .inactive-row {
+    background-color: #f9fafb;
+    color: #6b7280;
+    opacity: 0.6;
+}
+
+.inactive-row td {
+    border-color: #e5e7eb;
+}
+
+.marketplace-tag.active {
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #10b981;
+}
+
+.marketplace-tag.inactive {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 2px solid #d1d5db;
+    opacity: 0.6;
+}
+
+.platform-check.available {
+    background: #d1fae5;
+    color: #065f46;
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    font-weight: bold;
+}
+
+.platform-check.not-available {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-radius: 4px;
+    padding: 0.2rem 0.4rem;
+    font-weight: bold;
+}
+</style>

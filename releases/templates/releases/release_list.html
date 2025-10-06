@@ -73,19 +73,17 @@
                     </td>
                     <td>
     <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 200px;">
-        {% for marketplace in game.get_marketplaces_list %}
-            {% if marketplace in game.get_marketplace_platforms_dict %}
+        {% for marketplace_data in game.get_all_marketplaces_display %}
+            {% if marketplace_data.is_selected %}
                 <span class="marketplace-tag active" 
-                      title="{{ marketplace }}: {{ game.get_marketplace_platforms_dict|join:', ' }}">
-                    {{ game.get_marketplace_icon }} {{ marketplace }}
+                      title="{{ marketplace_data.name }}: опубликовано">
+                    {{ marketplace_data.icon }} {{ marketplace_data.name }}
                 </span>
             {% else %}
-                <span class="marketplace-tag inactive" title="{{ marketplace }}: не опубликовано">
-                    {{ game.get_marketplace_icon }} {{ marketplace }}
+                <span class="marketplace-tag inactive" title="{{ marketplace_data.name }}: не выбрано">
+                    {{ marketplace_data.icon }} {{ marketplace_data.name }}
                 </span>
             {% endif %}
-        {% empty %}
-            <span style="color: var(--secondary);">—</span>
         {% endfor %}
     </div>
 </td>

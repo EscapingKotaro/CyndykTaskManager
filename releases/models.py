@@ -136,3 +136,17 @@ class GameRelease(models.Model):
             'DIGISELLER': '🎯',
         }
         return icons.get(marketplace, '🏪')
+    def get_all_marketplaces_display(self):
+        """Возвращает все площадки с отметкой какие выбраны"""
+        all_marketplaces = [choice[0] for choice in self.MARKETPLACE_CHOICES]
+        selected_marketplaces = self.get_marketplaces_list()
+        
+        result = []
+        for marketplace in all_marketplaces:
+            result.append({
+                'code': marketplace,
+                'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),
+                'is_selected': marketplace in selected_marketplaces,
+                'icon': self.get_marketplace_icon(marketplace)
+            })
+        return result
