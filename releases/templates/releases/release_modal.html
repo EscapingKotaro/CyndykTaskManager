@@ -61,30 +61,27 @@
                             <span>{{ marketplace_data.name }}</span>
                         </div>
                     </td>
-                    <!-- Вместо сложных вызовов делаем проще -->
-{% for platform in game.get_platforms_list %}
-<td style="text-align: center;">
-    {% if marketplace_data.is_selected %}
-        <div class="platform-icon not-published"
-             data-marketplace="{{ marketplace_data.code }}"
-             data-platform="{{ platform }}"
-             title="Не опубликовано - кликните чтобы изменить">
-            🎮
-        </div>
-    {% else %}
-        <div class="platform-icon disabled" title="Площадка не выбрана">
-            🎮
-        </div>
-    {% endif %}
-</td>
-{% endfor %}
-
-<!-- И статус тоже упрощаем -->
-<td style="text-align: center;">
-    <span class="status-badge status-not_published">
-        Не опубликовано
-    </span>
-</td>
+                    {% for platform in game.get_platforms_list %}
+                    <td style="text-align: center;">
+                        {% if marketplace_data.is_selected %}
+                            <div class="platform-text clickable"
+                                 data-marketplace="{{ marketplace_data.code }}"
+                                 data-platform="{{ platform }}"
+                                 onclick="togglePlatformPublication({{ game.id }}, '{{ marketplace_data.code }}', '{{ platform }}', this)">
+                                ❌ Не опубл.
+                            </div>
+                        {% else %}
+                            <div class="platform-text disabled" title="Площадка не выбрана">
+                                🔒 Заблок.
+                            </div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td style="text-align: center;">
+                        <span class="status-badge status-not_published">
+                            Не опубликовано
+                        </span>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -103,41 +100,29 @@
 </div>
 
 <style>
-.platform-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
+.platform-text {
+    padding: 0.4rem 0.6rem;
     border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 1.2rem;
-}
-
-.platform-icon.published {
-    background: #d1fae5;
-    color: #065f46;
-    border: 2px solid #10b981;
-}
-
-.platform-icon.not-published {
+    border: 2px solid #d1d5db;
     background: #f3f4f6;
     color: #6b7280;
-    border: 2px solid #d1d5db;
 }
 
-.platform-icon.disabled {
+.platform-text.clickable:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+.platform-text.disabled {
     background: #f9fafb;
     color: #9ca3af;
     border: 2px solid #e5e7eb;
     cursor: not-allowed;
     opacity: 0.5;
-}
-
-.platform-icon:not(.disabled):hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
 .status-badge {
@@ -148,9 +133,9 @@
     display: inline-block;
 }
 
-.status-badge.status-fully_published {
-    background: #d1fae5;
-    color: #065f46;
+.status-badge.status-not_published {
+    background: #fecaca;
+    color: #b91c1c;
 }
 
 .status-badge.status-partially_published {
@@ -158,9 +143,9 @@
     color: #92400e;
 }
 
-.status-badge.status-not_published {
-    background: #fecaca;
-    color: #b91c1c;
+.status-badge.status-fully_published {
+    background: #d1fae5;
+    color: #065f46;
 }
 
 .inactive-row {
@@ -171,72 +156,86 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Обработка кликов по иконкам платформ
-    document.querySelectorAll('.platform-icon:not(.disabled)').forEach(icon => {
-        icon.addEventListener('click', function() {
-            const marketplace = this.getAttribute('data-marketplace');
-            const platform = this.getAttribute('data-platform');
-            const gameId = {{ game.id }};
-            
-            togglePlatformPublication(gameId, marketplace, platform, this);
-        });
+// Глобальная функция для дебага
+function togglePlatformPublication(gameId, marketplace, platform, element) {
+    alert('Клик обработан!\n' + 
+          'Game ID: ' + gameId + '\n' + 
+          'Marketplace: ' + marketplace + '\n' + 
+          'Platform: ' + platform);
+    
+    console.log('Toggle publication:', {
+        gameId: gameId,
+        marketplace: marketplace,
+        platform: platform,
+        element: element
     });
     
-    function togglePlatformPublication(gameId, marketplace, platform, iconElement) {
-        const formData = new FormData();
-        formData.append('marketplace', marketplace);
-        formData.append('platform', platform);
-        
-        fetch(`/releases/game/${gameId}/toggle-platform/`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': getCookie('csrftoken'),
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Обновляем иконку
-                if (data.is_published) {
-                    iconElement.classList.remove('not-published');
-                    iconElement.classList.add('published');
-                    iconElement.title = 'Опубликовано - кликните чтобы изменить';
-                } else {
-                    iconElement.classList.remove('published');
-                    iconElement.classList.add('not-published');
-                    iconElement.title = 'Не опубликовано - кликните чтобы изменить';
-                }
-                
-                // Обновляем статус площадки
-                const row = iconElement.closest('tr');
-                const statusCell = row.querySelector('.status-badge');
-                if (statusCell) {
-                    statusCell.className = `status-badge status-${data.marketplace_status}`;
-                    statusCell.textContent = data.marketplace_status_display;
-                }
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+    // Пока просто меняем текст для теста
+    if (element.textContent.includes('❌')) {
+        element.textContent = '✅ Опублик.';
+        element.style.background = '#d1fae5';
+        element.style.color = '#065f46';
+        element.style.borderColor = '#10b981';
+    } else {
+        element.textContent = '❌ Не опубл.';
+        element.style.background = '#f3f4f6';
+        element.style.color = '#6b7280';
+        element.style.borderColor = '#d1d5db';
     }
     
-    // Функция для получения CSRF токена
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+    // Тестируем AJAX запрос
+    testAjaxRequest(gameId, marketplace, platform);
+}
+
+function testAjaxRequest(gameId, marketplace, platform) {
+    const formData = new FormData();
+    formData.append('marketplace', marketplace);
+    formData.append('platform', platform);
+    
+    console.log('Sending AJAX request to:', `/releases/game/${gameId}/toggle-platform/`);
+    
+    fetch(`/releases/game/${gameId}/toggle-platform/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('AJAX response:', data);
+        if (data.success) {
+            alert('AJAX успешен! Ответ: ' + JSON.stringify(data));
+        } else {
+            alert('AJAX ошибка: ' + JSON.stringify(data));
+        }
+    })
+    .catch(error => {
+        console.error('AJAX error:', error);
+        alert('AJAX ошибка: ' + error.message);
+    });
+}
+
+// Функция для получения CSRF токена
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
-});
+    return cookieValue;
+}
+
+// Проверяем что скрипт загрузился
+console.log('Modal script loaded successfully');
+alert('Модальное окно загружено! Можно тестировать клики.');
 </script>

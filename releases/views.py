@@ -11,23 +11,26 @@ from django.http import JsonResponse
 @login_required
 def toggle_platform_publication(request, pk):
     """AJAX запрос для переключения публикации платформы"""
+    print(f"AJAX request received: game={pk}, marketplace={request.POST.get('marketplace')}, platform={request.POST.get('platform')}")
+    
     if request.method == 'POST':
         game = get_object_or_404(GameRelease, pk=pk)
         marketplace = request.POST.get('marketplace')
         platform = request.POST.get('platform')
         
+        print(f"Processing: marketplace={marketplace}, platform={platform}")
+        
         if marketplace and platform:
-            is_published = game.toggle_platform_publication(marketplace, platform)
-            status = game.get_marketplace_status(marketplace)
-            
+            # Пока просто возвращаем тестовый ответ
             return JsonResponse({
                 'success': True,
-                'is_published': is_published,
-                'marketplace_status': status,
-                'marketplace_status_display': game.get_marketplace_status_display(status)
+                'is_published': True,  # временно всегда True для теста
+                'marketplace_status': 'partially_published',
+                'marketplace_status_display': 'Частично опубликовано',
+                'debug': f'Game: {pk}, Marketplace: {marketplace}, Platform: {platform}'
             })
     
-    return JsonResponse({'success': False})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 @login_required
 def release_modal(request, pk):
     """Детальная информация для модального окна"""
