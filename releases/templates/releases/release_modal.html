@@ -61,31 +61,30 @@
                             <span>{{ marketplace_data.name }}</span>
                         </div>
                     </td>
-                    {% for platform in game.get_platforms_list %}
-                    <td style="text-align: center;">
-                        {% if marketplace_data.is_selected %}
-                            {% with is_published=game.get_platform_publication_status|default:False %}
-                            <div class="platform-icon {% if is_published %}published{% else %}not-published{% endif %}"
-                                 data-marketplace="{{ marketplace_data.code }}"
-                                 data-platform="{{ platform }}"
-                                 title="{% if is_published %}Опубликовано{% else %}Не опубликовано{% endif %} - кликните чтобы изменить">
-                                {{ game.get_platform_icon }}
-                            </div>
-                            {% endwith %}
-                        {% else %}
-                            <div class="platform-icon disabled" title="Площадка не выбрана">
-                                {{ game.get_platform_icon }}
-                            </div>
-                        {% endif %}
-                    </td>
-                    {% endfor %}
-                    <td style="text-align: center;">
-                        {% with status=game.get_marketplace_status %}
-                        <span class="status-badge status-{{ status }}">
-                            {{ game.get_marketplace_status_display }}
-                        </span>
-                        {% endwith %}
-                    </td>
+                    <!-- Вместо сложных вызовов делаем проще -->
+{% for platform in game.get_platforms_list %}
+<td style="text-align: center;">
+    {% if marketplace_data.is_selected %}
+        <div class="platform-icon not-published"
+             data-marketplace="{{ marketplace_data.code }}"
+             data-platform="{{ platform }}"
+             title="Не опубликовано - кликните чтобы изменить">
+            🎮
+        </div>
+    {% else %}
+        <div class="platform-icon disabled" title="Площадка не выбрана">
+            🎮
+        </div>
+    {% endif %}
+</td>
+{% endfor %}
+
+<!-- И статус тоже упрощаем -->
+<td style="text-align: center;">
+    <span class="status-badge status-not_published">
+        Не опубликовано
+    </span>
+</td>
                 </tr>
                 {% endfor %}
             </tbody>
