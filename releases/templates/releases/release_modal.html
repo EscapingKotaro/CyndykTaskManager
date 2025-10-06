@@ -62,24 +62,27 @@
                         </div>
                     </td>
                     {% for platform in game.get_platforms_list %}
-                   <!-- В таблице меняем только это -->
-<td style="text-align: center;">
-    {% if marketplace_data.is_selected %}
-        <div class="platform-text clickable"
-             onclick="alert('Клик! Площадка: {{ marketplace_data.code }}, Платформа: {{ platform }}')">
-            ❌ Не опубл.
-        </div>
-    {% else %}
-        <div class="platform-text disabled" title="Площадка не выбрана">
-            🔒 Заблок.
-        </div>
-    {% endif %}
-</td>
+                    <td style="text-align: center;">
+                        {% if marketplace_data.is_selected %}
+                            {% with is_published=game.get_platform_publication_status %}
+                            <div class="platform-text {% if is_published %}published{% else %}not-published{% endif %}"
+                                 onclick="handlePlatformClick({{ game.id }}, '{{ marketplace_data.code }}', '{{ platform }}', this)">
+                                {% if is_published %}✅ Опублик.{% else %}❌ Не опубл.{% endif %}
+                            </div>
+                            {% endwith %}
+                        {% else %}
+                            <div class="platform-text disabled">
+                                🔒 Заблок.
+                            </div>
+                        {% endif %}
+                    </td>
                     {% endfor %}
                     <td style="text-align: center;">
-                        <span class="status-badge status-not_published">
-                            Не опубликовано
+                        {% with status=game.get_marketplace_status %}
+                        <span class="status-badge status-{{ status }}">
+                            {{ game.get_marketplace_status_display }}
                         </span>
+                        {% endwith %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -106,22 +109,32 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
-    border: 2px solid #d1d5db;
-    background: #f3f4f6;
-    color: #6b7280;
+    border: 2px solid;
 }
 
-.platform-text.clickable:hover {
-    background: #e5e7eb;
-    transform: translateY(-1px);
+.platform-text.published {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #10b981;
+}
+
+.platform-text.not-published {
+    background: #f3f4f6;
+    color: #6b7280;
+    border-color: #d1d5db;
 }
 
 .platform-text.disabled {
     background: #f9fafb;
     color: #9ca3af;
-    border: 2px solid #e5e7eb;
+    border-color: #e5e7eb;
     cursor: not-allowed;
     opacity: 0.5;
+}
+
+.platform-text:not(.disabled):hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .status-badge {
@@ -155,5 +168,97 @@
 </style>
 
 <script>
-alert('Модальное окно загружено! Тестируем простые клики.');
+// Вся логика в одной функции
+function handlePlatformClick(gameId, marketplace, platform, element) {
+    console.log('Click:', {gameId, marketplace, platform});
+    
+    // Меняем статус визуально сразу
+    if (element.classList.contains('published')) {
+        element.classList.remove('published');
+        element.classList.add('not-published');
+        element.textContent = '❌ Не опубл.';
+    } else {
+        element.classList.remove('not-published');
+        element.classList.add('published');
+        element.textContent = '✅ Опублик.';
+    }
+    
+    // Отправляем AJAX запрос
+    sendPlatformToggleRequest(gameId, marketplace, platform, element);
+}
+
+function sendPlatformToggleRequest(gameId, marketplace, platform, element) {
+    const formData = new FormData();
+    formData.append('marketplace', marketplace);
+    formData.append('platform', platform);
+    
+    fetch(`/releases/game/${gameId}/toggle-platform/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Server response:', data);
+        
+        if (data.success) {
+            // Обновляем статус площадки если нужно
+            updateMarketplaceStatus(element, data.marketplace_status, data.marketplace_status_display);
+        } else {
+            // Если ошибка - возвращаем предыдущее состояние
+            if (element.classList.contains('published')) {
+                element.classList.remove('published');
+                element.classList.add('not-published');
+                element.textContent = '❌ Не опубл.';
+            } else {
+                element.classList.remove('not-published');
+                element.classList.add('published');
+                element.textContent = '✅ Опублик.';
+            }
+            alert('Ошибка: ' + (data.error || 'Неизвестная ошибка'));
+        }
+    })
+    .catch(error => {
+        console.error('Request failed:', error);
+        // Возвращаем предыдущее состояние при ошибке сети
+        if (element.classList.contains('published')) {
+            element.classList.remove('published');
+            element.classList.add('not-published');
+            element.textContent = '❌ Не опубл.';
+        } else {
+            element.classList.remove('not-published');
+            element.classList.add('published');
+            element.textContent = '✅ Опублик.';
+        }
+        alert('Ошибка сети: ' + error.message);
+    });
+}
+
+function updateMarketplaceStatus(element, status, statusDisplay) {
+    const row = element.closest('tr');
+    const statusCell = row.querySelector('.status-badge');
+    if (statusCell) {
+        statusCell.className = `status-badge status-${status}`;
+        statusCell.textContent = statusDisplay;
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+console.log('Modal functions loaded');
 </script>
