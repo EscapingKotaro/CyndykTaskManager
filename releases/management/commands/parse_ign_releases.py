@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from releases.parser import run_parser, get_parser_stats
+from releases.ign_parser import run_parser, get_parser_stats
 
 class Command(BaseCommand):
     help = 'Парсит релизы игр с IGN.com и сохраняет в БД'
