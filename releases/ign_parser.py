@@ -1,221 +1,256 @@
-import requests
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
+import time
 import re
+from datetime import datetime, timedelta
 from django.utils import timezone
 from .models import GameRelease
 
 class IGNReleaseParser:
     """
-    Парсер релизов игр с IGN.com
+    Парсер релизов игр с IGN.com с использованием Selenium
     """
     
     BASE_URL = "https://www.ign.com/upcoming/games"
     
     def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-        })
+        self.setup_driver()
+        self.stats = {
+            'total_pages_loaded': 0,
+            'game_links_found': 0,
+            'game_cards_found': 0,
+            'games_parsed': 0,
+            'games_saved': 0,
+            'errors': 0
+        }
+    
+    def setup_driver(self):
+        """Настраивает Chrome driver"""
+        chrome_options = Options()
+        chrome_options.add_argument("--headless=new")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+        
+        self.driver = webdriver.Chrome(options=chrome_options)
+        self.wait = WebDriverWait(self.driver, 15)
     
     def parse_releases(self):
         """
         Основной метод парсинга релизов
-        Возвращает список новых игр, добавленных в БД
         """
-        print("🕷️ Начинаем парсинг IGN...")
+        print("🕷️ Запускаем Selenium парсер IGN...")
         
         try:
-            # Получаем HTML страницы
-            response = self.session.get(self.BASE_URL, timeout=10)
-            response.raise_for_status()
+            # Загружаем страницу
+            self.driver.get(self.BASE_URL)
+            self.stats['total_pages_loaded'] += 1
             
-            # Парсим HTML
-            soup = BeautifulSoup(response.content, 'html.parser')
+            # Ждем загрузки контента
+            time.sleep(5)
             
-            # Ищем блоки с играми
-            games_data = self._extract_games_data(soup)
+            # Делаем скриншот для дебага
+            self.driver.save_screenshot('ign_page.png')
+            print("📸 Скриншот страницы сохранен как 'ign_page.png'")
+            
+            # Получаем HTML после полной загрузки
+            page_source = self.driver.page_source
+            
+            # Сохраняем HTML для дебага
+            with open('ign_page.html', 'w', encoding='utf-8') as f:
+                f.write(page_source)
+            print("💾 HTML страницы сохранен как 'ign_page.html'")
+            
+            # Анализируем структуру страницы
+            self._analyze_page_structure(page_source)
+            
+            # Парсим игры
+            games_data = self._parse_games_from_page()
             
             # Сохраняем в БД
             new_games = self._save_to_database(games_data)
+            
+            self.stats['games_saved'] = len(new_games)
+            self._print_stats()
             
             print(f"✅ Парсинг завершен! Добавлено {len(new_games)} новых игр")
             return new_games
             
         except Exception as e:
-            print(f"❌ Ошибка парсинга: {e}")
+            print(f"❌ Критическая ошибка парсинга: {e}")
+            self.stats['errors'] += 1
+            self._print_stats()
             return []
+        finally:
+            self.driver.quit()
     
-    def _extract_games_data(self, soup):
-        """
-        Извлекает данные об играх из HTML
-        """
+    def _analyze_page_structure(self, page_source):
+        """Анализирует структуру страницы для дебага"""
+        soup = BeautifulSoup(page_source, 'html.parser')
+        
+        print("\n🔍 АНАЛИЗ СТРУКТУРЫ СТРАНИЦЫ:")
+        print(f"📄 Длина HTML: {len(page_source)} символов")
+        
+        # Ищем различные элементы
+        game_links = soup.find_all('a', href=re.compile(r'/games/|/reviews/'))
+        self.stats['game_links_found'] = len(game_links)
+        print(f"🔗 Найдено ссылок на игры: {len(game_links)}")
+        
+        # Ищем карточки игр
+        game_cards = soup.find_all(['div', 'article'], class_=re.compile(r'game|item|card|product', re.I))
+        self.stats['game_cards_found'] = len(game_cards)
+        print(f"🎮 Найдено карточек игр: {len(game_cards)}")
+        
+        # Выводим первые 5 ссылок для примера
+        print("\n📋 Примеры найденных ссылок:")
+        for i, link in enumerate(game_links[:5]):
+            href = link.get('href', '')
+            text = link.get_text(strip=True)
+            print(f"  {i+1}. {text} -> {href}")
+        
+        # Выводим первые 5 карточек для примера
+        print("\n📋 Примеры найденных карточек:")
+        for i, card in enumerate(game_cards[:5]):
+            text = card.get_text(strip=True)[:100] + "..." if len(card.get_text(strip=True)) > 100 else card.get_text(strip=True)
+            print(f"  {i+1}. {text}")
+    
+    def _parse_games_from_page(self):
+        """Парсит игры со страницы используя Selenium"""
         games_data = []
         
-        # Ищем блоки с играми (может потребоваться корректировка селекторов)
-        game_cards = soup.find_all('div', class_=re.compile(r'game|release|item', re.I))
+        print("\n🎯 ПАРСИНГ ИГР:")
         
-        for card in game_cards:
-            try:
-                game_data = self._parse_game_card(card)
-                if game_data and self._is_valid_game(game_data):
-                    games_data.append(game_data)
-                    
-            except Exception as e:
-                print(f"⚠️ Ошибка парсинга карточки игры: {e}")
-                continue
-        
-        # Если не нашли стандартным способом, пробуем альтернативные селекторы
-        if not games_data:
-            games_data = self._fallback_parsing(soup)
-        
-        print(f"📊 Найдено {len(games_data)} игр для обработки")
-        return games_data
-    
-    def _parse_game_card(self, card):
-        """
-        Парсит отдельную карточку игры
-        """
-        game_data = {}
-        
-        # Название игры
-        title_elem = (card.find('h2') or card.find('h3') or 
-                     card.find('a', class_=re.compile(r'title|name', re.I)))
-        if title_elem:
-            game_data['title'] = title_elem.get_text().strip()
-        
-        # Дата релиза
-        date_elem = card.find('span', class_=re.compile(r'date|release', re.I))
-        if date_elem:
-            game_data['release_date'] = self._parse_date(date_elem.get_text().strip())
-        
-        # Платформы
-        platforms_elem = card.find('span', class_=re.compile(r'platform|console', re.I))
-        if platforms_elem:
-            game_data['platforms'] = self._parse_platforms(platforms_elem.get_text().strip())
-        
-        # Если не хватает критических данных, пропускаем
-        if not game_data.get('title') or not game_data.get('release_date'):
-            return None
-            
-        return game_data
-    
-    def _fallback_parsing(self, soup):
-        """
-        Альтернативные методы парсинга если основные не работают
-        """
-        games_data = []
-        
-        # Пробуем найти по структуре данных JSON-LD
-        script_tags = soup.find_all('script', type='application/ld+json')
-        for script in script_tags:
-            try:
-                # Здесь можно добавить парсинг JSON-LD если он есть на странице
-                pass
-            except:
-                pass
-        
-        # Пробуем найти по другим селекторам
-        items = soup.find_all('div', class_=re.compile(r'item|card|product', re.I))
-        for item in items:
-            try:
-                title_elem = item.find(['h1', 'h2', 'h3', 'h4'])
-                date_elem = item.find(text=re.compile(r'202[4-9]|Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec', re.I))
-                
-                if title_elem and date_elem:
-                    game_data = {
-                        'title': title_elem.get_text().strip(),
-                        'release_date': self._parse_date(date_elem),
-                        'platforms': ['PS5', 'XBOX_SERIES', 'PC']  # Дефолтные платформы
-                    }
-                    games_data.append(game_data)
-                    
-            except Exception as e:
-                continue
-        
-        return games_data
-    
-    def _parse_date(self, date_text):
-        """
-        Парсит дату из текста в объект datetime
-        """
         try:
-            # Убираем лишние слова
-            clean_date = re.sub(r'[^\w\s,\.]', '', date_text)
-            
-            # Пробуем разные форматы дат
-            date_formats = [
-                '%B %d, %Y',  # October 15, 2024
-                '%b %d, %Y',  # Oct 15, 2024  
-                '%Y-%m-%d',   # 2024-10-15
-                '%m/%d/%Y',   # 10/15/2024
-                '%d.%m.%Y',   # 15.10.2024
+            # Пробуем разные селекторы для поиска игр
+            selectors = [
+                "//a[contains(@href, '/games/')]",
+                "//article[contains(@class, 'game')]",
+                "//div[contains(@class, 'game-item')]",
+                "//figure//a",  # Твой xPath
+                "//*[@id='main-content']//a",
             ]
             
-            for fmt in date_formats:
+            for selector in selectors:
                 try:
-                    return datetime.strptime(clean_date.strip(), fmt).date()
-                except ValueError:
+                    elements = self.driver.find_elements(By.XPATH, selector)
+                    print(f"🔎 Селектор '{selector}': найдено {len(elements)} элементов")
+                    
+                    if elements:
+                        for i, element in enumerate(elements[:10]):  # Ограничим для теста
+                            try:
+                                game_data = self._parse_game_element(element)
+                                if game_data and self._is_valid_game(game_data):
+                                    games_data.append(game_data)
+                                    self.stats['games_parsed'] += 1
+                                    print(f"  ✅ Игра {i+1}: {game_data['title']}")
+                            except Exception as e:
+                                print(f"  ❌ Ошибка парсинга элемента {i+1}: {e}")
+                                continue
+                        
+                        break  # Если нашли элементы, выходим из цикла
+                        
+                except Exception as e:
+                    print(f"🔎 Селектор '{selector}': ошибка - {e}")
                     continue
             
-            # Если не распарсилось, ставим дату через 3 месяца
-            return timezone.now().date() + timedelta(days=90)
+            # Если не нашли через XPath, пробуем через CSS
+            if not games_data:
+                css_selectors = [
+                    "a[href*='/games/']",
+                    ".game-item",
+                    ".item-game",
+                    "article.game",
+                ]
+                
+                for css_selector in css_selectors:
+                    try:
+                        elements = self.driver.find_elements(By.CSS_SELECTOR, css_selector)
+                        print(f"🔎 CSS селектор '{css_selector}': найдено {len(elements)} элементов")
+                        
+                        if elements:
+                            for i, element in enumerate(elements[:10]):
+                                try:
+                                    game_data = self._parse_game_element(element)
+                                    if game_data and self._is_valid_game(game_data):
+                                        games_data.append(game_data)
+                                        self.stats['games_parsed'] += 1
+                                        print(f"  ✅ Игра {i+1}: {game_data['title']}")
+                                except Exception as e:
+                                    print(f"  ❌ Ошибка парсинга элемента {i+1}: {e}")
+                                    continue
+                            
+                            break
+                            
+                    except Exception as e:
+                        print(f"🔎 CSS селектор '{css_selector}': ошибка - {e}")
+                        continue
             
-        except Exception:
-            # Дефолтная дата если не удалось распарсить
-            return timezone.now().date() + timedelta(days=90)
+        except Exception as e:
+            print(f"❌ Ошибка при парсинге игр: {e}")
+            self.stats['errors'] += 1
+        
+        return games_data
     
-    def _parse_platforms(self, platforms_text):
-        """
-        Парсит платформы из текста
-        """
-        platforms = []
-        text_lower = platforms_text.lower()
-        
-        # Маппинг платформ
-        platform_map = {
-            'ps4': 'PS4',
-            'ps5': 'PS5', 
-            'playstation 4': 'PS4',
-            'playstation 5': 'PS5',
-            'xbox one': 'XBOX_ONE',
-            'xbox series': 'XBOX_SERIES',
-            'switch': 'SWITCH',
-            'nintendo switch': 'SWITCH',
-        }
-        
-        for key, platform in platform_map.items():
-            if key in text_lower:
-                platforms.append(platform)
-        
-        # Убираем дубликаты
-        platforms = list(set(platforms))
-        
-        # Если платформы не определились, ставим дефолтные
-        if not platforms:
-            platforms = ['PS5']
+    def _parse_game_element(self, element):
+        """Парсит данные из элемента игры"""
+        try:
+            game_data = {}
             
-        return platforms
+            # Получаем текст элемента
+            element_text = element.text.strip()
+            if not element_text or len(element_text) < 2:
+                return None
+            
+            # Название игры - берем из текста элемента
+            game_data['title'] = element_text.split('\n')[0] if '\n' in element_text else element_text
+            
+            # Пробуем получить ссылку
+            href = element.get_attribute('href')
+            if href:
+                game_data['url'] = href
+            
+            # Дата релиза - пока ставим дефолтную
+            game_data['release_date'] = timezone.now().date() + timedelta(days=60)
+            
+            # Платформы - дефолтные
+            game_data['platforms'] = ['PS5']
+            
+            # Дополнительная информация из атрибутов
+            title_attr = element.get_attribute('title')
+            if title_attr and len(title_attr) > len(game_data['title']):
+                game_data['title'] = title_attr
+            
+            return game_data
+            
+        except Exception as e:
+            print(f"❌ Ошибка парсинга элемента: {e}")
+            return None
     
     def _is_valid_game(self, game_data):
-        """
-        Проверяет валидность данных игры
-        """
-        # Проверяем что есть название и дата
-        if not game_data.get('title') or not game_data.get('release_date'):
+        """Проверяет валидность данных игры"""
+        if not game_data.get('title'):
             return False
         
-        # Проверяем что дата в будущем или не очень далеком прошлом (до 1 года)
-        max_past_date = timezone.now().date() - timedelta(days=365)
-        if game_data['release_date'] < max_past_date:
+        # Проверяем что название не слишком короткое и не содержит мусор
+        title = game_data['title']
+        if len(title) < 2 or len(title) > 200:
+            return False
+        
+        # Исключаем мусорные названия
+        exclude_words = ['ign', 'game', 'review', 'news', 'trailer', 'video']
+        if any(word in title.lower() for word in exclude_words):
             return False
             
         return True
     
     def _save_to_database(self, games_data):
-        """
-        Сохраняет игры в БД, только новые
-        """
+        """Сохраняет игры в БД, только новые"""
         new_games = []
         
         for game_data in games_data:
@@ -231,14 +266,14 @@ class IGNReleaseParser:
                 
                 # Создаем новую игру
                 game = GameRelease(
-                    title=game_data['title'],
+                    title=game_data['title'][:200],  # Ограничиваем длину
                     release_date=game_data['release_date'],
                     platforms=game_data.get('platforms', ['PS5', 'PC']),
                     marketplaces=[],  # Пока пустые площадки
-                    languages=['ENGLISH', 'RUSSIAN'],  # Дефолтные языки
+                    languages=['ENGLISH', 'RUSSIAN'],
                     marketplace_platforms={},
-                    description=f"Автоматически добавлено из IGN. Дата релиза: {game_data['release_date']}",
-                    is_published=False  # По умолчанию не опубликовано
+                    description=f"Автоматически добавлено из IGN. {game_data.get('url', '')}",
+                    is_published=False
                 )
                 
                 game.save()
@@ -247,29 +282,38 @@ class IGNReleaseParser:
                 
             except Exception as e:
                 print(f"❌ Ошибка сохранения игры {game_data.get('title')}: {e}")
+                self.stats['errors'] += 1
                 continue
         
         return new_games
+    
+    def _print_stats(self):
+        """Выводит детальную статистику"""
+        print("\n📊 ДЕТАЛЬНАЯ СТАТИСТИКА ПАРСИНГА:")
+        print(f"   📄 Загружено страниц: {self.stats['total_pages_loaded']}")
+        print(f"   🔗 Найдено ссылок на игры: {self.stats['game_links_found']}")
+        print(f"   🎮 Найдено карточек игр: {self.stats['game_cards_found']}")
+        print(f"   ✅ Успешно распарсено игр: {self.stats['games_parsed']}")
+        print(f"   💾 Сохранено в БД: {self.stats['games_saved']}")
+        print(f"   ❌ Ошибок: {self.stats['errors']}")
 
 
-# Утилитарные функции для запуска
+# Утилитарные функции
 def run_parser():
-    """
-    Запускает парсер и возвращает результат
-    """
+    """Запускает парсер"""
     parser = IGNReleaseParser()
     return parser.parse_releases()
 
 def get_parser_stats():
-    """
-    Возвращает статистику по играм в БД
-    """
+    """Возвращает статистику по играм в БД"""
     total_games = GameRelease.objects.count()
     upcoming_games = GameRelease.objects.filter(
         release_date__gte=timezone.now().date()
     ).count()
+    published_games = GameRelease.objects.filter(is_published=True).count()
     
     return {
         'total_games': total_games,
-        'upcoming_games': upcoming_games
+        'upcoming_games': upcoming_games,
+        'published_games': published_games
     }
