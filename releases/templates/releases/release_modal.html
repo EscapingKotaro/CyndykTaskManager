@@ -1,3 +1,5 @@
+{% load release_tags %}
+
 <div style="display: grid; grid-template-columns: 200px 1fr; gap: 2rem;">
     <!-- Левая колонка -->
     <div>
@@ -64,7 +66,8 @@
                     {% for platform in game.get_platforms_list %}
                     <td style="text-align: center;">
     {% if marketplace_data.is_selected %}
-        {% with is_published=game.get_platform_publication_status|default:False %}
+        {% with marketplace_platform=marketplace_data.code|add:','|add:platform %}
+        {% with is_published=game|get_platform_status:marketplace_platform %}
         <div class="platform-text {% if is_published %}published{% else %}not-published{% endif %}"
              onclick="(function(){ 
                 var element = this; 
@@ -153,6 +156,7 @@
             {% if is_published %}✅ Опублик.{% else %}❌ Не опубл.{% endif %}
         </div>
         {% endwith %}
+        {% endwith %}
     {% else %}
         <div class="platform-text disabled">
             🔒 Заблок.
@@ -161,12 +165,10 @@
 </td>
                     {% endfor %}
                     <td style="text-align: center;">
-                        {% with status=game.get_marketplace_status %}
-                        <span class="status-badge status-{{ status }}">
-                            {{ game.get_marketplace_status_display }}
-                        </span>
-                        {% endwith %}
-                    </td>
+    <span class="status-badge status-{{ game.get_marketplace_status|default:'not_published' }}">
+        {{ game|get_marketplace_status_display:marketplace_data.code }}
+    </span>
+</td>
                 </tr>
                 {% endfor %}
             </tbody>
