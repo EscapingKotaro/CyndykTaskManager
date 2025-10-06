@@ -516,12 +516,9 @@ def make_payment(request):
             payment = form.save(commit=False)
             payment.manager = request.user
             
-            if payment.amount > payment.employee.balance:
-                messages.error(request, 'Сумма выплаты не может превышать баланс сотрудника!')
-            else:
-                payment.save()
-                messages.success(request, f'Выплата {payment.amount} руб. для {payment.employee} выполнена!')
-                return redirect('payment_history')
+            payment.save()
+            messages.success(request, f'Выплата {payment.amount} руб. для {payment.employee} выполнена!')
+            return redirect('payment_history')
     else:
         form = PaymentForm()
         form.fields['employee'].queryset = CustomUser.objects.filter(manager=request.user)
