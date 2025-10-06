@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils import timezone
 from .models import GameRelease
-from .forms import GameReleaseForm, GameReleaseFilterForm
+from .forms import GameReleaseForm
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.http import JsonResponse
@@ -39,7 +39,7 @@ def release_list(request):
     games = GameRelease.objects.all()
     
     # Применяем фильтры
-    form = GameReleaseFilterForm(request.GET or None)
+    form = GameReleaseForm(request.GET or None)
     
     if form.is_valid():
         platform = form.cleaned_data.get('platform')
