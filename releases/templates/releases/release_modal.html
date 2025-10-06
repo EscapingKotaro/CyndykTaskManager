@@ -54,7 +54,6 @@
             </thead>
             <tbody>
                 {% for marketplace_data in game.get_all_marketplaces_display %}
-                {% with marketplace_status=game.get_marketplace_status %}
                 <tr class="{% if not marketplace_data.is_selected %}inactive-row{% endif %}">
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -65,7 +64,7 @@
                     {% for platform in game.get_platforms_list %}
                     <td style="text-align: center;">
                         {% if marketplace_data.is_selected %}
-                            {% with is_published=game.get_platform_publication_status %}
+                            {% with is_published=game.get_platform_publication_status|default:False %}
                             <div class="platform-icon {% if is_published %}published{% else %}not-published{% endif %}"
                                  data-marketplace="{{ marketplace_data.code }}"
                                  data-platform="{{ platform }}"
@@ -88,7 +87,6 @@
                         {% endwith %}
                     </td>
                 </tr>
-                {% endwith %}
                 {% endfor %}
             </tbody>
         </table>
@@ -104,6 +102,74 @@
         </div>
     </div>
 </div>
+
+<style>
+.platform-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1.2rem;
+}
+
+.platform-icon.published {
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #10b981;
+}
+
+.platform-icon.not-published {
+    background: #f3f4f6;
+    color: #6b7280;
+    border: 2px solid #d1d5db;
+}
+
+.platform-icon.disabled {
+    background: #f9fafb;
+    color: #9ca3af;
+    border: 2px solid #e5e7eb;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.platform-icon:not(.disabled):hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-badge.status-fully_published {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-badge.status-partially_published {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-badge.status-not_published {
+    background: #fecaca;
+    color: #b91c1c;
+}
+
+.inactive-row {
+    background-color: #f9fafb;
+    color: #6b7280;
+    opacity: 0.6;
+}
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
