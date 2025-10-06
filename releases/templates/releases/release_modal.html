@@ -63,102 +63,102 @@
                     </td>
                     {% for platform in game.get_platforms_list %}
                     <td style="text-align: center;">
-                        {% if marketplace_data.is_selected %}
-                            {% with is_published=game.get_platform_publication_status %}
-                            <div class="platform-text {% if is_published %}published{% else %}not-published{% endif %}"
-                                 onclick="(function(){ 
-                                    var element = this; 
-                                    var gameId = {{ game.id }}; 
-                                    var marketplace = '{{ marketplace_data.code }}'; 
-                                    var platform = '{{ platform }}'; 
-                                    
-                                    console.log('Click:', gameId, marketplace, platform); 
-                                    
-                                    // Меняем статус визуально 
-                                    if (element.classList.contains('published')) { 
-                                        element.classList.remove('published'); 
-                                        element.classList.add('not-published'); 
-                                        element.textContent = '❌ Не опубл.'; 
-                                    } else { 
-                                        element.classList.remove('not-published'); 
-                                        element.classList.add('published'); 
-                                        element.textContent = '✅ Опублик.'; 
-                                    } 
-                                    
-                                    // Отправляем AJAX 
-                                    var formData = new FormData(); 
-                                    formData.append('marketplace', marketplace); 
-                                    formData.append('platform', platform); 
-                                    
-                                    fetch('/releases/game/' + gameId + '/toggle-platform/', { 
-                                        method: 'POST', 
-                                        body: formData, 
-                                        headers: { 'X-CSRFToken': getCookie('csrftoken') } 
-                                    }) 
-                                    .then(function(r) { return r.json(); }) 
-                                    .then(function(data) { 
-                                        console.log('Response:', data); 
-                                        if (data.success) { 
-                                            // Обновляем статус площадки 
-                                            var row = element.closest('tr'); 
-                                            var statusCell = row.querySelector('.status-badge'); 
-                                            if (statusCell) { 
-                                                statusCell.className = 'status-badge status-' + data.marketplace_status; 
-                                                statusCell.textContent = data.marketplace_status_display; 
-                                            } 
-                                        } else { 
-                                            // Откатываем при ошибке 
-                                            if (element.classList.contains('published')) { 
-                                                element.classList.remove('published'); 
-                                                element.classList.add('not-published'); 
-                                                element.textContent = '❌ Не опубл.'; 
-                                            } else { 
-                                                element.classList.remove('not-published'); 
-                                                element.classList.add('published'); 
-                                                element.textContent = '✅ Опублик.'; 
-                                            } 
-                                            alert('Ошибка сервера'); 
-                                        } 
-                                    }) 
-                                    .catch(function(error) { 
-                                        console.error('Error:', error); 
-                                        // Откатываем при ошибке сети 
-                                        if (element.classList.contains('published')) { 
-                                            element.classList.remove('published'); 
-                                            element.classList.add('not-published'); 
-                                            element.textContent = '❌ Не опубл.'; 
-                                        } else { 
-                                            element.classList.remove('not-published'); 
-                                            element.classList.add('published'); 
-                                            element.textContent = '✅ Опублик.'; 
-                                        } 
-                                        alert('Ошибка сети'); 
-                                    }); 
-                                    
-                                    function getCookie(name) { 
-                                        var cookieValue = null; 
-                                        if (document.cookie && document.cookie !== '') { 
-                                            var cookies = document.cookie.split(';'); 
-                                            for (var i = 0; i < cookies.length; i++) { 
-                                                var cookie = cookies[i].trim(); 
-                                                if (cookie.substring(0, name.length + 1) === (name + '=')) { 
-                                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1)); 
-                                                    break; 
-                                                } 
-                                            } 
-                                        } 
-                                        return cookieValue; 
-                                    } 
-                                }).call(this)">
-                                {% if is_published %}✅ Опублик.{% else %}❌ Не опубл.{% endif %}
-                            </div>
-                            {% endwith %}
-                        {% else %}
-                            <div class="platform-text disabled">
-                                🔒 Заблок.
-                            </div>
-                        {% endif %}
-                    </td>
+    {% if marketplace_data.is_selected %}
+        {% with is_published=game.get_platform_publication_status|default:False %}
+        <div class="platform-text {% if is_published %}published{% else %}not-published{% endif %}"
+             onclick="(function(){ 
+                var element = this; 
+                var gameId = {{ game.id }}; 
+                var marketplace = '{{ marketplace_data.code }}'; 
+                var platform = '{{ platform }}'; 
+                
+                console.log('Click:', gameId, marketplace, platform); 
+                
+                // Меняем статус визуально 
+                if (element.classList.contains('published')) { 
+                    element.classList.remove('published'); 
+                    element.classList.add('not-published'); 
+                    element.textContent = '❌ Не опубл.'; 
+                } else { 
+                    element.classList.remove('not-published'); 
+                    element.classList.add('published'); 
+                    element.textContent = '✅ Опублик.'; 
+                } 
+                
+                // Отправляем AJAX 
+                var formData = new FormData(); 
+                formData.append('marketplace', marketplace); 
+                formData.append('platform', platform); 
+                
+                fetch('/releases/game/' + gameId + '/toggle-platform/', { 
+                    method: 'POST', 
+                    body: formData, 
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') } 
+                }) 
+                .then(function(r) { return r.json(); }) 
+                .then(function(data) { 
+                    console.log('Response:', data); 
+                    if (data.success) { 
+                        // Обновляем статус площадки 
+                        var row = element.closest('tr'); 
+                        var statusCell = row.querySelector('.status-badge'); 
+                        if (statusCell) { 
+                            statusCell.className = 'status-badge status-' + data.marketplace_status; 
+                            statusCell.textContent = data.marketplace_status_display; 
+                        } 
+                    } else { 
+                        // Откатываем при ошибке 
+                        if (element.classList.contains('published')) { 
+                            element.classList.remove('published'); 
+                            element.classList.add('not-published'); 
+                            element.textContent = '❌ Не опубл.'; 
+                        } else { 
+                            element.classList.remove('not-published'); 
+                            element.classList.add('published'); 
+                            element.textContent = '✅ Опублик.'; 
+                        } 
+                        alert('Ошибка сервера'); 
+                    } 
+                }) 
+                .catch(function(error) { 
+                    console.error('Error:', error); 
+                    // Откатываем при ошибке сети 
+                    if (element.classList.contains('published')) { 
+                        element.classList.remove('published'); 
+                        element.classList.add('not-published'); 
+                        element.textContent = '❌ Не опубл.'; 
+                    } else { 
+                        element.classList.remove('not-published'); 
+                        element.classList.add('published'); 
+                        element.textContent = '✅ Опублик.'; 
+                    } 
+                    alert('Ошибка сети'); 
+                }); 
+                
+                function getCookie(name) { 
+                    var cookieValue = null; 
+                    if (document.cookie && document.cookie !== '') { 
+                        var cookies = document.cookie.split(';'); 
+                        for (var i = 0; i < cookies.length; i++) { 
+                            var cookie = cookies[i].trim(); 
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) { 
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1)); 
+                                break; 
+                            } 
+                        } 
+                    } 
+                    return cookieValue; 
+                } 
+            }).call(this)">
+            {% if is_published %}✅ Опублик.{% else %}❌ Не опубл.{% endif %}
+        </div>
+        {% endwith %}
+    {% else %}
+        <div class="platform-text disabled">
+            🔒 Заблок.
+        </div>
+    {% endif %}
+</td>
                     {% endfor %}
                     <td style="text-align: center;">
                         {% with status=game.get_marketplace_status %}
