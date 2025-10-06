@@ -334,13 +334,7 @@ class IGNReleaseParser:
                     # Все площадки по умолчанию
                     marketplaces=['AVITO', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER'],
                     languages=['ENGLISH', 'RUSSIAN'],
-                    # Публикации по умолчанию - все платформы на всех площадках
-                    marketplace_platforms={
-                        'AVITO': game_data.get('platforms', []),
-                        'DIFMARK': game_data.get('platforms', []),
-                        'WILDBERRIES': game_data.get('platforms', []),
-                        'DIGISELLER': game_data.get('platforms', [])
-                    },
+                    marketplace_platforms={},  # Пустой словарь вместо публикаций всех платформ
                     description=f"Автоматически добавлено из IGN. {game_data.get('url', '')}",
                     # По умолчанию опубликовано
                     is_published=True
@@ -400,8 +394,15 @@ def get_parser_stats():
     ).count()
     published_games = GameRelease.objects.filter(is_published=True).count()
     
+    # Статистика по платформам
+    platform_stats = {}
+    for game in GameRelease.objects.all():
+        for platform in game.get_platforms_list():
+            platform_stats[platform] = platform_stats.get(platform, 0) + 1
+    
     return {
         'total_games': total_games,
         'upcoming_games': upcoming_games,
-        'published_games': published_games
+        'published_games': published_games,
+        'platform_stats': platform_stats  # Добавляем статистику по платформам
     }

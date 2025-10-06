@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from releases.ign_parser import run_parser, get_parser_stats
+from releases.models import GameRelease
+from releases.parser import run_parser, get_parser_stats
 
 class Command(BaseCommand):
     help = 'Парсит релизы игр с IGN.com и сохраняет в БД'
@@ -18,7 +19,8 @@ class Command(BaseCommand):
         self.stdout.write(f"   📅 Предстоящих релизов: {stats['upcoming_games']}")
         self.stdout.write(f"   ✅ Опубликовано: {stats['published_games']}")
         
-        if stats['platform_stats']:
+        # Добавляем статистику по платформам если есть
+        if 'platform_stats' in stats and stats['platform_stats']:
             self.stdout.write("\n🎮 СТАТИСТИКА ПО ПЛАТФОРМАМ:")
             for platform, count in stats['platform_stats'].items():
                 self.stdout.write(f"   {platform}: {count} игр")
