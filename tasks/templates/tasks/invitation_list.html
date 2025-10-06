@@ -33,8 +33,8 @@
                 <td>{{ inv.expires_at|date:"d.m.Y H:i" }}</td>
                 <td>
                     {% if inv.status == 'pending' %}
-                    <a href="#" class="btn btn-sm btn-outline" 
-                       onclick="copyToClipboard('{{ request.scheme }}://{{ request.get_host }}{% url 'register_with_invitation' inv.token %}')">
+                    <a href="#" class="btn btn-sm btn-outline copy-btn" 
+                       data-url="{{ request.scheme }}://{{ request.get_host }}{% url 'register_with_invitation' inv.token %}">
                         📋 Копировать ссылку
                     </a>
                     {% endif %}
@@ -45,11 +45,85 @@
     </table>
 </div>
 
+<style>
+.copy-btn.copied {
+    background-color: #28a745 !important;
+    border-color: #28a745 !important;
+    color: white !important;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-accepted {
+    background-color: #d1edff;
+    color: #004085;
+}
+
+.status-expired {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+</style>
+
 <script>
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        alert('Ссылка скопирована в буфер обмена!');
+document.addEventListener('DOMContentLoaded', function() {
+    // Вешаем обработчик на все кнопки копирования
+    const copyButtons = document.querySelectorAll('.copy-btn');
+    
+    copyButtons.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const url = this.getAttribute('data-url');
+            copyToClipboard(url, this);
+        });
     });
+});
+
+function copyToClipboard(text, button) {
+    // Создаем временный textarea
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        // Пытаемся скопировать старым способом
+        const successful = document.execCommand('copy');
+        if (successful) {
+            // Меняем вид кнопки на 2 секунды
+            const originalText = button.innerHTML;
+            button.innerHTML = '✅ Скопировано!';
+            button.classList.add('copied');
+            
+            setTimeout(() => {
+                button.innerHTML = originalText;
+                button.classList.remove('copied');
+            }, 2000);
+        } else {
+            // Если не получилось, показываем ссылку для ручного копирования
+            prompt('📋 Скопируйте ссылку вручную:', text);
+        }
+    } catch (err) {
+        // Fallback - показываем prompt для копирования
+        prompt('📋 Скопируйте ссылку вручную:', text);
+    } finally {
+        // Убираем временный элемент
+        document.body.removeChild(textArea);
+    }
 }
 </script>
 {% endblock %}

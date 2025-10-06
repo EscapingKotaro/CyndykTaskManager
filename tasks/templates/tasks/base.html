@@ -1020,6 +1020,7 @@ legend {
                             <a href="{% url 'employee_list' %}" class="nav-dropdown-item">👥 Сотрудники</a>
                             <a href="{% url 'task_management' %}" class="nav-dropdown-item">📋 Задачи</a>
                             <a href="{% url 'invitation_list' %}" class="nav-dropdown-item">📨 Приглашения</a>
+                            <a href="{% url 'payment_history' %}" class="nav-dropdown-item">Выплаты</a>
                         </div>
                     </div>
 
@@ -1040,6 +1041,8 @@ legend {
                     <a href="{% url 'dashboard' %}" class="nav-dropdown-toggle" style="text-decoration: none;">
                         📋 Мои задачи
                     </a>
+                    
+                    <a href="{% url 'payment_history' %}" class="nav-dropdown-toggle">Выплаты</a>
                     {% endif %}
                     <!-- Кастомные кнопки -->
                     {% load navigation_tags %}

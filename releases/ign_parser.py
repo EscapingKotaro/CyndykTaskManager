@@ -203,11 +203,14 @@ class IGNReleaseParser:
             return None
     
     def _parse_platforms_from_element(self, platforms_elem):
-        """Парсит платформы из HTML элемента"""
+        """Парсит платформы из HTML элемента - только нужные нам платформы"""
         platforms = []
         
         # Ищем иконки платформ
         platform_icons = platforms_elem.find_all(['span', 'img'], class_=re.compile(r'platform|icon', re.I))
+        
+        # Наши допустимые платформы
+        ALLOWED_PLATFORMS = ['PS4', 'PS5', 'SWITCH', 'SWITCH2', 'XBOX_ONE', 'XBOX_SERIES']
         
         for icon in platform_icons:
             # Проверяем классы и атрибуты для определения платформы
@@ -216,18 +219,21 @@ class IGNReleaseParser:
             src = icon.get('src', '').lower()
             
             # Определяем платформу по различным признакам
-            if 'ps4' in class_str or 'playstation-4' in class_str or 'ps4' in alt_text:
-                platforms.append('PS4')
-            elif 'ps5' in class_str or 'playstation-5' in class_str or 'ps5' in alt_text:
-                platforms.append('PS5')
-            elif 'xbox-one' in class_str or 'xbox-one' in alt_text:
-                platforms.append('XBOX_ONE')
-            elif 'xbox-series' in class_str or 'xbox-series' in alt_text or 'xbox' in alt_text:
-                platforms.append('XBOX_SERIES')
-            elif 'switch' in class_str or 'nintendo' in class_str or 'switch' in alt_text:
-                platforms.append('SWITCH')
-            elif 'pc' in class_str or 'windows' in class_str or 'pc' in alt_text or 'steam' in src:
-                platforms.append('PC')
+            platform_map = {
+                'ps4': 'PS4',
+                'playstation-4': 'PS4',
+                'ps5': 'PS5', 
+                'playstation-5': 'PS5',
+                'xbox-one': 'XBOX_ONE',
+                'xbox-series': 'XBOX_SERIES',
+                'switch': 'SWITCH',
+                'nintendo': 'SWITCH'
+            }
+            
+            for key, platform in platform_map.items():
+                if (key in class_str or key in alt_text or key in src) and platform in ALLOWED_PLATFORMS:
+                    platforms.append(platform)
+                    break
         
         # Убираем дубликаты
         platforms = list(set(platforms))
@@ -312,12 +318,12 @@ class IGNReleaseParser:
         if any(word in title.lower() for word in exclude_words):
             return False
         
-        # Проверяем что есть консольные платформы (не только PC)
+        # Проверяем что есть наши платформы
         platforms = game_data.get('platforms', [])
-        console_platforms = ['PS4', 'PS5', 'XBOX_ONE', 'XBOX_SERIES', 'SWITCH', 'SWITCH2']
-        has_console = any(platform in console_platforms for platform in platforms)
+        allowed_platforms = ['PS4', 'PS5', 'SWITCH', 'SWITCH2', 'XBOX_ONE', 'XBOX_SERIES']
+        has_our_platforms = any(platform in allowed_platforms for platform in platforms)
         
-        if not has_console:
+        if not has_our_platforms:
             return False
             
         return True
@@ -343,15 +349,24 @@ class IGNReleaseParser:
                     image_path = self._download_image(game_data['image_url'], game_data['title'])
                 
                 # Создаем новую игру
+                # Создаем новую игру
                 game = GameRelease(
                     title=game_data['title'][:200],
                     release_date=game_data['release_date'],
                     platforms=game_data.get('platforms', []),
-                    marketplaces=[],  # Пока пустые площадки
+                    # Все площадки по умолчанию
+                    marketplaces=['AVITO', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER'],
                     languages=['ENGLISH', 'RUSSIAN'],
-                    marketplace_platforms={},
+                    # Публикации по умолчанию - все платформы на всех площадках
+                    marketplace_platforms={
+                        'AVITO': game_data.get('platforms', []),
+                        'DIFMARK': game_data.get('platforms', []),
+                        'WILDBERRIES': game_data.get('platforms', []),
+                        'DIGISELLER': game_data.get('platforms', [])
+                    },
                     description=f"Автоматически добавлено из IGN. {game_data.get('url', '')}",
-                    is_published=False
+                    # По умолчанию опубликовано
+                    is_published=True
                 )
                 
                 # Сохраняем игру чтобы получить ID
