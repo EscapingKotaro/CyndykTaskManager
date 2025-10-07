@@ -111,22 +111,19 @@
                         <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
                             {% if game.is_published %}
                                 <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
-                                    onsubmit="event.preventDefault(); togglePublishStatus(this);">
+                                    onsubmit="event.preventDefault(); togglePublishStatus(this);" style="padding: 0; margin: 0;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
                                         {% if game.is_published %}👁️{% else %}🙈{% endif %}
                                     </button>
                                 </form>
-                                <button class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}" 
-                                        data-game-id="{{ game.id }}"
-                                        title="Публикация">{% if game.is_published %}👁️{% else %}🙈{% endif %}</button>
 
                                 <button class="btn btn-sm btn-primary view-game" 
                                         data-game-id="{{ game.id }}"
                                         title="Просмотр">✏️</button>
                             {% else %}
                                 <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
-                                    onsubmit="event.preventDefault(); togglePublishStatus(this);">
+                                    onsubmit="event.preventDefault(); togglePublishStatus(this);" style="padding: 0; margin: 0;">
                                     {% csrf_token %}
                                     <button type="submit" class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
                                         {% if game.is_published %}👁️{% else %}🙈{% endif %}
