@@ -15,15 +15,7 @@
             </div>
         {% endif %}
         
-        <!-- Переключатель публикации -->
-        <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
-              style="display: flex; flex-direction: column; gap: 1rem;"
-              onsubmit="event.preventDefault(); togglePublishStatus(this);">
-            {% csrf_token %}
-            <button type="submit" class="publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
-                {% if game.is_published %}✅ Опубликовано{% else %}❌ Скрыта{% endif %}
-            </button>
-        </form>
+        
         
         <!-- Баннер для скрытых игр -->
         {% if not game.is_published %}
