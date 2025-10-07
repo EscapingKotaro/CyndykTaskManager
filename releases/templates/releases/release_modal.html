@@ -84,9 +84,11 @@
             <thead>
                 <tr>
                     <th>Площадка</th>
-                    {% for platform in game.get_platforms_list %}
-                    <th style="text-align: center;">{{ platform }}</th>
+                    {% for platform in game.display_platforms_list %}
+                    <th style="text-align: center;"><img src="/media/{{ platform.icon }}" alt="{{ platform.name }}" class="lang-icon"></th>
                     {% endfor %}
+
+
                     <th style="text-align: center;">Статус</th>
                 </tr>
             </thead>
