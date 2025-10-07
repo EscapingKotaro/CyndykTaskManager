@@ -47,24 +47,27 @@ def toggle_marketplace(request, pk):
 @login_required
 def toggle_platform_publication(request, pk):
     """AJAX запрос для переключения публикации платформы"""
-    if request.method == 'POST':
-        game = get_object_or_404(GameRelease, pk=pk)
-        marketplace = request.POST.get('marketplace')
-        platform = request.POST.get('platform')
-        
-        if marketplace and platform:
-            # Используем реальный метод модели
-            is_published = game.toggle_platform_publication(marketplace, platform)
-            status = game.get_marketplace_status(marketplace)
+    if request.user.is_staff:
+        if request.method == 'POST':
+            game = get_object_or_404(GameRelease, pk=pk)
+            marketplace = request.POST.get('marketplace')
+            platform = request.POST.get('platform')
             
-            return JsonResponse({
-                'success': True,
-                'is_published': is_published,
-                'marketplace_status': status,
-                'marketplace_status_display': game.get_marketplace_status_display(status)
-            })
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
+            if marketplace and platform:
+                # Используем реальный метод модели
+                is_published = game.toggle_platform_publication(marketplace, platform)
+                status = game.get_marketplace_status(marketplace)
+                
+                return JsonResponse({
+                    'success': True,
+                    'is_published': is_published,
+                    'marketplace_status': status,
+                    'marketplace_status_display': game.get_marketplace_status_display(status)
+                })
+        
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    else:
+        return JsonResponse({'success': False, 'error': 'Your password is bad'})
 @login_required
 def release_modal(request, pk):
     """Детальная информация для модального окна"""

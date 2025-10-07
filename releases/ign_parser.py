@@ -318,7 +318,7 @@ class IGNReleaseParser:
                 ).first()
                 
                 if existing_game:
-                    print(f"⏩ Пропускаем существующую игру: {game_data['title']}")
+                    #print(f"⏩ Пропускаем существующую игру: {game_data['title']}")
                     continue
                 
                 # Скачиваем изображение
