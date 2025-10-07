@@ -110,9 +110,6 @@
                     <td>
                         <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
                             {% if game.is_published %}
-                                <button class="btn btn-sm btn-primary view-game" 
-                                        data-game-id="{{ game.id }}"
-                                        title="Отображение"></button>
                                 <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
                                     style="display: flex; flex-direction: column; gap: 1rem;"
                                     onsubmit="event.preventDefault(); togglePublishStatus(this);">
@@ -125,9 +122,14 @@
                                         data-game-id="{{ game.id }}"
                                         title="Просмотр">✏️</button>
                             {% else %}
-                                <button class="btn btn-sm btn-primary view-game" 
-                                        data-game-id="{{ game.id }}"
-                                        title="Просмотр (только просмотр)">👁️</button>
+                                <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
+                                    style="display: flex; flex-direction: column; gap: 1rem;"
+                                    onsubmit="event.preventDefault(); togglePublishStatus(this);">
+                                    {% csrf_token %}
+                                    <button type="submit" class="publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
+                                        {% if game.is_published %}👁️{% else %}🙈{% endif %}
+                                    </button>
+                                </form>
                                 <span class="btn btn-sm btn-secondary disabled"
                                       title="Редактирование недоступно для скрытых игр">✏️</span>
                             {% endif %}
@@ -517,13 +519,12 @@ function togglePublishStatus(form) {
     if (isCurrentlyPublished) {
         button.classList.remove('published');
         button.classList.add('not-published');
-        button.innerHTML = '❌ Не опубликовано';
+        button.innerHTML = '🙈';
     } else {
         button.classList.remove('not-published');
         button.classList.add('published');
-        button.innerHTML = '✅ Опубликовано';
+        button.innerHTML = '👁️';
     }
-    
     // Отправляем AJAX запрос
     fetch(form.action, {
         method: 'POST',
@@ -547,11 +548,11 @@ function togglePublishStatus(form) {
         if (isCurrentlyPublished) {
             button.classList.remove('not-published');
             button.classList.add('published');
-            button.innerHTML = '✅ Опубликовано';
+            button.innerHTML = '👁️';
         } else {
             button.classList.remove('published');
             button.classList.add('not-published');
-            button.innerHTML = '❌ Не опубликовано';
+            button.innerHTML = '🙈';
         }
         alert('Ошибка обновления статуса');
     });
