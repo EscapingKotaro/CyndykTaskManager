@@ -145,18 +145,22 @@ class GameRelease(models.Model):
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
         }
-        
+        #
+        all_marketplaces = [choice[0] for choice in self.MARKETPLACE_CHOICES]
+        #
         marketplaces = []
+        i=0
         for marketplace in ['AVITO', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER']:
             icon_path = MARKETPLACE_ICONS.get(marketplace)
             icon_url = f"{icon_path}" if icon_path else ""
             
             marketplaces.append({
-                'code': self.MARKETPLACE_CHOICES.get(marketplace),
+                'code': all_marketplaces[i][1],
                 'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),  # или просто marketplace
                 'is_selected': getattr(self, f'marketplace_{marketplace.lower()}', False),
                 'icon_url': icon_url
             })
+            i+=1
         return marketplaces
     def toggle_platform_publication(self, marketplace, platform):
         """Переключает публикацию платформы на площадке"""
