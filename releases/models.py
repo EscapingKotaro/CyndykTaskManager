@@ -137,6 +137,10 @@ class GameRelease(models.Model):
             'DIGISELLER': 'platform_icons/diga.png',
         }
         return icons.get(marketplace, '')
+#
+
+#
+
     def get_all_marketplaces_display(self):
         """Возвращает данные по всем площадкам с иконками"""
         MARKETPLACE_ICONS = {
@@ -147,6 +151,7 @@ class GameRelease(models.Model):
         }
         #
         all_marketplaces = [choice[0] for choice in self.MARKETPLACE_CHOICES]
+        selected_marketplaces = self.get_marketplaces_list()
         #
         marketplaces = []
         i=0
@@ -157,7 +162,7 @@ class GameRelease(models.Model):
             marketplaces.append({
                 'code': all_marketplaces[i][1],
                 'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),  # или просто marketplace
-                'is_selected': getattr(self, f'marketplace_{marketplace.lower()}', False),
+                'is_selected': marketplace in selected_marketplaces,
                 'icon_url': icon_url
             })
             i+=1
