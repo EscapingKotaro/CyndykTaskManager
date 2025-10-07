@@ -513,16 +513,21 @@ function toggleMarketplace(gameId, marketplace, element) {
 function togglePublishStatus(form) {
     const button = form.querySelector('button');
     const isCurrentlyPublished = button.classList.contains('published');
-    
+    const gameRow = form.closest('tr'); // Находим строку игры
+
     // Меняем статус сразу визуально
     if (isCurrentlyPublished) {
         button.classList.remove('published');
         button.classList.add('not-published');
         button.innerHTML = '🙈';
+
+        gameRow.classList.add('unpublished-row');
     } else {
         button.classList.remove('not-published');
         button.classList.add('published');
         button.innerHTML = '👁️';
+
+        gameRow.classList.remove('unpublished-row');
     }
     // Отправляем AJAX запрос
     fetch(form.action, {
