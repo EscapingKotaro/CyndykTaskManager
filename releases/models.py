@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinValueValidator
 from decimal import Decimal
+from django.conf import settings
 
 class GameRelease(models.Model):
     PLATFORM_CHOICES = [
