@@ -149,6 +149,7 @@ class GameRelease(models.Model):
             'XBOX_SERIES': 'platform_icons/xboxs.jpg',
         }
         arr=self.platforms if isinstance(self.platforms, list) else []
+        arr.sort()
         rz=[]
         for market in arr:
             rz.append({
