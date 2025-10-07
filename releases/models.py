@@ -124,6 +124,20 @@ class GameRelease(models.Model):
             'ENGLISH': 'platform_icons/en.jpg',
         }
         return icons.get(language, '')
+
+    def display_languages_list(self):
+        icons = {
+            'RUSSIAN': 'platform_icons/ru.jpg',
+            'ENGLISH': 'platform_icons/en.jpg',
+        }
+        arr=self.languages if isinstance(self.languages, list) else []
+        rz=[]
+        for lang in arr:
+            rz.append({
+                "code":lang,
+                "icon":icons.get(lang,''),
+            })
+        return rz
     
     def get_platform_icon(self, platform):
         """Возвращает иконку для платформы"""

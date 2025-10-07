@@ -97,8 +97,8 @@
                     </td>
                     <td>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 150px;">
-                            {% for lang in game.get_languages_list %}
-                            <span class="language-tag {% if not game.is_published %}unpublished{% endif %}"><img src="/media/{{ game.get_language_icon lang }}" alt="{{ lang }}" class="lang-icon"></span>
+                            {% for lang in game.display_languages_list %}
+                            <span class="language-tag {% if not game.is_published %}unpublished{% endif %}"><img src="/media/{{ lang.icon }}" alt="{{ lang.name }}" class="lang-icon"></span>
                             {% endfor %}
                         </div>
                     </td>
