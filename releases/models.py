@@ -130,12 +130,12 @@ class GameRelease(models.Model):
     def get_marketplace_icon(self, marketplace):
         """Возвращает иконку для площадки"""
         icons = {
-            'AVITO': '🛒',
-            'DIFMARK': '🏪',
-            'WILDBERRIES': '📦',
-            'DIGISELLER': '🎯',
+            'AVITO': 'platform_icons/avito.jpg',
+            'DIFMARK': 'platform_icons/avito.jpg',
+            'WILDBERRIES': 'platform_icons/avito.jpg',
+            'DIGISELLER': 'platform_icons/avito.jpg',
         }
-        return icons.get(marketplace, '🏪')
+        return icons.get(marketplace, '')
     def get_all_marketplaces_display(self):
         """Возвращает все площадки с отметкой какие выбраны"""
         all_marketplaces = [choice[0] for choice in self.MARKETPLACE_CHOICES]

@@ -79,19 +79,21 @@
                     </td>
                     <td>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 200px;">
-                            {% for marketplace_data in game.get_all_marketplaces_display %}
-                                {% if marketplace_data.is_selected %}
-                                    <span class="marketplace-tag active {% if not game.is_published %}unpublished{% endif %}" 
-                                          title="{{ marketplace_data.name }}: опубликовано">
-                                        {{ marketplace_data.icon }} {{ marketplace_data.name }}
-                                    </span>
-                                {% else %}
-                                    <span class="marketplace-tag inactive {% if not game.is_published %}unpublished{% endif %}" title="{{ marketplace_data.name }}: не выбрано">
-                                        {{ marketplace_data.icon }} {{ marketplace_data.name }}
-                                    </span>
-                                {% endif %}
-                            {% endfor %}
-                        </div>
+    {% for marketplace_data in game.get_all_marketplaces_display %}
+        {% if marketplace_data.is_selected %}
+            <span class="marketplace-tag active {% if not game.is_published %}unpublished{% endif %}" 
+                  title="{{ marketplace_data.name }}: опубликовано">
+                <img src="{{ MEDIA_URL }}{{ game.get_marketplace_icon }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
+                {{ marketplace_data.name }}
+            </span>
+        {% else %}
+            <span class="marketplace-tag inactive {% if not game.is_published %}unpublished{% endif %}" title="{{ marketplace_data.name }}: не выбрано">
+                <img src="{{ MEDIA_URL }}{{ game.get_marketplace_icon }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
+                {{ marketplace_data.name }}
+            </span>
+        {% endif %}
+    {% endfor %}
+</div>
                     </td>
                     <td>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 150px;">
@@ -362,6 +364,41 @@
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
+}
+.marketplace-icon {
+    width: 16px !important;
+    height: 16px !important;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 4px;
+    border-radius: 2px;
+}
+
+.marketplace-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.marketplace-tag.active {
+    background: #e7f3ff;
+    border: 1px solid #b3d9ff;
+    color: #0066cc;
+}
+
+.marketplace-tag.inactive {
+    background: #f5f5f5;
+    border: 1px solid #ddd;
+    color: #666;
+    opacity: 0.7;
+}
+
+.marketplace-tag.unpublished {
+    opacity: 0.5;
+    background: #e9ecef;
 }
 </style>
 
