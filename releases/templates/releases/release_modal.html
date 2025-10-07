@@ -201,9 +201,9 @@
         <div style="margin-top: 1.5rem; {% if not game.is_published %}opacity: 0.7;{% endif %}">
             <h4>🌐 Локализации</h4>
             <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                {% for lang in game.get_languages_list %}
-                <span class="language-tag">{{ lang }}</span>
-                {% endfor %}
+                {% for lang in game.display_languages_list %}
+                            <span class="{% if not game.is_published %}unpublished{% endif %}"><img src="/media/{{ lang.icon }}" alt="{{ lang.name }}" class="lang-icon"></span>
+                            {% endfor %}
             </div>
         </div>
     </div>
