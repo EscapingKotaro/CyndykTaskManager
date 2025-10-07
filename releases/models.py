@@ -137,19 +137,25 @@ class GameRelease(models.Model):
         }
         return icons.get(marketplace, '')
     def get_all_marketplaces_display(self):
-        """Возвращает все площадки с отметкой какие выбраны"""
-        all_marketplaces = [choice[0] for choice in self.MARKETPLACE_CHOICES]
-        selected_marketplaces = self.get_marketplaces_list()
+        """Возвращает данные по всем площадкам с иконками"""
+        MARKETPLACE_ICONS = {
+            'AVITO': 'platform_icons/avito.jpg',
+            'DIFMARK': 'platform_icons/avito.jpg', 
+            'WILDBERRIES': 'platform_icons/avito.jpg',
+            'DIGISELLER': 'platform_icons/avito.jpg',
+        }
         
-        result = []
-        for marketplace in all_marketplaces:
-            result.append({
-                'code': marketplace,
-                'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),
-                'is_selected': marketplace in selected_marketplaces,
-                'icon': self.get_marketplace_icon(marketplace)
+        marketplaces = []
+        for marketplace in ['AVITO', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER']:
+            icon_path = MARKETPLACE_ICONS.get(marketplace)
+            icon_url = f"{settings.MEDIA_URL}{icon_path}" if icon_path else ""
+            
+            marketplaces.append({
+                'name': self.get_marketplace_display(marketplace),  # или просто marketplace
+                'is_selected': getattr(self, f'marketplace_{marketplace.lower()}', False),
+                'icon_url': icon_url
             })
-        return result
+        return marketplaces
     def toggle_platform_publication(self, marketplace, platform):
         """Переключает публикацию платформы на площадке"""
         publications = self.get_marketplace_platforms_dict()
