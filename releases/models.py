@@ -152,6 +152,7 @@ class GameRelease(models.Model):
             icon_url = f"{icon_path}" if icon_path else ""
             
             marketplaces.append({
+                'code': marketplace,
                 'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),  # или просто marketplace
                 'is_selected': getattr(self, f'marketplace_{marketplace.lower()}', False),
                 'icon_url': icon_url
