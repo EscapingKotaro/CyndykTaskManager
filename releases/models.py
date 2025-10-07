@@ -149,7 +149,7 @@ class GameRelease(models.Model):
         marketplaces = []
         for marketplace in ['AVITO', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER']:
             icon_path = MARKETPLACE_ICONS.get(marketplace)
-            icon_url = f"{icon_path}" if icon_path else ""
+            icon_url = f"{settings.MEDIA_URL}{icon_path}" if icon_path else ""
             
             marketplaces.append({
                 'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),  # или просто marketplace
