@@ -15,6 +15,7 @@ class GameRelease(models.Model):
     
     MARKETPLACE_CHOICES = [
         ('AVITO', 'Avito'),
+        ('TELEGRAM', 'Telegram'),
         ('DIFMARK', 'Difmark'),
         ('WILDBERRIES', 'Wildberries'),
         ('DIGISELLER', 'Digiseller'),
@@ -132,6 +133,7 @@ class GameRelease(models.Model):
         """Возвращает иконку для площадки"""
         icons = {
             'AVITO': 'platform_icons/avito.jpg',
+            'TELEGRAM': 'platform_icons/difmark.png', 
             'DIFMARK': 'platform_icons/difmark.png', 
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
@@ -145,7 +147,8 @@ class GameRelease(models.Model):
         """Возвращает данные по всем площадкам с иконками"""
         MARKETPLACE_ICONS = {
             'AVITO': 'platform_icons/avito.jpg',
-            'DIFMARK': 'platform_icons/difmark.png', 
+            'TELEGRAM': 'platform_icons/difmark.png', 
+            'DIFMARK': 'platform_icons/difmark2.png', 
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
         }
@@ -155,12 +158,12 @@ class GameRelease(models.Model):
         #
         marketplaces = []
         i=0
-        for marketplace in ['AVITO', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER']:
+        for marketplace in ['AVITO', 'TELEGRAM', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER']:
             icon_path = MARKETPLACE_ICONS.get(marketplace)
             icon_url = f"{icon_path}" if icon_path else ""
             
             marketplaces.append({
-                'code': all_marketplaces[i][1],
+                'code': all_marketplaces[i],
                 'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),  # или просто marketplace
                 'is_selected': marketplace in selected_marketplaces,
                 'icon_url': icon_url
