@@ -83,12 +83,12 @@
         {% if marketplace_data.is_selected %}
             <span class="marketplace-tag active {% if not game.is_published %}unpublished{% endif %}" 
                   title="{{ marketplace_data.name }}: опубликовано">
-                <img src="/media/{{ game.get_marketplace_icon }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
+                <img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
                 {{ marketplace_data.name }}
             </span>
         {% else %}
             <span class="marketplace-tag inactive {% if not game.is_published %}unpublished{% endif %}" title="{{ marketplace_data.name }}: не выбрано">
-                <img src="/media/{{ game.get_marketplace_icon }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
+                <img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
                 {{ marketplace_data.name }}
             </span>
         {% endif %}
