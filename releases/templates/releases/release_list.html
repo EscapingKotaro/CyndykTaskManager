@@ -9,7 +9,7 @@
             <h1>🎮 Календарь релизов</h1>
             <p style="color: var(--secondary); margin: 0;">Управление релизами игр и публикациями</p>
         </div>
-        <a href="{% url 'releases:release_create' %}" class="btn btn-primary">➕ Добавить релиз</a>
+        
     </div>
 </div>
 
@@ -112,9 +112,18 @@
                             {% if game.is_published %}
                                 <button class="btn btn-sm btn-primary view-game" 
                                         data-game-id="{{ game.id }}"
-                                        title="Просмотр">👁️</button>
-                                <a href="{% url 'releases:release_update' game.id %}" class="btn btn-sm btn-warning"
-                                   title="Редактировать">✏️</a>
+                                        title="Отображение"></button>
+                                <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
+                                    style="display: flex; flex-direction: column; gap: 1rem;"
+                                    onsubmit="event.preventDefault(); togglePublishStatus(this);">
+                                    {% csrf_token %}
+                                    <button type="submit" class="publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
+                                        {% if game.is_published %}👁️{% else %}🙈{% endif %}
+                                    </button>
+                                </form>
+                                <button class="btn btn-sm btn-primary view-game" 
+                                        data-game-id="{{ game.id }}"
+                                        title="Просмотр">✏️</button>
                             {% else %}
                                 <button class="btn btn-sm btn-primary view-game" 
                                         data-game-id="{{ game.id }}"
@@ -444,56 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<script>
-// Функция для переключения статуса публикации без перезагрузки
-function togglePublishStatus(form) {
-    const button = form.querySelector('button');
-    const isCurrentlyPublished = button.classList.contains('published');
-    
-    // Меняем статус сразу визуально
-    if (isCurrentlyPublished) {
-        button.classList.remove('published');
-        button.classList.add('not-published');
-        button.innerHTML = '❌ Не опубликовано';
-    } else {
-        button.classList.remove('not-published');
-        button.classList.add('published');
-        button.innerHTML = '✅ Опубликовано';
-    }
-    
-    // Отправляем AJAX запрос
-    fetch(form.action, {
-        method: 'POST',
-        body: new FormData(form),
-        headers: {
-            'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value,
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network error');
-        }
-        return response;
-    })
-    .then(() => {
-        console.log('Статус публикации обновлен');
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        // Возвращаем предыдущее состояние при ошибке
-        if (isCurrentlyPublished) {
-            button.classList.remove('not-published');
-            button.classList.add('published');
-            button.innerHTML = '✅ Опубликовано';
-        } else {
-            button.classList.remove('published');
-            button.classList.add('not-published');
-            button.innerHTML = '❌ Не опубликовано';
-        }
-        alert('Ошибка обновления статуса');
-    });
-}
-</script>
+
 
 <script>
 // Функция для переключения площадки
