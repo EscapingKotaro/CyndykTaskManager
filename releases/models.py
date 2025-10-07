@@ -117,6 +117,14 @@ class GameRelease(models.Model):
         """Возвращает все возможные площадки"""
         return [choice[0] for choice in self.MARKETPLACE_CHOICES]
     
+    def get_language_icon(self, language):
+        """Возвращает иконку для платформы"""
+        icons = {
+            'RUSSIAN': 'platform_icons/ru.jpg',
+            'ENGLISH': 'platform_icons/en.jpg',
+        }
+        return icons.get(language, '')
+    
     def get_platform_icon(self, platform):
         """Возвращает иконку для платформы"""
         icons = {
