@@ -69,7 +69,7 @@
                 <div class="marketplace-card {% if marketplace_data.is_selected %}selected{% else %}not-selected{% endif %} {% if not game.is_published %}disabled-card{% endif %}"
                      {% if game.is_published %}onclick="toggleMarketplace({{ game.id }}, '{{ marketplace_data.code }}', this)"{% endif %}>
                     <div style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem;">
-                        <div style="font-size: 1.5rem;">{{ marketplace_data.icon }}</div>
+                        <div style="font-size: 1.5rem;"><img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon"></div>
                         <div>
                             <div style="font-weight: 600; font-size: 0.9rem;">{{ marketplace_data.name }}</div>
                             <div style="font-size: 0.8rem; color: #6b7280; margin-top: 0.2rem;">
@@ -103,7 +103,7 @@
                 <tr class="{% if not marketplace_data.is_selected %}inactive-row{% endif %} {% if not game.is_published %}disabled-row{% endif %}">
                     <td>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span>{{ marketplace_data.icon }}</span>
+                            <span><img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon"></span>
                             <span>{{ marketplace_data.name }}</span>
                         </div>
                     </td>
