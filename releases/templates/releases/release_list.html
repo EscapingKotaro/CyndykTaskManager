@@ -111,10 +111,9 @@
                         <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
                             {% if game.is_published %}
                                 <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
-                                    style="display: flex; flex-direction: column; gap: 1rem;"
                                     onsubmit="event.preventDefault(); togglePublishStatus(this);">
                                     {% csrf_token %}
-                                    <button type="submit" class="publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
+                                    <button type="submit" class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
                                         {% if game.is_published %}👁️{% else %}🙈{% endif %}
                                     </button>
                                 </form>
@@ -123,10 +122,9 @@
                                         title="Просмотр">✏️</button>
                             {% else %}
                                 <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
-                                    style="display: flex; flex-direction: column; gap: 1rem;"
                                     onsubmit="event.preventDefault(); togglePublishStatus(this);">
                                     {% csrf_token %}
-                                    <button type="submit" class="publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
+                                    <button type="submit" class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
                                         {% if game.is_published %}👁️{% else %}🙈{% endif %}
                                     </button>
                                 </form>
