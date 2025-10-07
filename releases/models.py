@@ -132,24 +132,24 @@ class GameRelease(models.Model):
         """Возвращает иконку для площадки"""
         icons = {
             'AVITO': 'platform_icons/avito.jpg',
-            'DIFMARK': 'platform_icons/avito.jpg',
-            'WILDBERRIES': 'platform_icons/avito.jpg',
-            'DIGISELLER': 'platform_icons/avito.jpg',
+            'DIFMARK': 'platform_icons/difmark.png', 
+            'WILDBERRIES': 'platform_icons/wb.jpg',
+            'DIGISELLER': 'platform_icons/diga.png',
         }
         return icons.get(marketplace, '')
     def get_all_marketplaces_display(self):
         """Возвращает данные по всем площадкам с иконками"""
         MARKETPLACE_ICONS = {
             'AVITO': 'platform_icons/avito.jpg',
-            'DIFMARK': 'platform_icons/avito.jpg', 
-            'WILDBERRIES': 'platform_icons/avito.jpg',
-            'DIGISELLER': 'platform_icons/avito.jpg',
+            'DIFMARK': 'platform_icons/difmark.png', 
+            'WILDBERRIES': 'platform_icons/wb.jpg',
+            'DIGISELLER': 'platform_icons/diga.png',
         }
         
         marketplaces = []
         for marketplace in ['AVITO', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER']:
             icon_path = MARKETPLACE_ICONS.get(marketplace)
-            icon_url = f"{icon_path}" if icon_path else "xui"
+            icon_url = f"{icon_path}" if icon_path else ""
             
             marketplaces.append({
                 'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),  # или просто marketplace
