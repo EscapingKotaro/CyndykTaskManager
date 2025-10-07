@@ -141,7 +141,7 @@ class GameRelease(models.Model):
 
     def display_platforms_list(self):
         icons = {
-            'PS4': 'platform_icons/ps4.jpg',
+            'PS4': 'platform_icons/ps4.png',
             'PS5': 'platform_icons/ps5.png',
             'SWITCH': 'platform_icons/ns.png',
             'SWITCH2': 'platform_icons/ns2.png',
