@@ -98,7 +98,7 @@
                     <td>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 150px;">
                             {% for lang in game.get_languages_list %}
-                            <span class="language-tag {% if not game.is_published %}unpublished{% endif %}">{{ lang }}</span>
+                            <span class="language-tag {% if not game.is_published %}unpublished{% endif %}"><img src="/media/{{ get_language_icon lang }}" alt="{{ lang }}" class="lang-icon"></span>
                             {% endfor %}
                         </div>
                     </td>
@@ -378,6 +378,14 @@
 .marketplace-icon {
     width: 16px !important;
     height: 16px !important;
+    object-fit: contain;
+    vertical-align: middle;
+    margin-right: 4px;
+    border-radius: 2px;
+}
+.lang-icon {
+    width: 48px !important;
+    height: 48px !important;
     object-fit: contain;
     vertical-align: middle;
     margin-right: 4px;
