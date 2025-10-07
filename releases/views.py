@@ -162,7 +162,7 @@ def release_update(request, pk):
 def toggle_publish(request, pk):
     """Переключение статуса публикации"""
     
-    if request.user.is_staff:
+    if request.user.is_superuser:
         game = get_object_or_404(GameRelease, pk=pk)
         game.is_published = not game.is_published
         game.save()
