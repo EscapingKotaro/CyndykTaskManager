@@ -70,9 +70,9 @@
                     </td>
                     <td>
                         <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 200px;">
-                            {% for platform in game.get_platforms_list %}
-                            <span class="platform-tag {% if not game.is_published %}unpublished{% endif %}" title="{{ platform }}">
-                                {{ game.get_platform_icon }} {{ platform }}
+                            {% for platform in game.display_platforms_list %}
+                            <span class="platform-tag {% if not game.is_published %}unpublished{% endif %}" title="{{ platform.name }}">
+                                <img src="/media/{{ platform.icon }}" alt="{{ platform.name }}" class="lang-icon">
                             </span>
                             {% endfor %}
                         </div>

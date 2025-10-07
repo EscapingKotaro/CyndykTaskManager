@@ -138,6 +138,24 @@ class GameRelease(models.Model):
                 "icon":icons.get(lang,''),
             })
         return rz
+
+    def display_platforms_list(self):
+        icons = {
+            'PS4': 'platform_icons/ps4.jpg',
+            'PS5': 'platform_icons/ps5.jpg',
+            'SWITCH': 'platform_icons/ns.jpg',
+            'SWITCH2': 'platform_icons/ns2.jpg',
+            'XBOX_ONE': 'platform_icons/xbox.jpg',
+            'XBOX_SERIES': 'platform_icons/xboxs.jpg',
+        }
+        arr=self.platforms if isinstance(self.platforms, list) else []
+        rz=[]
+        for market in arr:
+            rz.append({
+                "code":market,
+                "icon":icons.get(market,''),
+            })
+        return rz
     
     def get_platform_icon(self, platform):
         """Возвращает иконку для платформы"""
