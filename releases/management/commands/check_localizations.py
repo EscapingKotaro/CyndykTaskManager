@@ -134,7 +134,7 @@ class Command(BaseCommand):
             
             if new_loco is not None:
 
-                if current_languages!=[]:
+                if new_loco!=[]:
                     game.languages = new_loco
                     game.save()
                     updated_count += 1
