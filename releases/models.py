@@ -24,6 +24,7 @@ class GameRelease(models.Model):
     LANGUAGE_CHOICES = [
         ('RUSSIAN', 'Русский'),
         ('ENGLISH', 'Английский'),
+        ('UNKNOW', 'Неизвестно'),
     ]
     
     # Основная информация
@@ -122,6 +123,7 @@ class GameRelease(models.Model):
         icons = {
             'RUSSIAN': 'platform_icons/ru.jpg',
             'ENGLISH': 'platform_icons/en.jpg',
+            'UNKNOW': 'platform_icons/unknow.jpg',
         }
         return icons.get(language, '')
 
@@ -129,6 +131,7 @@ class GameRelease(models.Model):
         icons = {
             'RUSSIAN': 'platform_icons/ru.jpg',
             'ENGLISH': 'platform_icons/en.jpg',
+            'UNKNOW': 'platform_icons/unknow.jpg',
         }
         arr=self.languages if isinstance(self.languages, list) else []
         rz=[]
