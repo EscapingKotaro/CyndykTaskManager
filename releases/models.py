@@ -182,7 +182,7 @@ class GameRelease(models.Model):
             'DIFMARK': 'platform_icons/difmark.png', 
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
-            'FUNPAY': 'platform_icons/funpay.png',
+            'FUNPAY': 'platform_icons/funpay.jpg',
         }
         return icons.get(marketplace, '')
 #
@@ -197,7 +197,7 @@ class GameRelease(models.Model):
             'DIFMARK': 'platform_icons/difmark2.png', 
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
-            'FUNPAY': 'platform_icons/funpay.png',
+            'FUNPAY': 'platform_icons/funpay.jpg',
         }
         #
         all_marketplaces = [choice[0] for choice in self.MARKETPLACE_CHOICES]
