@@ -332,7 +332,7 @@ class IGNReleaseParser:
                     release_date=game_data['release_date'],
                     platforms=game_data.get('platforms', []),
                     # Все площадки по умолчанию
-                    marketplaces=['AVITO', 'DIFMARK','TELEGRAM', 'WILDBERRIES', 'DIGISELLER'],
+                    marketplaces=['AVITO', 'DIFMARK','TELEGRAM', 'WILDBERRIES', 'DIGISELLER','FUNPAY'],
                     languages=['UNKNOW'],
                     marketplace_platforms={},  # Пустой словарь вместо публикаций всех платформ
                     description=f"Автоматически добавлено из IGN. {game_data.get('url', '')}",
