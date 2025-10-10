@@ -124,7 +124,7 @@ class GameRelease(models.Model):
         icons = {
             'RUSSIAN': 'platform_icons/ru.jpg',
             'ENGLISH': 'platform_icons/en.jpg',
-            'UNKNOW': 'platform_icons/unknow.jpg',
+            'UNKNOW': 'platform_icons/unknow.png',
         }
         return icons.get(language, '')
 
@@ -132,7 +132,7 @@ class GameRelease(models.Model):
         icons = {
             'RUSSIAN': 'platform_icons/ru.jpg',
             'ENGLISH': 'platform_icons/en.jpg',
-            'UNKNOW': 'platform_icons/unknow.jpg',
+            'UNKNOW': 'platform_icons/unknow.png',
         }
         arr=self.languages if isinstance(self.languages, list) else []
         rz=[]
@@ -150,7 +150,7 @@ class GameRelease(models.Model):
             'SWITCH': 'platform_icons/ns.png',
             'SWITCH2': 'platform_icons/ns2.png',
             'XBOX_ONE': 'platform_icons/xbox.png',
-            'XBOX_SERIES': 'platform_icons/xboxs.jpg',
+            'XBOX_SERIES': 'platform_icons/xboxs.png',
         }
         arr=self.platforms if isinstance(self.platforms, list) else []
         arr.sort()
