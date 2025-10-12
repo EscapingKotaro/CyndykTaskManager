@@ -49,15 +49,24 @@ class IGNReleaseParser:
         chrome_options.add_argument("--window-size=1920,1080")
         chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         # Явно указываем путь к Chrome
+        
+        chrome_options.add_argument("--disable-features=VizDisplayCompositor")
+        chrome_options.add_argument("--disable-background-timer-throttling")
+        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
+        chrome_options.add_argument("--disable-renderer-backgrounding")
+        chrome_options.add_argument("--disable-ipc-flooding-protection")
+
+        
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-plugins")
+        chrome_options.add_argument("--disable-translate")
+        chrome_options.add_argument("--disable-default-apps")
 
         #
         chrome_options.add_argument("--disable-extensions")
         chrome_options.add_argument("--disable-plugins")
         
         chrome_options.binary_location = "/usr/bin/google-chrome"
-        chrome_options.add_argument("--disable-background-timer-throttling")
-        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
-        chrome_options.add_argument("--disable-renderer-backgrounding")
         # Явно указываем путь к ChromeDriver
         service = webdriver.ChromeService(executable_path="/usr/local/bin/chromedriver")
         
