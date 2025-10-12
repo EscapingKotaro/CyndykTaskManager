@@ -12,9 +12,6 @@ from django.core.files import File
 from tempfile import NamedTemporaryFile
 from .models import GameRelease
 
-from xvfbwrapper import Xvfb
-vdisplay = Xvfb()
-vdisplay.start()
 
 class IGNReleaseParser:
     """
@@ -70,7 +67,7 @@ class IGNReleaseParser:
         # Явно указываем путь к ChromeDriver
         service = webdriver.ChromeService(executable_path="/usr/local/bin/chromedriver")
         
-        self.driver = webdriver.Chrome(options=chrome_options)
+        self.driver = webdriver.Chrome(service=service, options=chrome_options)
     
     def parse_releases(self):
         """
