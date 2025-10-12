@@ -12,6 +12,10 @@ from django.core.files import File
 from tempfile import NamedTemporaryFile
 from .models import GameRelease
 
+from xvfbwrapper import Xvfb
+vdisplay = Xvfb()
+vdisplay.start()
+
 class IGNReleaseParser:
     """
     Парсер релизов игр с IGN.com - только ближайшие 2 недели
