@@ -17,7 +17,7 @@ class IGNReleaseParser:
     Парсер релизов игр с IGN.com - только ближайшие 2 недели
     """
     
-    BASE_URL = "https://www.ign.com/upcoming/games"
+    
     
     def __init__(self):
         self.setup_driver()
@@ -33,6 +33,7 @@ class IGNReleaseParser:
         # Рассчитываем диапазон дат (ближайшие 2 недели)
         self.today = timezone.now().date()
         self.max_date = self.today + timedelta(days=14)
+        self.BASE_URL = "https://www.ign.com/upcoming/games"
     
     def setup_driver(self):
         """Настраивает Chrome driver"""
