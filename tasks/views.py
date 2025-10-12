@@ -299,8 +299,8 @@ def register_with_invitation(request, token):
                 invitation.save()
                 
                 # Автоматически логиним пользователя
-                login(request, user)
-                messages.success(request, 'Регистрация завершена! Добро пожаловать!')
+               # login(request, user)
+              # messages.success(request, 'Регистрация завершена! Добро пожаловать!')
                 return redirect('dashboard')
         else:
             form = UserRegistrationForm()
