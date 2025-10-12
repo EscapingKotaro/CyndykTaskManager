@@ -44,8 +44,15 @@ class IGNReleaseParser:
         chrome_options.add_argument("--window-size=1920,1080")
         chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
         # Явно указываем путь к Chrome
-        chrome_options.binary_location = "/usr/bin/google-chrome"
+
+        #
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-plugins")
         
+        chrome_options.binary_location = "/usr/bin/google-chrome"
+        chrome_options.add_argument("--disable-background-timer-throttling")
+        chrome_options.add_argument("--disable-backgrounding-occluded-windows")
+        chrome_options.add_argument("--disable-renderer-backgrounding")
         # Явно указываем путь к ChromeDriver
         service = webdriver.ChromeService(executable_path="/usr/local/bin/chromedriver")
         
@@ -59,12 +66,40 @@ class IGNReleaseParser:
         print(f"📅 Ищем игры с {self.today} по {self.max_date}")
         
         try:
-            # Загружаем страницу
-            self.driver.get(self.BASE_URL)
-            self.stats['total_pages_loaded'] += 1
+            # Устанавливаем таймауты для драйвера
+            self.driver.set_page_load_timeout(60)
+            self.driver.implicitly_wait(10)
+            
+            print("🌐 Загружаем страницу IGN...")
+            
+            # Загружаем страницу с повторными попытками
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    self.driver.get(self.BASE_URL)
+                    self.stats['total_pages_loaded'] += 1
+                    print(f"✅ Страница загружена (попытка {attempt + 1})")
+                    break
+                except Exception as e:
+                    print(f"⚠️ Ошибка загрузки страницы (попытка {attempt + 1}): {e}")
+                    if attempt == max_retries - 1:
+                        raise e
+                    time.sleep(5)
             
             # Ждем загрузки контента
-            time.sleep(5)
+            print("⏳ Ждем загрузки контента...")
+            time.sleep(10)
+            
+            # Проверим что страница загрузилась
+            page_title = self.driver.title
+            print(f"📄 Заголовок страницы: {page_title}")
+            
+            # Сохраним скриншот для отладки
+            try:
+                self.driver.save_screenshot("/tmp/ign_page.png")
+                print("📸 Скриншот сохранен: /tmp/ign_page.png")
+            except:
+                pass
             
             # Парсим игры
             games_data = self._parse_games_from_page()
