@@ -33,7 +33,7 @@ class IGNReleaseParser:
         }
         # Рассчитываем диапазон дат (ближайшие 2 недели)
         self.today = timezone.now().date()
-        self.max_date = self.today + timedelta(days=14)
+        self.max_date = self.today + timedelta(days=18)
         self.BASE_URL = "https://www.ign.com/upcoming/games"
     
     def setup_driver(self):
@@ -159,7 +159,7 @@ class IGNReleaseParser:
                             print(f"    ⏩ Пропускаем (неподходящие платформы): {game_data['title']} - {game_data.get('platforms', [])}")
                             self.stats['invalid_platform_skipped'] += 1
                     else:
-                        print(f"    ⏩ Пропускаем (дата вне диапазона): {game_data['title']} - {game_data['release_date']}")
+                        #print(f"    ⏩ Пропускаем (дата вне диапазона): {game_data['title']} - {game_data['release_date']}")
                         self.stats['too_far_skipped'] += 1
                         
                 except Exception as e:
