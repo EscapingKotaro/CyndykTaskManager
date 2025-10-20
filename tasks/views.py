@@ -346,7 +346,7 @@ def custom_logout(request):
 # Главная страница - разная логика для админа и сотрудника
 @login_required
 def dashboard(request):
-    if request.user.role in ['boss', 'manager']:
+    if request.user.role in ['boss']:
         subordinates = CustomUser.objects.filter(manager=request.user)
         tasks = Task.objects.filter(created_by=request.user)
         
