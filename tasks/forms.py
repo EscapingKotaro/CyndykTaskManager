@@ -8,7 +8,7 @@ import re
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'assigned_to', 'priority', 'due_date']
+        fields = ['title', 'description', 'assigned_to', 'due_date']
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
