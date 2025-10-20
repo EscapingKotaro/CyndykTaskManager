@@ -125,33 +125,103 @@ class UserEditForm(forms.ModelForm):
         return user
 # forms.py
 class TaskForm(forms.ModelForm):
+    due_date = forms.DateField(
+        label='📅 Дата выполнения',
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'form-control',
+            'placeholder': 'Выберите дату'
+        })
+    )
+    
+    payment_amount = forms.DecimalField(
+        label='💰 Сумма к оплате (руб.)',
+        max_digits=10,
+        decimal_places=2,
+        initial=0,
+        widget=forms.NumberInput(attrs={
+            'class': 'form-control',
+            'placeholder': '0.00',
+            'step': '0.01',
+            'min': '0'
+        })
+    )
+    
+    tags = forms.CharField(
+        label='🏷️ Ярлыки задачи',
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'срочно, важное, дизайн...'
+        }),
+        help_text='Укажите через запятую'
+    )
+
     class Meta:
         model = Task
-        fields = ['title', 'description', 'controlled_by', 'assigned_to', 'due_date']
+        fields = ['title', 'description', 'assigned_to', 'due_date', 'payment_amount', 'tags', 'controlled_by']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Введите название задачи'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Подробное описание задачи...'
+            }),
+            'assigned_to': forms.Select(attrs={'class': 'form-control'}),
+            'controlled_by': forms.Select(attrs={'class': 'form-control'}),
+        }
     
     def __init__(self, *args, **kwargs):
         self.request = kwargs.pop('request', None)
         super().__init__(*args, **kwargs)
         
         if self.request and self.request.user.is_authenticated:
-            # Фильтруем пользователей по правам
             user = self.request.user
+            
+            # Фильтруем исполнителей (только не staff)
             if user.role == 'boss':
-                # Босс видит всех
-                users = CustomUser.objects.filter(is_active=True)
+                users = CustomUser.objects.filter(is_staff=False, is_active=True)
             elif user.role == 'manager':
-                # Менеджер видит только свою команду
-                users = user.get_team_users().filter(is_active=True)
+                users = user.get_team_users().filter(is_staff=False, is_active=True)
             else:
-                # Техник видит только себя
-                users = CustomUser.objects.filter(id=user.id)
+                users = CustomUser.objects.filter(id=user.id, is_staff=False, is_active=True)
             
             self.fields['assigned_to'].queryset = users
 
+            # Фильтруем контролеров (только boss и manager)
             self.fields['controlled_by'].queryset = user.get_team_users().filter(
                 is_active=True, 
                 role__in=['boss', 'manager']
             )
+            
+            # Если пользователь не boss/manager - устанавливаем контролера по умолчанию
+            if user.role not in ['boss', 'manager']:
+                boss = user.manager if user.manager else user.get_team_users().filter(role='boss').first()
+                if boss:
+                    self.fields['controlled_by'].initial = boss
+            
+            # Если пользователь boss/manager - может оставить поле пустым
+            if user.role in ['boss', 'manager']:
+                self.fields['controlled_by'].required = False
+                self.fields['controlled_by'].empty_label = "Не назначен"
+
+    def clean_tags(self):
+        tags = self.cleaned_data.get('tags', '').strip()
+        if tags:
+            tags_list = [tag.strip() for tag in tags.split(',') if tag.strip()]
+            if len(tags_list) > 10:
+                raise forms.ValidationError('Не более 10 тегов')
+            return ', '.join(tags_list)
+        return tags
+
+    def clean_payment_amount(self):
+        payment_amount = self.cleaned_data.get('payment_amount')
+        if payment_amount < 0:
+            raise forms.ValidationError('Сумма не может быть отрицательной')
+        return payment_amount
             
 
 class UserForm(forms.ModelForm):
