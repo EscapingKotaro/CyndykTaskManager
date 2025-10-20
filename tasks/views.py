@@ -216,7 +216,10 @@ def employee_list(request):
     if request.user.role not in ['boss', 'manager']:
         return redirect('dashboard')
     
-    subordinates = CustomUser.objects.filter(manager=request.user)
+    if request.user.role=='boss':
+        subordinates = CustomUser.objects.filter(manager=request.user)
+    else:
+        subordinates = CustomUser.objects.filter(manager=request.user.manager)
     search_query = request.GET.get('search', '')
     
     if search_query:
