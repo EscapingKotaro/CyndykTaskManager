@@ -98,7 +98,7 @@
                             <a href="{% url 'edit_task' task.id %}" class="btn btn-sm btn-warning"
                                title="Редактировать">✏️</a>
 
-                            {% if task.status == 'proposed' and user.role in ['boss','manager'] %}
+                            {% if task.status == 'proposed' and user.role != 'technician' %}
                             <a href="{% url 'approve_task' task.id %}" class="btn btn-sm btn-success">
                                 ✅ К исполнению
                             </a>

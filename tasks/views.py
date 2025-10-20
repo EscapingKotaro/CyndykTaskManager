@@ -433,7 +433,7 @@ def create_task(request):
             else:
                 messages.success(request, '✅ Задача создана!')
                 
-            return redirect('task_list')
+            return redirect('dashboard')
     else:
         form = TaskForm(request=request)
     
@@ -449,7 +449,7 @@ def approve_task(request, task_id):
             request.user.role != 'boss' and
             request.user != task.assigned_to.manager):
             messages.error(request, 'У вас нет прав подтверждать эту задачу')
-            return redirect('task_list')
+            return redirect('dashboard')
         
         if task.status == 'proposed':
             task.status = 'created'
@@ -461,7 +461,7 @@ def approve_task(request, task_id):
     except Task.DoesNotExist:
         messages.error(request, 'Задача не найдена')
     
-    return redirect('task_list')
+    return redirect('dashboard')
 
 @login_required
 def start_task(request, task_id):
