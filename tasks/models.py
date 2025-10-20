@@ -3,6 +3,12 @@ from django.db import models
 from django.utils import timezone
 
 class CustomUser(AbstractUser):
+    ROLE_CHOICES = [
+        ('boss', 'Босс'),
+        ('manager', 'Менеджер'), 
+        ('technician', 'Техник'),
+    ]
+
     manager = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True, 
                                limit_choices_to={'is_staff': True}, related_name='subordinates')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, verbose_name='Баланс')
@@ -13,7 +19,15 @@ class CustomUser(AbstractUser):
     # Убираем фамилию из обязательных
     first_name = models.CharField(max_length=30, blank=True, verbose_name='Имя')
     last_name = models.CharField(max_length=150, blank=True, verbose_name='Фамилия')  # Делаем необязательной
-    
+    role = models.CharField(
+        max_length=20, 
+        choices=ROLE_CHOICES, 
+        default='technician',
+        verbose_name='Роль',
+        blank=True,
+        null=True
+    )
+
     def get_display_name(self):
         return self.first_name or self.username
     
@@ -26,6 +40,14 @@ class CustomUser(AbstractUser):
         if self.avatar and hasattr(self.avatar, 'url'):
             return self.avatar.url
         return None
+    def is_boss(self):
+        return self.role == 'boss'
+    
+    def is_manager(self):
+        return self.role == 'manager'
+    
+    def is_technician(self):
+        return self.role == 'technician' or not self.role
 class Task(models.Model):
     STATUS_CHOICES = [
         ('created', 'Создана'),
