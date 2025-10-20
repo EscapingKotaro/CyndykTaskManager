@@ -199,7 +199,7 @@ class TaskForm(forms.ModelForm):
             
             # Если пользователь не boss/manager - устанавливаем контролера по умолчанию
             if user.role not in ['boss']:
-                boss = user.manager if user.manager else user.get_team_users().filter(role='boss').first()
+                boss = user.manager
                 if boss:
                     self.fields['controlled_by'].initial = boss
             
