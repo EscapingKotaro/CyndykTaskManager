@@ -2,7 +2,7 @@
 
 {% block title %}Создать задачу - TaskManager{% endblock %}
 
-{% block style %}
+{%block style %}
 <style>
 .employee-selection {
     margin-bottom: 2rem;
@@ -75,126 +75,71 @@
 .employee-radio {
     display: none;
 }
-
-/* Стили для выбора даты */
-.date-input-wrapper {
-    position: relative;
-}
-
-.date-input-wrapper input[type="date"] {
-    padding-right: 2.5rem;
-}
-
-.date-input-wrapper::after {
-    content: '📅';
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    pointer-events: none;
-}
-
-/* Адаптивная сетка */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-}
-
-.form-full-width {
-    grid-column: 1 / -1;
-}
-
-@media (max-width: 768px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .employee-cards {
-        grid-template-columns: 1fr;
-    }
-}
 </style>
 {% endblock %}
 
 {% block content %}
-<div style="max-width: 900px; margin: 0 auto;">
+<div style="max-width: 800px; margin: 0 auto;">
     <div class="card">
-        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 2rem;">
-            <h2>➕ Создать новую задачу</h2>
-            <a href="{% url 'dashboard' %}" class="btn btn-secondary">← Назад</a>
-        </div>
+        <h2>➕ Создать новую задачу</h2>
         
         <form method="post">
             {% csrf_token %}
             
-            <div class="form-grid">
-                <!-- Основная информация -->
-                <div class="form-group form-full-width">
+            <div class="form-row">
+                <div class="form-group" style="grid-column: 1 / -1;">
                     <label for="id_title">📝 Название задачи:</label>
                     {{ form.title }}
-                    {% if form.title.errors %}
-                    <div class="error-text">{{ form.title.errors }}</div>
-                    {% endif %}
                 </div>
-                
-                <div class="form-group form-full-width">
-                    <label for="id_description">📄 Описание задачи:</label>
-                    {{ form.description }}
-                    {% if form.description.errors %}
-                    <div class="error-text">{{ form.description.errors }}</div>
-                    {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_description">📄 Описание задачи:</label>
+                {{ form.description }}
+            </div>
+            
+            <div class="form-row">
+                <!-- Заменяем выпадающий список на этот блок -->
+<div class="employee-selection">
+    <label>👥 Выберите сотрудника:</label>
+    <div class="employee-cards">
+        {% for emp in form.assigned_to.field.queryset %}
+        <div class="employee-card-select" data-employee-id="{{ emp.id }}">
+            <div class="employee-avatar-small">
+                {% if emp.avatar %}
+                    <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}">
+                {% else %}
+                    <div class="avatar-placeholder-small">👤</div>
+                {% endif %}
+            </div>
+            <div class="employee-info-small">
+                <strong>{{ emp.get_display_name }}</strong>
+                {% if emp.tags %}
+                <div class="tags-small">
+                    {% for tag in emp.get_tags_list|slice:":3" %}
+                    <span class="tag-small">{{ tag }}</span>
+                    {% endfor %}
                 </div>
+                {% endif %}
+            </div>
+            <input type="radio" name="assigned_to" value="{{ emp.id }}" 
+                   class="employee-radio" {% if forloop.first %}checked{% endif %}>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+
                 
-                <!-- Исполнитель -->
-                <div class="form-group form-full-width">
-                    <label>👥 Исполнитель:</label>
-                    
-                    {% if form.assigned_to.field.queryset.count <= 5 %}
-                    <!-- Карточки для небольшого количества сотрудников -->
-                    <div class="employee-cards">
-                        {% for emp in form.assigned_to.field.queryset %}
-                        <div class="employee-card-select" data-employee-id="{{ emp.id }}">
-                            <div class="employee-avatar-small">
-                                {% if emp.avatar %}
-                                    <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}">
-                                {% else %}
-                                    <div class="avatar-placeholder-small">
-                                        {% if emp.role == 'boss' %}👑{% elif emp.role == 'manager' %}📊{% else %}👤{% endif %}
-                                    </div>
-                                {% endif %}
-                            </div>
-                            <div class="employee-info-small">
-                                <strong>{{ emp.get_display_name }}</strong>
-                                <div style="font-size: 0.8rem; color: var(--secondary);">
-                                    {% if emp.role == 'boss' %}👑 Босс
-                                    {% elif emp.role == 'manager' %}📊 Менеджер
-                                    {% else %}👤 Техник{% endif %}
-                                </div>
-                                {% if emp.tags %}
-                                <div class="tags-small">
-                                    {% for tag in emp.get_tags_list|slice:":2" %}
-                                    <span class="tag-small">{{ tag }}</span>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <input type="radio" name="assigned_to" value="{{ emp.id }}" 
-                                   class="employee-radio" {% if forloop.first %}checked{% endif %}>
-                        </div>
-                        {% endfor %}
-                    </div>
-                    {% else %}
-                    <!-- Выпадающий список для большого количества сотрудников -->
-                    {{ form.assigned_to }}
-                    {% endif %}
-                    
-                    {% if form.assigned_to.errors %}
-                    <div class="error-text">{{ form.assigned_to.errors }}</div>
-                    {% endif %}
+                <div class="form-group">
+                    <label for="id_due_date">📅 Срок выполнения:</label>
+                    {{ form.due_date }}
                 </div>
-                
-                <!-- Контролер -->
+            </div>
+            
+            <!-- Контролер -->
                 <div class="form-group">
                     <label for="id_controlled_by">👑 На контроле у:</label>
                     {{ form.controlled_by }}
@@ -233,15 +178,15 @@
                     {% endif %}
                     <div class="help-text">Укажите через запятую</div>
                 </div>
-            </div>
             
-            <div class="form-actions" style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); text-align: center;">
+            <div class="form-actions">
                 <button type="submit" class="btn btn-primary">✅ Создать задачу</button>
-                <a href="{% url 'dashboard' %}" class="btn btn-secondary">❌ Отмена</a>
+                <a href="{% url 'dashboard' %}" class="btn" style="background: var(--border);">❌ Отмена</a>
             </div>
         </form>
     </div>
 </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -265,6 +210,32 @@ document.addEventListener('DOMContentLoaded', function() {
     if (employeeCards.length > 0) {
         employeeCards[0].classList.add('selected');
     }
+});
+</script>
+
+<script>
+// Динамическое обновление списка сотрудников при изменении тегов
+document.addEventListener('DOMContentLoaded', function() {
+    const tagsInput = document.getElementById('id_tags');
+    const assignedSelect = document.getElementById('id_assigned_to');
+    
+    function filterEmployeesByTags() {
+        const tags = tagsInput.value.toLowerCase().split(',').map(tag => tag.trim());
+        
+        // Показываем/скрываем сотрудников в зависимости от тегов
+        for (let option of assignedSelect.options) {
+            if (option.value) {
+                const employeeTags = option.getAttribute('data-tags') || '';
+                const hasMatchingTag = tags.some(tag => 
+                    tag && employeeTags.toLowerCase().includes(tag)
+                );
+                
+                option.style.display = tags.length > 0 && !hasMatchingTag ? 'none' : '';
+            }
+        }
+    }
+    
+    tagsInput.addEventListener('input', filterEmployeesByTags);
 });
 </script>
 {% endblock %}
