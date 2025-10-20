@@ -205,9 +205,13 @@ class UserForm(forms.ModelForm):
             'username': 'Только английские буквы, цифры и символы @/./+/-/_',
             'email': 'На этот email будут отправляться уведомления',
         }
+    def __init__(self, *args, **kwargs):
+        self.editing_user = kwargs.pop('editing_user', None)  # Кто редактирует
+        super().__init__(*args, **kwargs)
+        
+        # Если редактируем существующего пользователя, убираем поле пароля из обязательных
         if self.instance.pk:
             self.fields['new_password'].required = False
-
     def clean_telegram_username(self):
         telegram_username = self.cleaned_data.get('telegram_username', '').strip()
         if telegram_username:
