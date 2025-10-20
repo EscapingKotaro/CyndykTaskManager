@@ -115,7 +115,7 @@ def task_management(request):
     """
     Страница управления задачами для админа
     """
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     tasks = Task.objects.filter(created_by=request.user).order_by('-created_date')
@@ -155,7 +155,7 @@ def edit_task(request, task_id):
     """
     Редактирование задачи админом
     """
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         messages.error(request, 'У вас нет прав для редактирования задач.')
         return redirect('dashboard')
     
@@ -202,7 +202,7 @@ def task_detail(request, task_id):
     """
     Детальная страница задачи для админа
     """
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     task = get_object_or_404(Task, id=task_id, created_by=request.user)
@@ -213,7 +213,7 @@ def task_detail(request, task_id):
 
 @login_required
 def employee_list(request):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     subordinates = CustomUser.objects.filter(manager=request.user)
@@ -236,7 +236,7 @@ def employee_list(request):
 
 @login_required
 def create_invitation(request):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     if request.method == 'POST':
@@ -268,7 +268,7 @@ def create_invitation(request):
 
 @login_required
 def invitation_list(request):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     invitations = Invitation.objects.filter(created_by=request.user).order_by('-created_at')
@@ -329,7 +329,7 @@ def profile(request):
 
 @login_required
 def get_employee_balance(request, employee_id):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return JsonResponse({'error': 'Access denied'}, status=403)
     
     employee = get_object_or_404(CustomUser, id=employee_id, manager=request.user)
@@ -343,7 +343,7 @@ def custom_logout(request):
 # Главная страница - разная логика для админа и сотрудника
 @login_required
 def dashboard(request):
-    if request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         subordinates = CustomUser.objects.filter(manager=request.user)
         tasks = Task.objects.filter(created_by=request.user)
         
@@ -382,7 +382,7 @@ def dashboard(request):
 # Админ создает нового сотрудника
 @login_required
 def create_employee(request):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     if request.method == 'POST':
@@ -496,7 +496,7 @@ def change_password(request):
 # Админ может сменить пароль сотрудника
 @login_required
 def change_employee_password(request, user_id):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     employee = get_object_or_404(CustomUser, id=user_id, manager=request.user)
@@ -546,7 +546,7 @@ def payment_history(request):
 
 @login_required
 def timeline_view(request):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     tasks = Task.objects.filter(created_by=request.user).order_by('due_date')
@@ -601,7 +601,7 @@ from calendar import monthrange
 
 @login_required
 def calendar_view(request):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']
         return redirect('dashboard')
     
     # Получаем год и месяц из параметров или текущие
