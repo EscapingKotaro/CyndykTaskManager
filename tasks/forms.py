@@ -3,14 +3,31 @@ from django.contrib.auth.forms import PasswordChangeForm
 from .models import *
 import re
 
+
+# forms.py
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'assigned_to', 'due_date', 'payment_amount']
-        widgets = {
-            'due_date': forms.DateInput(attrs={'type': 'date'}),
-            'description': forms.Textarea(attrs={'rows': 4}),
-        }
+        fields = ['title', 'description', 'assigned_to', 'priority', 'due_date']
+    
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+        
+        if self.request and self.request.user.is_authenticated:
+            # Фильтруем пользователей по правам
+            user = self.request.user
+            if user.role == 'boss':
+                # Босс видит всех
+                users = CustomUser.objects.filter(is_active=True)
+            elif user.role == 'manager':
+                # Менеджер видит только свою команду
+                users = user.get_team_users().filter(is_active=True)
+            else:
+                # Техник видит только себя
+                users = CustomUser.objects.filter(id=user.id)
+            
+            self.fields['assigned_to'].queryset = users
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(

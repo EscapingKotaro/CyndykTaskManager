@@ -1009,7 +1009,8 @@ legend {
 
                 <!-- Основное меню (десктоп) -->
                 <div class="nav-main" id="navMain">
-                    {% if user.is_authenticated and user.is_staff %}
+                    {% if user.is_authenticated %}
+                    {% if user.role == 'boss' or user.role == 'manager' %}
                     <!-- Меню админа -->
                     <div class="nav-dropdown">
                         <button class="nav-dropdown-toggle">
@@ -1043,7 +1044,7 @@ legend {
                         Календарь релизов
                     </a>
 
-                    {% elif user.is_authenticated %}
+                    {% else %}
                     <!-- Меню сотрудника -->
                     <a href="{% url 'dashboard' %}" class="nav-dropdown-toggle" style="text-decoration: none;">
                         📋 Мои задачи
@@ -1056,6 +1057,7 @@ legend {
                     </a>
                     
                     <a href="{% url 'payment_history' %}" class="nav-dropdown-toggle">Выплаты</a>
+                    {% endif %}
                     {% endif %}
                     <!-- Кастомные кнопки -->
                     {% load navigation_tags %}

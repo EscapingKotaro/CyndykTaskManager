@@ -390,7 +390,12 @@ def create_employee(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password'])
-            user.manager = request.user  # Начальником становится текущий админ
+            if request.user.role == 'boss':
+                # Босс создает - начальником становится сам босс
+                user.manager = request.user
+            else:
+                # Менеджер создает - находим общего босса
+                user.manager = request.user.get_boss()
             user.is_staff = False  # Обычный сотрудник
             user.save()
             return redirect('dashboard')
@@ -402,20 +407,25 @@ def create_employee(request):
 # Админ создает задачу
 @login_required
 def create_task(request):
-    if not request.user.is_staff:
+    if request.user.role not in ['boss', 'manager']:
         return redirect('dashboard')
     
     if request.method == 'POST':
-        form = TaskForm(request.POST)
+        form = TaskForm(request.POST, request=request)
         if form.is_valid():
             task = form.save(commit=False)
-            task.created_by = request.user  # Кем создана задача
+            task.created_by = request.user
+            
+            # Проверяем права на назначение
+            if not request.user.can_assign_task_to(task.assigned_to):
+                messages.error(request, 'У вас нет прав назначать задачи этому пользователю')
+                return render(request, 'tasks/create_task.html', {'form': form})
+            
             task.save()
-            return redirect('dashboard')
+            messages.success(request, 'Задача создана!')
+            return redirect('task_list')
     else:
-        form = TaskForm()
-        # Показываем только подчиненных текущего админа
-        form.fields['assigned_to'].queryset = CustomUser.objects.filter(manager=request.user)
+        form = TaskForm(request=request)
     
     return render(request, 'tasks/create_task.html', {'form': form})
 

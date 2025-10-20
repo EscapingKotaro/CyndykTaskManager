@@ -48,6 +48,38 @@ class CustomUser(AbstractUser):
     
     def is_technician(self):
         return self.role == 'technician' or not self.role
+
+    def get_team_users(self):
+        """Возвращает пользователей, которых видит текущий пользователь"""
+        if self.role == 'boss':
+            # Босс видит всех, у кого ОН указан как manager
+            return CustomUser.objects.filter(manager=self)
+        elif self.role == 'manager':
+            # Менеджер видит всех, у кого ТОТ ЖЕ boss (тот же manager)
+            return CustomUser.objects.filter(manager=self.manager)
+        else:
+            # Техник видит только себя
+            return CustomUser.objects.filter(id=self.id)
+    
+    def can_assign_task_to(self, target_user):
+        """Может ли пользователь назначать задачи target_user"""
+        if self.role == 'boss':
+            # Босс может всем, у кого ОН manager
+            return target_user.manager == self
+        elif self.role == 'manager':
+            # Менеджер может всем, у кого ТОТ ЖЕ manager (тот же boss)
+            return target_user.manager == self.manager
+        elif self.role == 'technician':
+            return target_user == self  # Техник только себе
+        return False
+    def get_boss(self):
+        """
+        Возвращает босса пользователя (верхнего в иерархии)
+        """
+        current = self
+        while current.manager is not None:
+            current = current.manager
+        return current
 class Task(models.Model):
     STATUS_CHOICES = [
         ('created', 'Создана'),
