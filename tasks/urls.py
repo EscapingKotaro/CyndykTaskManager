@@ -11,6 +11,7 @@ urlpatterns = [
     path('task/<int:task_id>/start/', views.start_task, name='start_task'),
     path('task/<int:task_id>/submit/', views.submit_task, name='submit_task'),
     path('task/<int:task_id>/complete/', views.complete_task, name='complete_task'),
+    path('task/<int:task_id>/approve/', views.approve_task, name='approve_task'),
     path('change-password/', views.change_password, name='change_password'),
     path('change-password/<int:user_id>/', views.change_employee_password, name='change_employee_password'),
     path('make-payment/', views.make_payment, name='make_payment'),
@@ -32,5 +33,6 @@ urlpatterns = [
     path('navigation-buttons/', views.navigation_buttons, name='navigation_buttons'),
     path('navigation-buttons/<int:button_id>/edit/', views.edit_navigation_button, name='edit_navigation_button'),
     path('navigation-buttons/<int:button_id>/delete/', views.delete_navigation_button, name='delete_navigation_button'),
+    path('employee/<int:user_id>/edit/', views.edit_employee, name='edit_employee'),
 ]
 

@@ -97,6 +97,12 @@
                                title="Просмотр">👁️</a>
                             <a href="{% url 'edit_task' task.id %}" class="btn btn-sm btn-warning"
                                title="Редактировать">✏️</a>
+
+                            {% if task.status == 'proposed' and user.role in ['boss','manager'] %}
+                            <a href="{% url 'approve_task' task.id %}" class="btn btn-sm btn-success">
+                                ✅ К исполнению
+                            </a>
+                            {% endif %}
                             
                             {% if task.status == 'submitted' %}
                             <a href="{% url 'complete_task' task.id %}" class="btn btn-sm btn-success"
@@ -183,6 +189,20 @@
 
 .table tbody tr:hover {
     background: #f8fafc;
+}
+.task-proposed {
+    border-left: 4px solid #ffd700;
+    background: linear-gradient(135deg, #fff9e6 0%, #fff3cd 100%);
+}
+
+.task-status-proposed {
+    background: #ffd700;
+    color: #856404;
+}
+
+.task-status-created {
+    background: #28a745;
+    color: white;
 }
 </style>
 {% endblock %}

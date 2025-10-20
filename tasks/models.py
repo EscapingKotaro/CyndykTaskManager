@@ -27,7 +27,15 @@ class CustomUser(AbstractUser):
         blank=True,
         null=True
     )
-
+    def can_edit_user(self, target_user):
+        """Может ли пользователь редактировать target_user"""
+        if self.role == 'boss':
+            # Босс может редактировать всех в своей команде
+            return target_user.manager == self
+        elif self.role == 'manager':
+            # Менеджер может редактировать только своих подчиненных
+            return target_user.manager == self
+        return False
     def get_display_name(self):
         return self.first_name or self.username
     
@@ -82,10 +90,10 @@ class CustomUser(AbstractUser):
         return current
 class Task(models.Model):
     STATUS_CHOICES = [
-        ('created', 'Создана'),
-        ('in_progress', 'В исполнении'),
-        ('submitted', 'Сдана на отчет'),
-        ('completed', 'Выполнена'),
+        ('proposed', '🟡 Предложена'),
+        ('created', '🟢 Создана'), 
+        ('in_progress', '🔵 В работе'),
+        ('completed', '✅ Завершена'),
     ]
 
     title = models.CharField(max_length=200, verbose_name='Название')
@@ -102,7 +110,8 @@ class Task(models.Model):
     created_by = models.ForeignKey(CustomUser, on_delete=models.CASCADE, 
                                   related_name='created_tasks', verbose_name='Кем создана')
     tags = models.CharField(max_length=200, blank=True, verbose_name='Ярлыки задачи')
-
+    controlled_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True,
+                                     related_name='controlled_tasks', verbose_name='На контроле у')
     def __str__(self):
         return self.title
 

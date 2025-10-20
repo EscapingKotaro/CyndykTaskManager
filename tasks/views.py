@@ -5,7 +5,6 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Sum
 from .models import Task, CustomUser, Payment
-from .forms import TaskForm, UserForm, CustomPasswordChangeForm, PaymentForm
 from .forms import *
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import logout as auth_logout
@@ -410,28 +409,59 @@ def create_employee(request):
 # Админ создает задачу
 @login_required
 def create_task(request):
-    if request.user.role not in ['boss', 'manager']:
-        return redirect('dashboard')
-    
     if request.method == 'POST':
         form = TaskForm(request.POST, request=request)
         if form.is_valid():
             task = form.save(commit=False)
             task.created_by = request.user
             
-            # Проверяем права на назначение
+            # Проверяем права на назначение исполнителя
             if not request.user.can_assign_task_to(task.assigned_to):
                 messages.error(request, 'У вас нет прав назначать задачи этому пользователю')
                 return render(request, 'tasks/create_task.html', {'form': form})
             
+            # Автоматически определяем статус
+            if request.user.role == 'boss':
+                task.status = 'created'  # Босс создает сразу активные задачи
+            else:
+                task.status = 'proposed'  # Остальные создают предложения
+            
             task.save()
-            messages.success(request, 'Задача создана!')
+            
+            if task.status == 'proposed':
+                messages.success(request, '✅ Задача предложена! Ожидает подтверждения начальника.')
+            else:
+                messages.success(request, '✅ Задача создана!')
+                
             return redirect('task_list')
     else:
         form = TaskForm(request=request)
     
     return render(request, 'tasks/create_task.html', {'form': form})
-
+@login_required
+def approve_task(request, task_id):
+    """Подтверждение предложенной задачи"""
+    try:
+        task = Task.objects.get(id=task_id)
+        
+        # Проверяем права - только контролер или boss может подтверждать
+        if (request.user != task.controlled_by and 
+            request.user.role != 'boss' and
+            request.user != task.assigned_to.manager):
+            messages.error(request, 'У вас нет прав подтверждать эту задачу')
+            return redirect('task_list')
+        
+        if task.status == 'proposed':
+            task.status = 'created'
+            task.save()
+            messages.success(request, '✅ Задача подтверждена и переведена в работу!')
+        else:
+            messages.warning(request, 'Задача уже подтверждена')
+            
+    except Task.DoesNotExist:
+        messages.error(request, 'Задача не найдена')
+    
+    return redirect('task_list')
 
 @login_required
 def start_task(request, task_id):
@@ -680,4 +710,37 @@ def task_details_api(request, task_id):
         'payment_amount': float(task.payment_amount),
         'status': task.status,
         'status_display': task.get_status_display(),
+    })
+
+@login_required
+def edit_employee(request, user_id):
+    """Редактирование профиля сотрудника"""
+    # Проверяем права доступа - только boss и manager
+    if request.user.role not in ['boss', 'manager']:
+        messages.error(request, 'У вас нет прав для редактирования профилей')
+        return redirect('employee_list')
+    
+    try:
+        target_user = CustomUser.objects.get(id=user_id)
+    except CustomUser.DoesNotExist:
+        messages.error(request, 'Пользователь не найден')
+        return redirect('employee_list')
+    
+    # Проверяем права на редактирование этого пользователя
+    if not request.user.can_edit_user(target_user):
+        messages.error(request, 'У вас нет прав редактировать этого пользователя')
+        return redirect('employee_list')
+    
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=target_user, editing_user=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'✅ Профиль {target_user.get_display_name()} успешно обновлен!')
+            return redirect('employee_list')
+    else:
+        form = UserEditForm(instance=target_user, editing_user=request.user)
+    
+    return render(request, 'tasks/edit_employee.html', {
+        'form': form,
+        'target_user': target_user
     })

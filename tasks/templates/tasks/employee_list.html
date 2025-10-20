@@ -77,7 +77,7 @@
             </div>
             
             <div class="employee-actions">
-                <a href="{% url 'delete_employee' emp.id %}" class="btn btn-sm btn-danger">🗑️ Удалить</a>
+                <a href="{% url 'edit_employee' emp.id %}" class="btn btn-sm btn-primary">✏️ Редактировать</a>
             </div>
         </div>
         {% empty %}
