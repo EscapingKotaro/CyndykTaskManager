@@ -204,9 +204,9 @@ class TaskForm(forms.ModelForm):
                     self.fields['controlled_by'].initial = boss
             
             # Если пользователь boss/manager - может оставить поле пустым
-            if user.role in ['boss', 'manager']:
-                self.fields['controlled_by'].required = False
-                self.fields['controlled_by'].empty_label = "Не назначен"
+            #if user.role in ['boss', 'manager']:
+            #    self.fields['controlled_by'].required = False
+            #    self.fields['controlled_by'].empty_label = "Не назначен"
 
     def clean_tags(self):
         tags = self.cleaned_data.get('tags', '').strip()
