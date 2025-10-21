@@ -192,10 +192,7 @@ class TaskForm(forms.ModelForm):
             self.fields['assigned_to'].queryset = users
 
             # Фильтруем контролеров (только boss и manager)
-            self.fields['controlled_by'].queryset = user.get_team_users().filter(
-                is_active=True, 
-                role__in=['boss', 'manager']
-            )
+            self.fields['controlled_by'].queryset = user.get_team_leadership()
             
             # Если пользователь не boss/manager - устанавливаем контролера по умолчанию
             if user.role not in ['boss']:

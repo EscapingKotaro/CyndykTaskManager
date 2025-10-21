@@ -727,9 +727,9 @@ def edit_employee(request, user_id):
         return redirect('employee_list')
     
     # Проверяем права на редактирование этого пользователя
-    if not request.user.can_edit_user(target_user):
-        messages.error(request, 'У вас нет прав редактировать этого пользователя')
-        return redirect('employee_list')
+    #if not request.user.can_edit_user(target_user):
+    #    messages.error(request, 'У вас нет прав редактировать этого пользователя')
+    #    return redirect('employee_list')
     
     if request.method == 'POST':
         form = UserEditForm(request.POST, instance=target_user, editing_user=request.user)

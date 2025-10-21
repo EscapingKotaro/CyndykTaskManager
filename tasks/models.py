@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+from django.db.models import Q, Sum
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
@@ -56,7 +57,47 @@ class CustomUser(AbstractUser):
     
     def is_technician(self):
         return self.role == 'technician' or not self.role
-
+    def get_team_leadership(self):
+    """Возвращает руководство команды (босс + все менеджеры)"""
+    if self.role == 'boss':
+        # Босс возвращает себя + всех менеджеров в его команде
+        managers = CustomUser.objects.filter(manager=self, role='manager')
+        return CustomUser.objects.filter(
+            models.Q(id=self.id) |  # Сам босс
+            models.Q(id__in=managers)  # Все его менеджеры
+        ).distinct()
+    elif self.role == 'manager':
+        # Менеджер возвращает своего босса + всех менеджеров с тем же боссом
+        boss = self.manager
+        if boss:
+            same_boss_managers = CustomUser.objects.filter(
+                manager=boss, 
+                role='manager'
+            ).exclude(id=self.id)  # Исключаем себя
+            return CustomUser.objects.filter(
+                models.Q(id=boss.id) |  # Босс
+                models.Q(id__in=same_boss_managers) |  # Другие менеджеры
+                models.Q(id=self.id)  # Сам менеджер
+            ).distinct()
+        else:
+            return CustomUser.objects.filter(id=self.id)
+    else:
+        # Техник возвращает своего босса + менеджера (если есть)
+        boss = self.manager
+        if boss:
+            # Ищем менеджера который управляет этим техником
+            direct_manager = CustomUser.objects.filter(
+                manager=boss,
+                role='manager',
+                id=self.manager.id  # Если у техника менеджер не босс
+            ).first()
+            
+            leadership = [boss]
+            if direct_manager and direct_manager != boss:
+                leadership.append(direct_manager)
+            return CustomUser.objects.filter(id__in=[user.id for user in leadership])
+        else:
+            return CustomUser.objects.none()
     def get_team_users(self):
         """Возвращает пользователей, которых видит текущий пользователь"""
         if self.role == 'boss':
