@@ -88,7 +88,11 @@ def task_management(request):
     if not request.user.is_staff:
         return redirect('dashboard')
     
-    tasks = Task.objects.filter(created_by=request.user).order_by('-created_date')
+    tasks = Task.objects.filter(
+        Q(created_by=request.user) |
+        Q(controlled_by=request.user)
+    ).order_by('-created_date')
+
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
     
