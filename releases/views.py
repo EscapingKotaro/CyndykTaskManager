@@ -159,13 +159,13 @@ def release_update(request, pk):
     return render(request, 'releases/release_form.html', {'form': form})
 
 @login_required
-def toggle_publish(request, game_id):
-    game = get_object_or_404(GameRelease, id=game_id)
+def toggle_publish(request, pk):
+    game = get_object_or_404(GameRelease, id=pk)
     game.is_published = not game.is_published
     game.save()
     
     return JsonResponse({
         'success': True,
         'is_published': game.is_published,
-        'game_id': game_id
+        'game_id': pk
     })
