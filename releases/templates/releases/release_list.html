@@ -112,32 +112,28 @@
                         </span>
                     </td>
                     <td>
-                        <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
-                            {% if game.is_published %}
-                                <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
-                                    onsubmit="event.preventDefault(); togglePublishStatus(this);" style="padding: 0; margin: 0;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
-                                        {% if game.is_published %}👁️{% else %}🙈{% endif %}
-                                    </button>
-                                </form>
+    <div style="display: flex; gap: 0.3rem; flex-wrap: wrap;">
+        <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
+              onsubmit="event.preventDefault(); togglePublishStatus(this);" 
+              style="padding: 0; margin: 0;">
+            {% csrf_token %}
+            <button type="submit" 
+                    class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}"
+                    data-game-id="{{ game.id }}">
+                {% if game.is_published %}👁️{% else %}🙈{% endif %}
+            </button>
+        </form>
 
-                                <button class="btn btn-sm btn-primary view-game" 
-                                        data-game-id="{{ game.id }}"
-                                        title="Просмотр">✏️</button>
-                            {% else %}
-                                <form method="post" action="{% url 'releases:toggle_publish' game.id %}" 
-                                    onsubmit="event.preventDefault(); togglePublishStatus(this);" style="padding: 0; margin: 0;">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn btn-sm btn-primary publish-toggle {% if game.is_published %}published{% else %}not-published{% endif %}">
-                                        {% if game.is_published %}👁️{% else %}🙈{% endif %}
-                                    </button>
-                                </form>
-                                <span class="btn btn-sm btn-secondary disabled"
-                                      title="Редактирование недоступно для скрытых игр">✏️</span>
-                            {% endif %}
-                        </div>
-                    </td>
+        {% if game.is_published %}
+            <button class="btn btn-sm btn-primary view-game" 
+                    data-game-id="{{ game.id }}"
+                    title="Просмотр">✏️</button>
+        {% else %}
+            <span class="btn btn-sm btn-secondary disabled"
+                  title="Редактирование недоступно для скрытых игр">✏️</span>
+        {% endif %}
+    </div>
+</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -525,6 +521,30 @@
     opacity: 0.5 !important;
     filter: grayscale(100%) !important;
 }
+/* Плавные переходы для изменений */
+.unpublished-row,
+.platform-tag,
+.marketplace-tag,
+.language-tag,
+.status-badge,
+.publish-toggle {
+    transition: all 0.3s ease;
+}
+
+/* Стили для кнопки переключения */
+.publish-toggle.published {
+    background: var(--success);
+    border-color: var(--success);
+}
+
+.publish-toggle.not-published {
+    background: var(--secondary);
+    border-color: var(--secondary);
+}
+
+.publish-toggle:hover {
+    transform: scale(1.1);
+}
 </style>
 
 <script>
@@ -625,25 +645,55 @@ function toggleMarketplace(gameId, marketplace, element) {
 }
 
 // Функция для переключения статуса публикации без перезагрузки
+// Функция для переключения статуса публикации без перезагрузки
 function togglePublishStatus(form) {
     const button = form.querySelector('button');
     const isCurrentlyPublished = button.classList.contains('published');
     const gameRow = form.closest('tr'); // Находим строку игры
+    const statusBadge = gameRow.querySelector('.status-badge'); // Находим бейдж статуса
 
     // Меняем статус сразу визуально
     if (isCurrentlyPublished) {
+        // Переключаем на "скрыто"
         button.classList.remove('published');
         button.classList.add('not-published');
         button.innerHTML = '🙈';
-
+        
+        // Обновляем строку
         gameRow.classList.add('unpublished-row');
+        
+        // Обновляем статус бейдж
+        statusBadge.classList.remove('status-published');
+        statusBadge.classList.add('status-unpublished');
+        statusBadge.innerHTML = '❌ Скрыто';
+        
+        // Обновляем кнопку редактирования
+        const editButton = gameRow.querySelector('.view-game');
+        if (editButton) {
+            editButton.replaceWith(createDisabledEditButton());
+        }
+        
     } else {
+        // Переключаем на "опубликовано"
         button.classList.remove('not-published');
         button.classList.add('published');
         button.innerHTML = '👁️';
-
+        
+        // Обновляем строку
         gameRow.classList.remove('unpublished-row');
+        
+        // Обновляем статус бейдж
+        statusBadge.classList.remove('status-unpublished');
+        statusBadge.classList.add('status-published');
+        statusBadge.innerHTML = '✅ Активно';
+        
+        // Восстанавливаем кнопку редактирования
+        const disabledButton = gameRow.querySelector('.btn.disabled');
+        if (disabledButton) {
+            disabledButton.replaceWith(createEditButton(button.getAttribute('data-game-id')));
+        }
     }
+
     // Отправляем AJAX запрос
     fetch(form.action, {
         method: 'POST',
@@ -656,24 +706,103 @@ function togglePublishStatus(form) {
         if (!response.ok) {
             throw new Error('Network error');
         }
-        return response;
+        return response.json();
     })
-    .then(() => {
-        console.log('Статус публикации обновлен');
+    .then(data => {
+        if (data.success) {
+            console.log('Статус публикации обновлен');
+            
+            // Дополнительное обновление если нужно
+            updateGameCardVisuals(gameRow, !isCurrentlyPublished);
+        } else {
+            throw new Error('Server error');
+        }
     })
     .catch(error => {
         console.error('Error:', error);
         // Возвращаем предыдущее состояние при ошибке
-        if (isCurrentlyPublished) {
-            button.classList.remove('not-published');
-            button.classList.add('published');
-            button.innerHTML = '👁️';
-        } else {
-            button.classList.remove('published');
-            button.classList.add('not-published');
-            button.innerHTML = '🙈';
-        }
+        revertPublishStatus(button, gameRow, statusBadge, isCurrentlyPublished);
         alert('Ошибка обновления статуса');
+    });
+}
+
+// Функция для создания отключенной кнопки редактирования
+function createDisabledEditButton() {
+    const span = document.createElement('span');
+    span.className = 'btn btn-sm btn-secondary disabled';
+    span.title = 'Редактирование недоступно для скрытых игр';
+    span.textContent = '✏️';
+    return span;
+}
+
+// Функция для создания активной кнопки редактирования
+function createEditButton(gameId) {
+    const button = document.createElement('button');
+    button.className = 'btn btn-sm btn-primary view-game';
+    button.setAttribute('data-game-id', gameId);
+    button.title = 'Просмотр';
+    button.textContent = '✏️';
+    
+    // Добавляем обработчик события
+    button.addEventListener('click', function() {
+        const gameId = this.getAttribute('data-game-id');
+        loadGameDetails(gameId);
+    });
+    
+    return button;
+}
+
+// Функция для отката изменений при ошибке
+function revertPublishStatus(button, gameRow, statusBadge, wasPublished) {
+    if (wasPublished) {
+        button.classList.remove('not-published');
+        button.classList.add('published');
+        button.innerHTML = '👁️';
+        gameRow.classList.remove('unpublished-row');
+        statusBadge.classList.remove('status-unpublished');
+        statusBadge.classList.add('status-published');
+        statusBadge.innerHTML = '✅ Активно';
+    } else {
+        button.classList.remove('published');
+        button.classList.add('not-published');
+        button.innerHTML = '🙈';
+        gameRow.classList.add('unpublished-row');
+        statusBadge.classList.remove('status-published');
+        statusBadge.classList.add('status-unpublished');
+        statusBadge.innerHTML = '❌ Скрыто';
+    }
+}
+
+// Дополнительная функция для обновления визуальных элементов
+function updateGameCardVisuals(gameRow, isNowPublished) {
+    // Обновляем иконку игры
+    const gameIcon = gameRow.querySelector('img');
+    if (gameIcon) {
+        if (isNowPublished) {
+            gameIcon.style.filter = 'none';
+        } else {
+            gameIcon.style.filter = 'grayscale(100%) opacity(0.7)';
+        }
+    }
+    
+    // Обновляем заголовок игры
+    const gameTitle = gameRow.querySelector('strong');
+    if (gameTitle) {
+        if (isNowPublished) {
+            gameTitle.style.color = '';
+        } else {
+            gameTitle.style.color = '#6b7280';
+        }
+    }
+    
+    // Обновляем теги платформ и площадок
+    const tags = gameRow.querySelectorAll('.platform-tag, .marketplace-tag, .language-tag');
+    tags.forEach(tag => {
+        if (isNowPublished) {
+            tag.classList.remove('unpublished');
+        } else {
+            tag.classList.add('unpublished');
+        }
     });
 }
 

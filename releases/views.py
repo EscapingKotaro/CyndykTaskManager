@@ -159,11 +159,13 @@ def release_update(request, pk):
     return render(request, 'releases/release_form.html', {'form': form})
 
 @login_required
-def toggle_publish(request, pk):
-    """Переключение статуса публикации"""
+def toggle_publish(request, game_id):
+    game = get_object_or_404(GameRelease, id=game_id)
+    game.is_published = not game.is_published
+    game.save()
     
-    if request.user.is_superuser:
-        game = get_object_or_404(GameRelease, pk=pk)
-        game.is_published = not game.is_published
-        game.save()
-    return redirect('releases:release_list')
+    return JsonResponse({
+        'success': True,
+        'is_published': game.is_published,
+        'game_id': game_id
+    })
