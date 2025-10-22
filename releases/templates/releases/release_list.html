@@ -78,23 +78,27 @@
                         </div>
                     </td>
                     <td>
-                        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 200px;">
-    {% for marketplace_data in game.get_all_marketplaces_display %}
-        {% if marketplace_data.is_selected %}
-            <span class="marketplace-tag active {% if not game.is_published %}unpublished{% endif %}" 
-                  title="{{ marketplace_data.name }}: опубликовано">
-                <img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
-                {{ marketplace_data.name }}
-            </span>
-        {% else %}
-            <span class="marketplace-tag inactive {% if not game.is_published %}unpublished{% endif %}" title="{{ marketplace_data.name }}: не выбрано">
-                <img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
-                {{ marketplace_data.name }}
-            </span>
-        {% endif %}
-    {% endfor %}
-</div>
-                    </td>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 200px;">
+        {% for marketplace_data in game.get_all_marketplaces_display %}
+            {% if marketplace_data.is_selected %}
+                <span class="marketplace-tag marketplace-{{ marketplace_data.status }} active {% if not game.is_published %}unpublished{% endif %}" 
+                      title="{{ marketplace_data.name }} - 
+                             {% if marketplace_data.status == 'fully_published' %}Все платформы опубликованы
+                             {% elif marketplace_data.status == 'partially_published' %}Часть платформ опубликована
+                             {% else %}Не опубликовано{% endif %}">
+                    <img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
+                    {{ marketplace_data.name }}
+                </span>
+            {% else %}
+                <span class="marketplace-tag inactive {% if not game.is_published %}unpublished{% endif %}" 
+                      title="{{ marketplace_data.name }}: не выбрано">
+                    <img src="/media/{{ marketplace_data.icon_url }}" alt="{{ marketplace_data.name }}" class="marketplace-icon">
+                    {{ marketplace_data.name }}
+                </span>
+            {% endif %}
+        {% endfor %}
+    </div>
+</td>
                     <td>
                         <div>
                             {% for lang in game.display_languages_list %}
@@ -417,6 +421,109 @@
 .marketplace-tag.unpublished {
     opacity: 0.5;
     background: #e9ecef;
+}
+/* Стили для статусов публикации площадок */
+.marketplace-tag.active.marketplace-fully_published {
+    background: #d1fae5 !important;
+    border: 2px solid #10b981 !important;
+    color: #065f46 !important;
+    position: relative;
+}
+
+.marketplace-tag.active.marketplace-fully_published::after {
+    content: "✓";
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #10b981;
+    color: white;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marketplace-tag.active.marketplace-partially_published {
+    background: #fef3c7 !important;
+    border: 2px solid #f59e0b !important;
+    color: #92400e !important;
+    position: relative;
+}
+
+.marketplace-tag.active.marketplace-partially_published::after {
+    content: "~";
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #f59e0b;
+    color: white;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.marketplace-tag.active.marketplace-not_published {
+    background: #fee2e2 !important;
+    border: 2px solid #ef4444 !important;
+    color: #dc2626 !important;
+    opacity: 0.8;
+    position: relative;
+}
+
+.marketplace-tag.active.marketplace-not_published::after {
+    content: "✕";
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #ef4444;
+    color: white;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Базовые стили для marketplace-tag */
+.marketplace-tag {
+    position: relative;
+    padding: 0.3rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin: 0.1rem;
+    transition: all 0.2s ease;
+}
+
+.marketplace-tag:hover {
+    transform: scale(1.05);
+    z-index: 1;
+}
+
+/* Для невыбранных площадок */
+.marketplace-tag.inactive {
+    background: #f3f4f6 !important;
+    color: #6b7280 !important;
+    border: 2px solid #d1d5db !important;
+    opacity: 0.6;
+}
+
+/* Для неопубликованных игр */
+.marketplace-tag.unpublished {
+    opacity: 0.5 !important;
+    filter: grayscale(100%) !important;
 }
 </style>
 

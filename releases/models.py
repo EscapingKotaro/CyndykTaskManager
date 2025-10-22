@@ -20,6 +20,7 @@ class GameRelease(models.Model):
         ('WILDBERRIES', 'Wildberries'),
         ('DIGISELLER', 'Digiseller'),
         ('FUNPAY', 'Funpay'),
+        ('DARKSTORE', 'DarkStore'),
     ]
     
     LANGUAGE_CHOICES = [
@@ -183,6 +184,7 @@ class GameRelease(models.Model):
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
             'FUNPAY': 'platform_icons/funpay.jpg',
+            'DARKSTORE', 'platform_icons/darkstore.png',
         }
         return icons.get(marketplace, '')
 #
@@ -190,7 +192,7 @@ class GameRelease(models.Model):
 #
 
     def get_all_marketplaces_display(self):
-        """Возвращает данные по всем площадкам с иконками"""
+        """Возвращает данные по всем площадкам с иконками и статусами"""
         MARKETPLACE_ICONS = {
             'AVITO': 'platform_icons/avito.jpg',
             'TELEGRAM': 'platform_icons/difmark.png', 
@@ -198,24 +200,30 @@ class GameRelease(models.Model):
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
             'FUNPAY': 'platform_icons/funpay.jpg',
+            'DARKSTORE': 'platform_icons/darkstore.png',
         }
-        #
+        
         all_marketplaces = [choice[0] for choice in self.MARKETPLACE_CHOICES]
         selected_marketplaces = self.get_marketplaces_list()
-        #
+        
         marketplaces = []
-        i=0
-        for marketplace in ['AVITO', 'TELEGRAM', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER','FUNPAY']:
+        i = 0
+        for marketplace in ['AVITO', 'TELEGRAM', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER', 'FUNPAY', 'DARKSTORE']:
             icon_path = MARKETPLACE_ICONS.get(marketplace)
             icon_url = f"{icon_path}" if icon_path else ""
             
+            # Получаем статус публикации для этой площадки
+            status = self.get_marketplace_platform_status(marketplace)
+            
             marketplaces.append({
                 'code': all_marketplaces[i],
-                'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),  # или просто marketplace
+                'name': dict(self.MARKETPLACE_CHOICES).get(marketplace, marketplace),
                 'is_selected': marketplace in selected_marketplaces,
-                'icon_url': icon_url
+                'icon_url': icon_url,
+                'status': status  # Добавляем статус публикации
             })
-            i+=1
+            i += 1
+        
         return marketplaces
     def toggle_platform_publication(self, marketplace, platform):
         """Переключает публикацию платформы на площадке"""
@@ -261,3 +269,15 @@ class GameRelease(models.Model):
             'fully_published': 'Опубликовано'
         }
         return status_map.get(status, 'Не опубликовано')
+    def get_marketplace_platform_status(self, marketplace):
+        """Возвращает статус публикации платформ на конкретной площадке"""
+        publications = self.get_marketplace_platforms_dict()
+        marketplace_platforms = publications.get(marketplace, [])
+        all_platforms = self.get_platforms_list()
+        
+        if not marketplace_platforms:
+            return 'not_published'  # Ни одной платформы не опубликовано
+        elif len(marketplace_platforms) == len(all_platforms):
+            return 'fully_published'  # Все платформы опубликованы
+        else:
+            return 'partially_published'  # Часть платформ опубликована
