@@ -160,12 +160,13 @@ def release_update(request, pk):
 
 @login_required
 def toggle_publish(request, pk):
-    game = get_object_or_404(GameRelease, id=pk)
-    game.is_published = not game.is_published
-    game.save()
-    
-    return JsonResponse({
-        'success': True,
-        'is_published': game.is_published,
-        'game_id': pk
-    })
+    if request.user.is_superuser:
+        game = get_object_or_404(GameRelease, id=pk)
+        game.is_published = not game.is_published
+        game.save()
+        
+        return JsonResponse({
+            'success': True,
+            'is_published': game.is_published,
+            'game_id': pk
+        })
