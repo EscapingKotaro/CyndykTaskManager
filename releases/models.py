@@ -184,7 +184,7 @@ class GameRelease(models.Model):
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
             'FUNPAY': 'platform_icons/funpay.jpg',
-            'DARKSTORE', 'platform_icons/darkstore.png',
+            'DARKSTORE': 'platform_icons/darkstore.png',
         }
         return icons.get(marketplace, '')
 #
