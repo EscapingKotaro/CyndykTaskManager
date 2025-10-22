@@ -378,7 +378,7 @@ def create_employee(request):
                 user.manager = request.user.get_boss()
             user.is_staff = False  # Обычный сотрудник
             user.save()
-            return redirect('dashboard')
+            return redirect('employee_list')
     else:
         form = UserForm()
     
@@ -411,7 +411,7 @@ def create_task(request):
             else:
                 messages.success(request, '✅ Задача создана!')
                 
-            return redirect('dashboard')
+            return redirect('task_management')
     else:
         form = TaskForm(request=request)
     
@@ -427,7 +427,7 @@ def approve_task(request, task_id):
             request.user.role != 'boss' and
             request.user != task.assigned_to.manager):
             messages.error(request, 'У вас нет прав подтверждать эту задачу')
-            return redirect('dashboard')
+            return redirect('task_management')
         
         if task.status == 'proposed':
             task.status = 'created'
@@ -439,7 +439,7 @@ def approve_task(request, task_id):
     except Task.DoesNotExist:
         messages.error(request, 'Задача не найдена')
     
-    return redirect('dashboard')
+    return redirect('task_management')
 
 @login_required
 def start_task(request, task_id):
@@ -482,7 +482,7 @@ def complete_task(request, task_id):
         employee.balance += task.payment_amount
         employee.save()
         
-        return redirect('dashboard')
+        return redirect('task_management')
     
     return render(request, 'tasks/complete_task.html', {'task': task})
 
