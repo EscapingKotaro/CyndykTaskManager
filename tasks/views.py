@@ -83,35 +83,6 @@ def delete_navigation_button(request, button_id):
         return redirect('navigation_buttons')
     
     return render(request, 'tasks/delete_navigation_button.html', {'button': button})
-@login_required
-def task_management(request):
-    if not request.user.is_staff:
-        return redirect('dashboard')
-    
-    tasks = Task.objects.filter(
-        Q(created_by=request.user) |
-        Q(controlled_by=request.user)
-    ).order_by('-created_date')
-
-    search_query = request.GET.get('search', '')
-    status_filter = request.GET.get('status', '')
-    
-    if search_query:
-        tasks = tasks.filter(
-            Q(title__icontains=search_query) |
-            Q(description__icontains=search_query) |
-            Q(assigned_to__username__icontains=search_query) |
-            Q(assigned_to__first_name__icontains=search_query)
-        )
-    
-    if status_filter:
-        tasks = tasks.filter(status=status_filter)
-    
-    return render(request, 'tasks/task_management.html', {
-        'tasks': tasks,
-        'search_query': search_query,
-        'status_filter': status_filter
-    })
 
 @login_required
 def task_management(request):
@@ -121,7 +92,10 @@ def task_management(request):
     if request.user.role not in ['boss', 'manager']:
         return redirect('dashboard')
     
-    tasks = Task.objects.filter(created_by=request.user).order_by('-created_date')
+    tasks = Task.objects.filter(
+        Q(created_by=request.user) |
+        Q(controlled_by=request.user)
+    ).order_by('-created_date').order_by('-created_date')
     search_query = request.GET.get('search', '')
     status_filter = request.GET.get('status', '')
     employee_filter = request.GET.get('employee', '')
