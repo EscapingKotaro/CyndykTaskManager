@@ -7,6 +7,7 @@ from .forms import GameReleaseForm
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.http import JsonResponse
+from django.core.paginator import Paginator
 
 @login_required
 def toggle_marketplace(request, pk):
@@ -108,7 +109,13 @@ def release_list(request):
         
         # Сортировка
         games = games.order_by(sort_by)
-    
+    # 🔥 ПАГИНАЦИЯ - ДОБАВЛЯЕМ ПОСЛЕ СОРТИРОВКИ
+    paginator = Paginator(games, 20)  # 20 игр на страницу
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Заменяем games на page_obj в контексте
+    games = page_obj
     # Статистика
     total_games = games.count()
     published_games = games.filter(is_published=True).count()

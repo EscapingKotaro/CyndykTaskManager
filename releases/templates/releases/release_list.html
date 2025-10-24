@@ -14,7 +14,7 @@
 </div>
 
 <div class="card">
-    <h2>Список релизов ({{ games.count }})</h2>
+    <h2>Список релизов ({{ games.paginator.count }})</h2>
     
     {% if games %}
     <div style="overflow-x: auto;">
@@ -143,6 +143,58 @@
     <!-- пустой state без изменений -->
     {% endif %}
 </div>
+
+<!-- 🔥 ПАГИНАЦИЯ ДЛЯ РЕЛИЗОВ -->
+{% if games.paginator.num_pages > 1 %}
+<div class="pagination" style="margin: 20px 0; display: flex; justify-content: center; align-items: center; gap: 10px;">
+    <!-- Кнопка "Назад" -->
+    {% if games.has_previous %}
+        <a href="?page={{ games.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="pagination-btn" 
+           style="padding: 8px 16px; background: #f1f3f4; border-radius: 4px; text-decoration: none; color: #202124;">
+            ← Назад
+        </a>
+    {% else %}
+        <span class="pagination-btn disabled" style="padding: 8px 16px; background: #f8f9fa; border-radius: 4px; color: #9aa0a6;">
+            ← Назад
+        </span>
+    {% endif %}
+
+    <!-- Номера страниц -->
+    <div class="pagination-numbers" style="display: flex; gap: 4px;">
+        {% for num in games.paginator.page_range %}
+            {% if num == games.number %}
+                <span class="pagination-current" style="padding: 8px 12px; background: #1a73e8; color: white; border-radius: 4px;">
+                    {{ num }}
+                </span>
+            {% elif num > games.number|add:'-3' and num < games.number|add:'3' %}
+                <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+                   style="padding: 8px 12px; background: #f1f3f4; border-radius: 4px; text-decoration: none; color: #202124;">
+                    {{ num }}
+                </a>
+            {% endif %}
+        {% endfor %}
+    </div>
+
+    <!-- Кнопка "Вперед" -->
+    {% if games.has_next %}
+        <a href="?page={{ games.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+           class="pagination-btn" 
+           style="padding: 8px 16px; background: #f1f3f4; border-radius: 4px; text-decoration: none; color: #202124;">
+            Вперед →
+        </a>
+    {% else %}
+        <span class="pagination-btn disabled" style="padding: 8px 16px; background: #f8f9fa; border-radius: 4px; color: #9aa0a6;">
+            Вперед →
+        </span>
+    {% endif %}
+</div>
+
+<!-- 🔥 ИНФОРМАЦИЯ О СТРАНИЦЕ -->
+<div style="text-align: center; color: #5f6368; font-size: 14px; margin-top: 10px;">
+    Игры {{ games.start_index }}–{{ games.end_index }} из {{ games.paginator.count }}
+</div>
+{% endif %}
 
 <!-- Модальное окно для просмотра игры -->
 <div id="gameModal" class="modal">
