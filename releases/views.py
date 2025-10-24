@@ -109,6 +109,11 @@ def release_list(request):
         
         # Сортировка
         games = games.order_by(sort_by)
+    
+    # Статистика
+    total_games = games.count()
+    published_games = games.filter(is_published=True).count()
+    upcoming_games = games.filter(release_date__gt=timezone.now().date()).count()
     # 🔥 ПАГИНАЦИЯ - ДОБАВЛЯЕМ ПОСЛЕ СОРТИРОВКИ
     paginator = Paginator(games, 20)  # 20 игр на страницу
     page_number = request.GET.get('page')
@@ -116,10 +121,6 @@ def release_list(request):
 
     # Заменяем games на page_obj в контексте
     games = page_obj
-    # Статистика
-    total_games = games.count()
-    published_games = games.filter(is_published=True).count()
-    upcoming_games = games.filter(release_date__gt=timezone.now().date()).count()
     
     context = {
         'games': games,
