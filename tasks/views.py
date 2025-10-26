@@ -161,7 +161,7 @@ def delete_task(request, task_id):
     Удаление задачи админом
     """
     task = get_object_or_404(Task, id=task_id)
-    if not request.user.is_staff and (task.created_by!=request.user or task.controlled_by!=request.user or task.status!='proposed'):
+    if not request.user.is_staff and ((task.created_by!=request.user and task.controlled_by!=request.user) or task.status!='proposed'):
         messages.error(request, 'У вас нет прав для удаления задач.')
         return redirect('dashboard')
     
