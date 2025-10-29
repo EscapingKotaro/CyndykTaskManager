@@ -393,7 +393,10 @@ class IGNReleaseParser:
                 
                 # Сохраняем игру чтобы получить ID
                 game.save()
-                
+
+                if game.platforms:  # Если есть платформы
+                    game.marketplace_platforms['DIFMARK'] = game.platforms.copy()
+                    game.save()
                 # Добавляем изображение если скачали
                 if image_path and os.path.exists(image_path):
                     try:
