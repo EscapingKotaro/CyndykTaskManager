@@ -100,79 +100,10 @@
             </div>
             
             <div class="tasks-grid">
-                {% for task in group.tasks %}
-                <article class="task-card" data-task-id="{{ task.id }}" data-priority="{% if task.payment_amount > 5000 %}high{% elif task.payment_amount > 2000 %}medium{% else %}low{% endif %}">
-                    <div class="task-card-inner">
-                        <!-- Хедер карточки -->
-                        <header class="task-header">
-                            <h3 class="task-title">{{ task.title }}</h3>
-                            <div class="task-meta">
-                                {% if task.payment_amount > 0 %}
-                                <div class="payment-badge">
-                                    💰 {{ task.payment_amount }} ₽
-                                </div>
-                                {% endif %}
-                            </div>
-                        </header>
-                        
-                        <!-- Описание -->
-                        <div class="task-description">
-                            {{ task.description|truncatewords:15 }}
-                        </div>
-                        
-                        <!-- Теги -->
-                        {% if task.tags %}
-                        <div class="task-tags">
-                            {% for tag in task.tags.split %}
-                            <span class="tag">{{ tag }}</span>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Дедлайн -->
-                        <div class="task-deadline {% if task.is_overdue %}overdue{% elif task.is_urgent %}urgent{% endif %}">
-                            <span class="deadline-icon">📅</span>
-                            <span class="deadline-date">{{ task.due_date|date:"d.m.Y" }}</span>
-                            {% if task.is_overdue %}
-                            <span class="deadline-alert">ПРОСРОЧЕНО</span>
-                            {% elif task.days_until_due == 0 %}
-                            <span class="deadline-alert today">СЕГОДНЯ!</span>
-                            {% elif task.days_until_due == 1 %}
-                            <span class="deadline-alert tomorrow">ЗАВТРА</span>
-                            {% endif %}
-                        </div>
-                        
-                        <!-- Футер карточки -->
-                        <footer class="task-footer">
-                            <div class="task-actions">
-                                {% if task.status == 'created' %}
-                                <button class="btn-action btn-start" onclick="location.href='{% url 'start_task' task.id %}'">
-                                    <span class="btn-icon">🚀</span>
-                                    Начать
-                                </button>
-                                {% elif task.status == 'in_progress' %}
-                                <div class="progress-info">
-                                    <div class="timer">
-                                        <span class="timer-icon">⏱️</span>
-                                        <span class="timer-text">{{ task.started_date|timesince }}</span>
-                                    </div>
-                                    <button class="btn-action btn-submit" onclick="location.href='{% url 'submit_task' task.id %}'">
-                                        📤 Сдать
-                                    </button>
-                                </div>
-                                {% elif task.status == 'submitted' %}
-                                <div class="submitted-info">
-                                    <div class="waiting-badge">
-                                        ⏳ На проверке
-                                    </div>
-                                    <small class="submit-time">{{ task.submitted_date|date:"d.m H:i" }}</small>
-                                </div>
-                                {% endif %}
-                            </div>
-                        </footer>
-                    </div>
-                </article>
-                {% endfor %}
+                <!-- В секции tasks-grid -->
+{% for task in group.tasks %}
+    {% include 'tasks/partials/task_card_board.html' with task=task show_assignee=show_assignee|default:False %}
+{% endfor %}
                 
                 {% if group.count == 0 %}
                 <div class="empty-state">
