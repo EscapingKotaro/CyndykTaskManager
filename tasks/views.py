@@ -12,6 +12,7 @@ from django.http import JsonResponse
 import secrets
 from datetime import timedelta
 from django.contrib.auth import login  # ← Добавляем этот импорт
+from .utils import get_kanban_data, get_team_kanban_data
 
 @login_required
 def navigation_buttons(request):
@@ -318,6 +319,67 @@ def get_employee_balance(request, employee_id):
 def custom_logout(request):
     auth_logout(request)
     return redirect('login')
+
+from .utils import get_kanban_data, get_team_kanban_data
+
+@login_required
+def employee_kanban(request):
+    """Канбан для обычного сотрудника"""
+    kanban_data = get_kanban_data(request.user)
+    
+    return render(request, 'tasks/kanban_employee.html', {
+        **kanban_data,
+        'page_title': 'Мои задачи',
+        'header_title': '👨‍💻 Мои задачи',
+        'show_balance': True,
+    })
+
+@login_required
+def manager_team_kanban(request):
+    """Канбан для руководителя - вся команда"""
+    if not request.user.is_manager() and not request.user.is_boss():
+        return redirect('employee_kanban')
+    
+    kanban_data = get_team_kanban_data(request.user)
+    
+    return render(request, 'tasks/kanban_team.html', {
+        **kanban_data,
+        'page_title': 'Задачи команды',
+        'header_title': '👥 Задачи команды',
+        'board_title': '📋 Задачи команды',
+        'show_balance': False,
+        'show_empty_columns': True,
+        'team_stats': {
+            'user_count': kanban_data['team_users'].count(),
+            'task_count': kanban_data['total_tasks'],
+            'total_payment': kanban_data['total_payment']
+        }
+    })
+
+@login_required
+def manager_user_kanban(request, user_id):
+    """Канбан для руководителя - конкретный сотрудник"""
+    if not request.user.is_manager() and not request.user.is_boss():
+        return redirect('employee_kanban')
+    
+    try:
+        target_user = CustomUser.objects.get(id=user_id)
+        if not request.user.can_assign_task_to(target_user):
+            return HttpResponseForbidden("Нет доступа к этому пользователю")
+    except CustomUser.DoesNotExist:
+        return HttpResponseNotFound("Пользователь не найден")
+    
+    kanban_data = get_kanban_data(request.user, assigned_to_user=target_user)
+    
+    return render(request, 'tasks/kanban_user.html', {
+        **kanban_data,
+        'page_title': f'Задачи {target_user.get_display_name()}',
+        'header_title': f'👤 Задачи {target_user.get_display_name()}',
+        'board_title': f'📋 Задачи сотрудника',
+        'target_user': target_user,
+        'show_balance': False,
+        'show_assignee': False,
+    })
 
 # Главная страница - разная логика для админа и сотрудника
 @login_required

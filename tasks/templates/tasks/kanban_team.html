@@ -1,0 +1,27 @@
+{% extends 'tasks/kanban_base.html' %}
+
+{% block task_list %}
+    {% for user, user_tasks in group.user_tasks.items %}
+    <div class="user-task-group">
+        <div class="user-header">
+            <div class="user-avatar">
+                {% if user.get_avatar_url %}
+                <img src="{{ user.get_avatar_url }}" alt="{{ user.get_display_name }}">
+                {% else %}
+                👤
+                {% endif %}
+            </div>
+            <span class="user-name">{{ user.get_display_name }}</span>
+            <span class="user-task-count">({{ user_tasks|length }})</span>
+        </div>
+        
+        <div class="user-tasks">
+            {% for task in user_tasks %}
+            <div class="task-card" data-task-id="{{ task.id }}">
+                {% include 'tasks/partials/task_card.html' with task=task show_assignee=False %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% endblock %}

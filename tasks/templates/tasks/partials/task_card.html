@@ -1,0 +1,68 @@
+<div class="task-content">
+    <div class="task-header">
+        <h4 class="task-title">{{ task.title }}</h4>
+        {% if show_assignee %}
+        <div class="task-assignee">
+            <span class="assignee-avatar">
+                {% if task.assigned_to.get_avatar_url %}
+                <img src="{{ task.assigned_to.get_avatar_url }}" alt="{{ task.assigned_to.get_display_name }}">
+                {% else %}
+                👤
+                {% endif %}
+            </span>
+            <span class="assignee-name">{{ task.assigned_to.get_display_name }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <p class="task-description">{{ task.description|truncatewords:20 }}</p>
+    
+    <div class="task-meta">
+        <div class="meta-item">
+            <span class="meta-icon">📅</span>
+            <span class="meta-text">{{ task.due_date }}</span>
+        </div>
+        
+        {% if task.payment_amount > 0 %}
+        <div class="meta-item">
+            <span class="meta-icon">💰</span>
+            <span class="meta-text">{{ task.payment_amount }} руб.</span>
+        </div>
+        {% endif %}
+        
+        {% if task.tags %}
+        <div class="meta-item">
+            <span class="meta-icon">🏷️</span>
+            <span class="meta-text">{{ task.tags }}</span>
+        </div>
+        {% endif %}
+        
+        {% if task.started_date and task.status == 'in_progress' %}
+        <div class="meta-item">
+            <span class="meta-icon">⏱️</span>
+            <span class="meta-text">{{ task.started_date|timesince }}</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="task-actions">
+        {% if task.status == 'created' %}
+            <a href="{% url 'start_task' task.id %}" class="btn btn-primary btn-sm">
+                🚀 Начать
+            </a>
+        {% elif task.status == 'in_progress' %}
+            <a href="{% url 'submit_task' task.id %}" class="btn btn-success btn-sm">
+                📤 Сдать
+            </a>
+        {% elif task.status == 'submitted' %}
+            <span class="status-badge status-waiting">⏳ На проверке</span>
+            {% if can_control_tasks %}
+            <a href="{% url 'complete_task' task.id %}" class="btn btn-success btn-sm">
+                ✅ Принять
+            </a>
+            {% endif %}
+        {% else %}
+            <span class="status-badge status-completed">✅ Выполнено</span>
+        {% endif %}
+    </div>
+</div>

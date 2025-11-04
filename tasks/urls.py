@@ -34,5 +34,9 @@ urlpatterns = [
     path('navigation-buttons/<int:button_id>/edit/', views.edit_navigation_button, name='edit_navigation_button'),
     path('navigation-buttons/<int:button_id>/delete/', views.delete_navigation_button, name='delete_navigation_button'),
     path('employee/<int:user_id>/edit/', views.edit_employee, name='edit_employee'),
+
+    path('kanban/', views.employee_kanban, name='employee_kanban'),
+    path('kanban/team/', views.manager_team_kanban, name='team_kanban'),
+    path('kanban/user/<int:user_id>/', views.manager_user_kanban, name='user_kanban'),
 ]
 
