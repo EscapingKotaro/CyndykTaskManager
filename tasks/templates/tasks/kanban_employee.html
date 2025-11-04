@@ -1,9 +1,9 @@
 {% extends 'tasks/kanban_base.html' %}
 
-{% block task_list %}
-    {% for task in group.tasks %}
-    <div class="task-card" data-task-id="{{ task.id }}">
-        {% include 'tasks/partials/task_card.html' with task=task show_assignee=False %}
-    </div>
-    {% endfor %}
+{% block kanban_header %}
+<!-- Переопределяем хедер если нужно -->
+{% endblock %}
+
+{% block kanban_sidebar %}
+<!-- Переопределяем сайдбар если нужно -->
 {% endblock %}
