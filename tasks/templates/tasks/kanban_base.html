@@ -42,39 +42,7 @@
         </div>
     </header>
 
-    <!-- Фильтры и поиск -->
-    <div class="board-controls">
-        <div class="controls-left">
-            <div class="view-toggles">
-                <button class="view-toggle active" data-view="board">
-                    <span class="toggle-icon">📋</span>
-                    Доска
-                </button>
-                <button class="view-toggle" data-view="list">
-                    <span class="toggle-icon">📝</span>
-                    Список
-                </button>
-            </div>
-            
-            <div class="filter-tags">
-                <button class="filter-tag active">Все</button>
-                <button class="filter-tag">Сегодня</button>
-                <button class="filter-tag">Срочные</button>
-                <button class="filter-tag">Высокооплачиваемые</button>
-            </div>
-        </div>
-        
-        <div class="controls-right">
-            <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" placeholder="Поиск задач..." class="search-input">
-            </div>
-            <button class="btn-new-task">
-                <span class="btn-icon">➕</span>
-                Новая задача
-            </button>
-        </div>
-    </div>
+    
 
     <!-- Основная доска -->
     <main class="task-board">
@@ -120,56 +88,33 @@
 
 {% block extra_css %}
 <style>
-:root {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
-    --background: #f8fafc;
-    --surface: #ffffff;
-    --text: #1e293b;
-    --text-light: #64748b;
-    --border: #e2e8f0;
-    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    background: var(--background);
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-/* Основной лейаут */
+/* Обновленные стили для доски */
 .board-layout {
     min-height: 100vh;
-    padding: 0;
+    background: var(--background);
+    padding: 1rem;
 }
 
-/* Хедер доски */
+/* Компактный хедер */
 .board-header {
     background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 1.5rem 2rem;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-shadow: var(--shadow);
+    margin-bottom: 1.5rem;
 }
 
 .header-main {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .board-title {
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text);
     margin: 0;
@@ -177,17 +122,17 @@ body {
 
 .board-stats {
     display: flex;
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .stat {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    gap: 0.5rem;
 }
 
 .stat-number {
-    font-size: 1.5rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--primary);
 }
@@ -195,322 +140,218 @@ body {
 .stat-label {
     font-size: 0.8rem;
     color: var(--text-light);
-    margin-top: 0.25rem;
 }
 
-/* Юзер виджет */
-.user-widget {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.5rem 1rem;
-    background: var(--background);
-    border-radius: 12px;
-}
-
-.user-avatar, .avatar-placeholder {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-}
-
-.user-avatar {
-    object-fit: cover;
-}
-
-.avatar-placeholder {
-    background: var(--primary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 0.9rem;
-}
-
-.user-name {
-    font-weight: 600;
-    color: var(--text);
-}
-
-.balance-badge {
-    background: var(--success);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-/* Контролы */
-.board-controls {
-    background: var(--surface);
-    padding: 1rem 2rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.controls-left {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-}
-
-.view-toggles {
-    display: flex;
-    background: var(--background);
-    border-radius: 12px;
-    padding: 0.25rem;
-}
-
-.view-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border: none;
-    background: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--text-light);
-    transition: all 0.2s ease;
-}
-
-.view-toggle.active {
-    background: var(--surface);
-    color: var(--text);
-    box-shadow: var(--shadow);
-}
-
-.filter-tags {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.filter-tag {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    transition: all 0.2s ease;
-}
-
-.filter-tag.active {
-    background: var(--primary);
-    color: white;
-    border-color: var(--primary);
-}
-
-.controls-right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.search-box {
-    position: relative;
-    display: flex;
-    align-items: center;
-}
-
-.search-icon {
-    position: absolute;
-    left: 1rem;
-    color: var(--text-light);
-}
-
-.search-input {
-    padding: 0.75rem 1rem 0.75rem 2.5rem;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    background: var(--surface);
-    width: 250px;
-    font-size: 0.9rem;
-}
-
-.btn-new-task {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s ease;
-}
-
-.btn-new-task:hover {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-}
-
-/* Основная доска */
+/* Основная доска - 4 колонки */
 .task-board {
-    padding: 2rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
     align-items: start;
+    height: calc(100vh - 120px);
 }
 
 .board-section {
     background: var(--surface);
-    border-radius: 16px;
-    padding: 1.5rem;
+    border-radius: 12px;
+    padding: 1rem;
     box-shadow: var(--shadow);
-    min-height: 600px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    border-top: 4px solid var(--border);
 }
 
+.board-section[data-status="proposed"] {
+    border-top-color: #fbbf24;
+}
+
+.board-section[data-status="created"] {
+    border-top-color: var(--success);
+}
+
+.board-section[data-status="in_progress"] {
+    border-top-color: var(--primary);
+}
+
+.board-section[data-status="submitted"] {
+    border-top-color: var(--warning);
+}
+
+/* Заголовок секции */
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--border);
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border);
 }
 
 .section-title {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     font-weight: 600;
     color: var(--text);
     margin: 0;
 }
 
 .status-icon {
-    font-size: 1.25rem;
+    font-size: 1.1rem;
 }
 
 .section-stats {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
 }
 
 .task-count {
     background: var(--primary);
     color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
 }
 
 .payment-amount {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--success);
     font-weight: 600;
 }
 
-/* Сетка задач */
+/* Контейнер для задач с прокруткой */
 .tasks-grid {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    min-height: 200px;
+    gap: 0.75rem;
+    flex: 1;
+    overflow-y: auto;
+    max-height: calc(100vh - 200px);
+    padding-right: 0.25rem;
 }
 
-/* Карточка задачи */
+/* Стили скроллбара */
+.tasks-grid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.tasks-grid::-webkit-scrollbar-track {
+    background: var(--background);
+    border-radius: 2px;
+}
+
+.tasks-grid::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 2px;
+}
+
+.tasks-grid::-webkit-scrollbar-thumb:hover {
+    background: var(--text-light);
+}
+
+/* Карточка задачи - компактная */
 .task-card {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    transition: all 0.3s ease;
+    border-radius: 8px;
+    transition: all 0.2s ease;
     cursor: pointer;
+    border-left: 3px solid var(--border);
 }
 
 .task-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .task-card[data-priority="high"] {
-    border-left: 4px solid var(--danger);
+    border-left-color: var(--danger);
 }
 
 .task-card[data-priority="medium"] {
-    border-left: 4px solid var(--warning);
+    border-left-color: var(--warning);
 }
 
 .task-card[data-priority="low"] {
-    border-left: 4px solid var(--success);
+    border-left-color: var(--success);
 }
 
 .task-card-inner {
-    padding: 1.25rem;
+    padding: 0.75rem;
 }
 
 .task-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
+    gap: 0.5rem;
 }
 
 .task-title {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.3;
     flex: 1;
 }
 
 .task-meta {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.25rem;
+    flex-shrink: 0;
 }
 
 .payment-badge {
     background: var(--success);
     color: white;
-    padding: 0.25rem 0.5rem;
-    border-radius: 8px;
-    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .task-description {
     color: var(--text-light);
-    font-size: 0.9rem;
-    line-height: 1.5;
-    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .task-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
 }
 
 .tag {
     background: var(--background);
     color: var(--text-light);
-    padding: 0.25rem 0.5rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.65rem;
 }
 
 .task-deadline {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem;
+    gap: 0.4rem;
+    padding: 0.4rem 0.6rem;
     background: var(--background);
-    border-radius: 8px;
-    margin-bottom: 1rem;
-    font-size: 0.8rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    font-size: 0.75rem;
 }
 
 .task-deadline.overdue {
@@ -526,14 +367,15 @@ body {
 }
 
 .deadline-alert {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
     margin-left: auto;
 }
 
-.deadline-alert.today {
+.deadline-alert.today,
+.deadline-alert.overdue {
     background: var(--danger);
     color: white;
 }
@@ -543,14 +385,9 @@ body {
     color: white;
 }
 
-.deadline-alert.overdue {
-    background: var(--danger);
-    color: white;
-}
-
 .task-footer {
     border-top: 1px solid var(--border);
-    padding-top: 1rem;
+    padding-top: 0.5rem;
 }
 
 .task-actions {
@@ -562,14 +399,15 @@ body {
 .btn-action {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
+    gap: 0.3rem;
+    padding: 0.4rem 0.8rem;
     border: none;
-    border-radius: 8px;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .btn-start {
@@ -593,7 +431,7 @@ body {
 .progress-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.5rem;
     width: 100%;
     justify-content: space-between;
 }
@@ -601,92 +439,100 @@ body {
 .timer {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
+    gap: 0.3rem;
+    font-size: 0.7rem;
     color: var(--text-light);
 }
 
 .submitted-info {
     display: flex;
     flex-direction: column;
-    gap: 0.25rem;
+    gap: 0.15rem;
     width: 100%;
 }
 
 .waiting-badge {
     background: #fffbeb;
     color: var(--warning);
-    padding: 0.5rem;
-    border-radius: 8px;
+    padding: 0.3rem 0.5rem;
+    border-radius: 6px;
     text-align: center;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     font-weight: 600;
 }
 
 .submit-time {
     text-align: center;
     color: var(--text-light);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
 }
 
 /* Пустые состояния */
 .empty-state {
     text-align: center;
-    padding: 3rem 1rem;
+    padding: 2rem 1rem;
     color: var(--text-light);
 }
 
 .empty-icon {
-    font-size: 2rem;
+    font-size: 1.5rem;
     margin-bottom: 0.5rem;
     opacity: 0.5;
 }
 
 .empty-text {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
 }
 
 /* Адаптивность */
+@media (max-width: 1400px) {
+    .task-board {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .board-section {
+        padding: 0.75rem;
+    }
+}
+
 @media (max-width: 1200px) {
     .task-board {
         grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(2, 1fr);
+        height: auto;
     }
 }
 
 @media (max-width: 768px) {
     .task-board {
         grid-template-columns: 1fr;
-        padding: 1rem;
-    }
-    
-    .board-header,
-    .board-controls {
-        padding: 1rem;
-        flex-direction: column;
         gap: 1rem;
     }
     
-    .header-main {
+    .board-header {
         flex-direction: column;
         gap: 1rem;
         text-align: center;
     }
     
-    .controls-left,
-    .controls-right {
+    .header-main {
         flex-direction: column;
-        width: 100%;
+        gap: 1rem;
     }
     
-    .search-input {
-        width: 100%;
-    }
-    
-    .btn-new-task {
-        width: 100%;
+    .board-stats {
         justify-content: center;
     }
+}
+
+/* Убираем лишние элементы */
+.view-toggles,
+.filter-tags,
+.search-box,
+.btn-new-task {
+    display: none !important;
 }
 </style>
 {% endblock %}
