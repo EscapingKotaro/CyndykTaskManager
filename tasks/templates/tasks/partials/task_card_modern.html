@@ -1,0 +1,77 @@
+<div class="modern-task-card">
+    <!-- Заголовок и приоритет -->
+    <div class="task-header">
+        <h4 class="task-title">{{ task.title }}</h4>
+        <div class="task-priority">
+            {% if task.payment_amount > 5000 %}
+            <span class="priority-high">🔥</span>
+            {% elif task.payment_amount > 2000 %}
+            <span class="priority-medium">⚡</span>
+            {% else %}
+            <span class="priority-low">💎</span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Прогресс и сроки -->
+    <div class="task-meta">
+        <div class="deadline-indicator {% if task.is_overdue %}overdue{% endif %}">
+            <span class="meta-icon">📅</span>
+            <span class="deadline-text">{{ task.due_date|date:"d.m" }}</span>
+            {% if task.days_until_due == 0 %}
+            <span class="deadline-badge today">Сегодня!</span>
+            {% elif task.days_until_due == 1 %}
+            <span class="deadline-badge tomorrow">Завтра</span>
+            {% elif task.days_until_due < 0 %}
+            <span class="deadline-badge overdue">Просрочено</span>
+            {% endif %}
+        </div>
+        
+        {% if task.payment_amount > 0 %}
+        <div class="payment-indicator">
+            <span class="payment-icon">💰</span>
+            <span class="payment-amount">{{ task.payment_amount }} ₽</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Теги -->
+    {% if task.tags %}
+    <div class="task-tags">
+        {% for tag in task.tags.split %}
+        <span class="task-tag">{{ tag }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Действия -->
+    <div class="task-actions">
+        {% if task.status == 'created' %}
+        <button class="btn-action btn-start" onclick="location.href='{% url 'start_task' task.id %}'">
+            <span class="btn-icon">🚀</span>
+            Начать
+        </button>
+        {% elif task.status == 'in_progress' %}
+        <div class="progress-actions">
+            <button class="btn-action btn-submit" onclick="location.href='{% url 'submit_task' task.id %}'">
+                <span class="btn-icon">📤</span>
+                Сдать
+            </button>
+            <div class="timer">
+                <span class="timer-icon">⏱️</span>
+                <span class="timer-text">{{ task.started_date|timesince }}</span>
+            </div>
+        </div>
+        {% elif task.status == 'submitted' %}
+        <div class="submitted-status">
+            <div class="status-waiting">
+                <span class="status-icon">⏳</span>
+                На проверке
+            </div>
+            <div class="submitted-time">
+                {{ task.submitted_date|date:"d.m H:i" }}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
