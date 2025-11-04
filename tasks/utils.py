@@ -1,5 +1,6 @@
 from django.db.models import Q, Sum
 from collections import OrderedDict
+from .models import *
 
 def get_kanban_data(user, assigned_to_user=None):
     """
