@@ -155,6 +155,22 @@ class Task(models.Model):
                                      related_name='controlled_tasks', verbose_name='На контроле у')
     def __str__(self):
         return self.title
+    @property
+    def days_until_due(self):
+        """Количество дней до дедлайна"""
+        from django.utils import timezone
+        delta = self.due_date - timezone.now().date()
+        return delta.days
+    
+    @property
+    def is_overdue(self):
+        """Просрочена ли задача"""
+        return self.days_until_due < 0 and self.status not in ['completed', 'submitted']
+    
+    @property 
+    def is_urgent(self):
+        """Срочная ли задача (менее 2 дней)"""
+        return 0 <= self.days_until_due <= 2
 
 class Payment(models.Model):
     employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments_received', 

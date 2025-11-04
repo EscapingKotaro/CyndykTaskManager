@@ -2,20 +2,25 @@ from django.db.models import Q, Sum
 from collections import OrderedDict
 from .models import *
 
-def get_kanban_data(user, assigned_to_user=None):
+def get_kanban_data(user, assigned_to_user=None, show_completed=False):
     """
     Универсальная функция для получения данных канбана
-    assigned_to_user - если None, то задачи текущего пользователя
     """
     if assigned_to_user:
-        # Для просмотра задач конкретного пользователя (руководителем)
         tasks = Task.objects.filter(assigned_to=assigned_to_user)
     else:
-        # Для обычного пользователя
         tasks = Task.objects.filter(assigned_to=user)
     
-    # Создаем упорядоченные статусы
-    status_order = ['proposed', 'created', 'in_progress', 'submitted', 'completed']
+    # Исключаем выполненные задачи если не указано обратное
+    if not show_completed:
+        tasks = tasks.exclude(status='completed')
+    
+    # Статусы для канбана (без выполненных или с ними)
+    if show_completed:
+        status_order = ['proposed', 'created', 'in_progress', 'submitted', 'completed']
+    else:
+        status_order = ['proposed', 'created', 'in_progress', 'submitted']
+    
     status_groups = OrderedDict()
     
     for status_code in status_order:
@@ -31,10 +36,20 @@ def get_kanban_data(user, assigned_to_user=None):
             'code': status_code
         }
     
+    # Статистика по выполненным задачам за текущий месяц
+    from datetime import datetime
+    current_month = datetime.now().month
+    completed_this_month = Task.objects.filter(
+        assigned_to=assigned_to_user if assigned_to_user else user,
+        status='completed',
+        submitted_date__month=current_month
+    ).count()
+    
     return {
         'status_groups': status_groups,
         'total_tasks': tasks.count(),
-        'total_payment': tasks.aggregate(total=Sum('payment_amount'))['total'] or 0
+        'total_payment': tasks.aggregate(total=Sum('payment_amount'))['total'] or 0,
+        'completed_this_month': completed_this_month
     }
 
 def get_team_kanban_data(manager_user):

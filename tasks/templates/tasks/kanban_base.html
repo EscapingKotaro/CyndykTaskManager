@@ -1,252 +1,543 @@
 {% extends 'tasks/base.html' %}
+{% load static %}
 
 {% block title %}{{ page_title|default:"Канбан" }} - TaskManager{% endblock %}
 
 {% block content %}
-<div class="kanban-header">
-    {% block kanban_header %}
-    <div class="card">
-        <h1>{{ header_title|default:"👨‍💻 Мои задачи" }}</h1>
-        {% if show_balance and request.user.balance > 0 %}
-        <div class="balance-card">
-            <h3>💰 Текущий баланс</h3>
-            <p class="balance-amount">{{ request.user.balance }} руб.</p>
-        </div>
-        {% endif %}
-        
-        {% if team_stats %}
-        <div class="team-stats">
-            <div class="stat-item">
-                <span class="stat-label">👥 Команда:</span>
-                <span class="stat-value">{{ team_stats.user_count }} чел.</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">📋 Задачи:</span>
-                <span class="stat-value">{{ team_stats.task_count }}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">💰 Сумма:</span>
-                <span class="stat-value">{{ team_stats.total_payment }} руб.</span>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-    {% endblock %}
-</div>
-
-<div class="card">
-    <h2>{{ board_title|default:"📋 Активные задачи" }} ({{ total_tasks }})</h2>
-    
-    {% if total_tasks > 0 %}
-    <div class="kanban-container">
-        {% for status_code, group in status_groups.items %}
-        {% if group.count > 0 or show_empty_columns %}
-        <div class="kanban-column {% if group.count == 0 %}empty-column{% endif %}">
-            <div class="column-header">
-                <h3 class="column-title">{{ group.name }}</h3>
-                <div class="column-stats">
-                    <span class="task-count">{{ group.count }}</span>
-                    {% if group.total_payment > 0 %}
-                    <span class="payment-badge">💰 {{ group.total_payment }}</span>
+<div class="kanban-layout">
+    <!-- Боковая панель с статистикой -->
+    <aside class="kanban-sidebar">
+        {% block kanban_sidebar %}
+        <div class="sidebar-card">
+            <div class="user-info">
+                <div class="avatar-container">
+                    {% if request.user.get_avatar_url %}
+                    <img src="{{ request.user.get_avatar_url }}" alt="{{ request.user.get_display_name }}" class="user-avatar">
+                    {% else %}
+                    <div class="avatar-placeholder">👤</div>
                     {% endif %}
                 </div>
+                <h2 class="user-name">{{ request.user.get_display_name }}</h2>
+                <p class="user-role">{{ request.user.get_role_display }}</p>
             </div>
             
-            <div class="tasks-container" data-status="{{ status_code }}">
-                {% block task_list %}
-                    {% for task in group.tasks %}
-                    <div class="task-card" data-task-id="{{ task.id }}">
-                        {% include 'tasks/partials/task_card.html' with task=task %}
+            <div class="stats-grid">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">📋</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ total_tasks }}</span>
+                        <span class="stat-label">активных</span>
                     </div>
-                    {% endfor %}
-                {% endblock %}
+                </div>
                 
-                {% if group.count == 0 and show_empty_columns %}
-                <div class="empty-column-message">
-                    <p>Нет задач</p>
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ total_payment }}</span>
+                        <span class="stat-label">руб.</span>
+                    </div>
+                </div>
+                
+                {% if completed_this_month > 0 %}
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <span class="stat-value">{{ completed_this_month }}</span>
+                        <span class="stat-label">за месяц</span>
+                    </div>
                 </div>
                 {% endif %}
             </div>
+            
+            {% if request.user.balance > 0 %}
+            <div class="balance-widget">
+                <div class="balance-header">
+                    <span class="balance-icon">💳</span>
+                    <span>Баланс</span>
+                </div>
+                <div class="balance-amount">{{ request.user.balance }} ₽</div>
+                <div class="balance-actions">
+                    <button class="btn-balance">💸 Вывести</button>
+                </div>
+            </div>
+            {% endif %}
         </div>
-        {% endif %}
-        {% endfor %}
-    </div>
-    {% else %}
-    <div class="empty-state">
-        <p class="empty-icon">🎉</p>
-        <p class="empty-title">Нет активных задач!</p>
-        <p class="empty-subtitle">Отличная работа! Новые задачи появятся здесь.</p>
-    </div>
-    {% endif %}
+        {% endblock %}
+    </aside>
+
+    <!-- Основная область канбана -->
+    <main class="kanban-main">
+        {% block kanban_header %}
+        <div class="kanban-topbar">
+            <div class="topbar-left">
+                <h1 class="page-title">{{ header_title|default:"🗂️ Мой Канбан" }}</h1>
+                <div class="view-actions">
+                    <button class="btn-view active" data-view="board">🎯 Доска</button>
+                    <button class="btn-view" data-view="list">📝 Список</button>
+                </div>
+            </div>
+            
+            <div class="topbar-right">
+                <div class="search-box">
+                    <input type="text" placeholder="🔍 Поиск задач..." class="search-input">
+                </div>
+                <button class="btn-filter">🎛️ Фильтры</button>
+            </div>
+        </div>
+        {% endblock %}
+
+        <!-- Канбан доска -->
+        <div class="kanban-board">
+            {% for status_code, group in status_groups.items %}
+            <div class="kanban-column" data-status="{{ status_code }}">
+                <div class="column-header">
+                    <div class="column-title-section">
+                        <h3 class="column-title">{{ group.name }}</h3>
+                        <span class="column-badge">{{ group.count }}</span>
+                    </div>
+                    {% if group.total_payment > 0 %}
+                    <div class="column-payment">💰 {{ group.total_payment }} ₽</div>
+                    {% endif %}
+                </div>
+                
+                <div class="tasks-list" id="tasks-{{ status_code }}">
+                    {% for task in group.tasks %}
+                    <div class="task-item" data-task-id="{{ task.id }}" draggable="true">
+                        {% include 'tasks/partials/task_card_modern.html' with task=task %}
+                    </div>
+                    {% endfor %}
+                    
+                    {% if group.count == 0 %}
+                    <div class="empty-column">
+                        <div class="empty-icon">🎯</div>
+                        <p class="empty-text">Нет задач</p>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                {% if status_code == 'created' %}
+                <div class="column-footer">
+                    <button class="btn-add-task">➕ Добавить задачу</button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </main>
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-.kanban-container {
+:root {
+    --primary: #6366f1;
+    --primary-dark: #4f46e5;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --background: #f8fafc;
+    --surface: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.kanban-layout {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: 320px 1fr;
+    gap: 0;
+    min-height: 100vh;
+    background: var(--background);
+}
+
+/* Боковая панель */
+.kanban-sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.5rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-card {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+}
+
+.user-info {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.avatar-container {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1rem;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--primary);
+}
+
+.user-avatar {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+}
+
+.user-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 0.25rem 0;
+}
+
+.user-role {
+    color: var(--text-light);
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Статистика */
+.stats-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 12px;
+    background: var(--background);
+    transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.stat-primary { border-left: 4px solid var(--primary); }
+.stat-success { border-left: 4px solid var(--success); }
+.stat-warning { border-left: 4px solid var(--warning); }
+
+.stat-icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+}
+
+.stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+/* Баланс */
+.balance-widget {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    padding: 1.25rem;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.balance-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.balance-amount {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.balance-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.btn-balance {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-balance:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Основная область */
+.kanban-main {
+    padding: 1.5rem;
+    overflow-x: auto;
+}
+
+.kanban-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 1rem 0;
+}
+
+.page-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+}
+
+.view-actions {
+    display: flex;
+    background: var(--background);
+    border-radius: 12px;
+    padding: 0.25rem;
+    margin-left: 1rem;
+}
+
+.btn-view {
+    padding: 0.5rem 1rem;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-view.active {
+    background: var(--surface);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.search-box {
+    position: relative;
+}
+
+.search-input {
+    padding: 0.75rem 1rem 0.75rem 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    width: 250px;
+    font-size: 0.9rem;
+}
+
+.search-input::before {
+    content: '🔍';
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.btn-filter {
+    padding: 0.75rem 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-filter:hover {
+    background: var(--background);
+}
+
+/* Канбан доска */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 1.5rem;
     align-items: start;
 }
 
 .kanban-column {
-    background: var(--background);
-    border-radius: 10px;
-    padding: 1rem;
-    min-height: 400px;
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 1.25rem;
+    box-shadow: var(--shadow);
+    min-height: 600px;
+    border-top: 4px solid var(--border);
 }
 
-.kanban-column.empty-column {
-    opacity: 0.6;
-}
+.kanban-column[data-status="proposed"] { border-top-color: #fbbf24; }
+.kanban-column[data-status="created"] { border-top-color: var(--success); }
+.kanban-column[data-status="in_progress"] { border-top-color: var(--primary); }
+.kanban-column[data-status="submitted"] { border-top-color: var(--warning); }
 
 .column-header {
+    margin-bottom: 1.5rem;
+}
+
+.column-title-section {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 2px solid var(--border);
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
 .column-title {
     font-size: 1.1rem;
     font-weight: 600;
+    color: var(--text);
     margin: 0;
-    color: var(--primary);
 }
 
-.column-stats {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.task-count {
+.column-badge {
     background: var(--primary);
     color: white;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
     font-size: 0.8rem;
     font-weight: 600;
 }
 
-.payment-badge {
-    background: #10b981;
-    color: white;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.8rem;
+.column-payment {
+    font-size: 0.9rem;
+    color: var(--success);
     font-weight: 600;
 }
 
-.tasks-container {
+.tasks-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
-    min-height: 100px;
+    min-height: 200px;
 }
 
-.task-card {
-    background: white;
+.task-item {
+    background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 1rem;
-    transition: all 0.2s ease;
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: all 0.3s ease;
+    cursor: grab;
 }
 
-.task-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+.task-item:hover {
     transform: translateY(-2px);
+    box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.15);
 }
 
-.balance-card {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-    padding: 1.5rem;
-    border-radius: 10px;
-    margin: 1rem 0;
-    max-width: 300px;
+.task-item:active {
+    cursor: grabbing;
 }
 
-.balance-amount {
-    font-size: 2rem;
-    margin: 0.5rem 0;
-    font-weight: bold;
-}
-
-.team-stats {
-    display: flex;
-    gap: 2rem;
-    margin-top: 1rem;
-    flex-wrap: wrap;
-}
-
-.stat-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-}
-
-.stat-label {
-    font-size: 0.9rem;
-    color: var(--secondary);
-}
-
-.stat-value {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--primary);
-}
-
-.empty-state {
+.empty-column {
     text-align: center;
-    padding: 3rem;
-    color: var(--secondary);
+    padding: 3rem 1rem;
+    color: var(--text-light);
 }
 
 .empty-icon {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-}
-
-.empty-title {
-    font-size: 1.2rem;
+    font-size: 2rem;
     margin-bottom: 0.5rem;
+    opacity: 0.5;
 }
 
-.empty-column-message {
-    text-align: center;
-    padding: 2rem;
-    color: var(--secondary);
-    font-style: italic;
+.empty-text {
+    margin: 0;
+    font-size: 0.9rem;
 }
 
-/* Статус-специфичные стили колонок */
-.tasks-container[data-status="proposed"] {
-    border-left: 4px solid #fbbf24;
+.column-footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
 }
 
-.tasks-container[data-status="created"] {
-    border-left: 4px solid #10b981;
+.btn-add-task {
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--background);
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.tasks-container[data-status="in_progress"] {
-    border-left: 4px solid #3b82f6;
+.btn-add-task:hover {
+    background: var(--surface);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
-.tasks-container[data-status="submitted"] {
-    border-left: 4px solid #f59e0b;
-}
-
-.tasks-container[data-status="completed"] {
-    border-left: 4px solid #059669;
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .kanban-layout {
+        grid-template-columns: 280px 1fr;
+    }
 }
 
 @media (max-width: 768px) {
-    .kanban-container {
+    .kanban-layout {
         grid-template-columns: 1fr;
+    }
+    
+    .kanban-sidebar {
+        display: none;
+    }
+    
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+    
+    .kanban-topbar {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+    
+    .topbar-left, .topbar-right {
+        justify-content: center;
+    }
+    
+    .search-input {
+        width: 100%;
     }
 }
 </style>
