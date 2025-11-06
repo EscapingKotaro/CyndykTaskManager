@@ -6,7 +6,8 @@ from django.db.models import Q, Sum
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
         ('boss', 'Босс'),
-        ('manager', 'Менеджер'), 
+        ('manager', 'Руковод'), 
+        ('false_manager', 'Менеджер'), 
         ('technician', 'Техник'),
     ]
 
@@ -56,7 +57,7 @@ class CustomUser(AbstractUser):
         return self.role == 'manager'
     
     def is_technician(self):
-        return self.role == 'technician' or not self.role
+        return self.role == 'technician' or self.role == "false_manager" or not self.role
     def get_team_leadership(self):
         if self.role == 'boss':
             # Босс возвращает себя + всех менеджеров в его команде

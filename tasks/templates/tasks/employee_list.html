@@ -35,11 +35,13 @@
     
     <div class="employee-grid">
         {% for emp in subordinates %}
-        <div class="employee-card {% if emp.role == 'manager' %}employee-manager{% elif emp.role == 'boss' %}employee-boss{% endif %}">
+        <div class="employee-card {% if emp.role == 'manager' %}employee-manager{% elif emp.role == 'boss' %}employee-boss{% elif emp.role == 'false_manager' %}employee-false-manager{% endif %}">
             <div class="employee-role-badge">
                 {% if emp.role == 'boss' %}
                     👑 Босс
                 {% elif emp.role == 'manager' %}
+                    👑 Руковод
+                {% elif emp.role == 'false_manager' %}
                     📊 Менеджер
                 {% else %}
                     👤 Техник
@@ -280,6 +282,65 @@
     background: rgba(255, 255, 255, 0.2);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* СТИЛЬ ДЛЯ МЛАДШЕГО МЕНЕДЖЕРА - СКРОМНО, НО С ДОСТОИНСТВОМ */
+.employee-false-manager {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    border: 2px solid #d0d7e3;
+    color: #4a5568;
+    position: relative;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.employee-false-manager::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #a0aec0, #cbd5e0);
+    opacity: 0.7;
+}
+
+.employee-false-manager::after {
+    content: '⭐';
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 1rem;
+    opacity: 0.6;
+}
+
+.employee-false-manager .employee-info h3 {
+    color: #2d3748;
+    font-weight: 600;
+}
+
+.employee-false-manager .employee-username,
+.employee-false-manager .employee-email,
+.employee-false-manager .employee-telegram {
+    color: #718096;
+}
+
+.employee-false-manager .employee-balance {
+    color: #2d3748;
+    font-weight: 500;
+}
+
+.employee-false-manager .tag {
+    background: rgba(113, 128, 150, 0.1);
+    color: #4a5568;
+    border: 1px solid rgba(113, 128, 150, 0.2);
+    font-size: 0.85rem;
+}
+
+/* Легкий ховер-эффект для интерактивности */
+.employee-false-manager:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+    transition: all 0.2s ease;
 }
 
 /* Бейдж роли */
