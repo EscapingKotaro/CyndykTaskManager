@@ -162,6 +162,17 @@
 
     <!-- Номера страниц -->
     <div class="pagination-numbers" style="display: flex; gap: 4px;">
+        <!-- Всегда показываем первую страницу -->
+        {% if 1 not in games.paginator.page_range|slice:":5" %}
+            <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               style="padding: 8px 12px; background: #f1f3f4; border-radius: 4px; text-decoration: none; color: #202124;">
+                1
+            </a>
+            {% if 2 not in games.paginator.page_range|slice:":5" %}
+                <span style="padding: 8px 4px; color: #9aa0a6;">...</span>
+            {% endif %}
+        {% endif %}
+
         {% for num in games.paginator.page_range %}
             {% if num == games.number %}
                 <span class="pagination-current" style="padding: 8px 12px; background: #1a73e8; color: white; border-radius: 4px;">
@@ -174,6 +185,17 @@
                 </a>
             {% endif %}
         {% endfor %}
+
+        <!-- Всегда показываем последнюю страницу -->
+        {% if games.paginator.num_pages not in games.paginator.page_range|slice:"-5:" %}
+            {% if games.paginator.num_pages|add:"-1" not in games.paginator.page_range|slice:"-5:" %}
+                <span style="padding: 8px 4px; color: #9aa0a6;">...</span>
+            {% endif %}
+            <a href="?page={{ games.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" 
+               style="padding: 8px 12px; background: #f1f3f4; border-radius: 4px; text-decoration: none; color: #202124;">
+                {{ games.paginator.num_pages }}
+            </a>
+        {% endif %}
     </div>
 
     <!-- Кнопка "Вперед" -->

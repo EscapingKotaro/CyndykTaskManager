@@ -117,6 +117,16 @@ def release_list(request):
     # 🔥 ПАГИНАЦИЯ - ДОБАВЛЯЕМ ПОСЛЕ СОРТИРОВКИ
     paginator = Paginator(games, 20)  # 20 игр на страницу
     page_number = request.GET.get('page')
+
+    # Если страница не указана, находим страницу с сегодняшними релизами
+    if not page_number:
+        today = timezone.now().date()
+        # Находим индекс первого релиза на сегодня или позже
+        for index, game in enumerate(games):
+            if game.release_date >= today:
+                page_number = (index // 20) + 1  # 20 - размер страницы
+                break
+
     page_obj = paginator.get_page(page_number)
 
     # Заменяем games на page_obj в контексте

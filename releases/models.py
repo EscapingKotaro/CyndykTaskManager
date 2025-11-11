@@ -78,7 +78,7 @@ class GameRelease(models.Model):
     class Meta:
         verbose_name = 'Релиз игры'
         verbose_name_plural = 'Релизы игр'
-        ordering = ['-release_date', 'title']
+        ordering = ['release_date', 'title']
         indexes = [
             models.Index(fields=['release_date']),
             models.Index(fields=['is_published']),
