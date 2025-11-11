@@ -19,6 +19,7 @@ class GameRelease(models.Model):
         ('DIFMARK', 'Difmark'),
         ('WILDBERRIES', 'Wildberries'),
         ('DIGISELLER', 'Digiseller'),
+        ('GGSEL', 'GGSel'),
         ('FUNPAY', 'Funpay'),
         ('DARKSTORE', 'DarkStore'),
     ]
@@ -183,6 +184,7 @@ class GameRelease(models.Model):
             'DIFMARK': 'platform_icons/difmark.png', 
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
+            'GGSEL': 'platform_icons/ggsel.png',
             'FUNPAY': 'platform_icons/funpay.jpg',
             'DARKSTORE': 'platform_icons/darkstore.png',
         }
@@ -199,6 +201,7 @@ class GameRelease(models.Model):
             'DIFMARK': 'platform_icons/difmark2.png', 
             'WILDBERRIES': 'platform_icons/wb.jpg',
             'DIGISELLER': 'platform_icons/diga.png',
+            'GGSEL': 'platform_icons/ggsel.png',
             'FUNPAY': 'platform_icons/funpay.jpg',
             'DARKSTORE': 'platform_icons/darkstore.png',
         }
@@ -208,7 +211,7 @@ class GameRelease(models.Model):
         
         marketplaces = []
         i = 0
-        for marketplace in ['AVITO', 'TELEGRAM', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER', 'FUNPAY', 'DARKSTORE']:
+        for marketplace in ['AVITO', 'TELEGRAM', 'DIFMARK', 'WILDBERRIES', 'DIGISELLER','GGSEL', 'FUNPAY', 'DARKSTORE']:
             icon_path = MARKETPLACE_ICONS.get(marketplace)
             icon_url = f"{icon_path}" if icon_path else ""
             
