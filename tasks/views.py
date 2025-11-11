@@ -386,7 +386,10 @@ def manager_user_kanban(request, user_id):
 def dashboard(request):
     if request.user.role in ['boss']:
         subordinates = CustomUser.objects.filter(manager=request.user)
-        tasks = Task.objects.filter(created_by=request.user)
+        tasks = Task.objects.filter(
+        Q(created_by=request.user) |
+        Q(controlled_by=request.user)
+    ).order_by('-created_date').order_by('-created_date')
         
         # Статистика для админа
         total_debt = subordinates.aggregate(total=Sum('balance'))['total'] or 0
@@ -532,7 +535,13 @@ def complete_task(request, task_id):
     if not request.user.is_staff:
         return redirect('dashboard')
     
-    task = get_object_or_404(Task, id=task_id, created_by=request.user)
+    task = get_object_or_404(
+    Task.objects.filter(
+        Q(created_by=request.user) |
+        Q(controlled_by=request.user)
+    ),
+    id=task_id
+)
     
     if request.method == 'POST':
         task.status = 'completed'
