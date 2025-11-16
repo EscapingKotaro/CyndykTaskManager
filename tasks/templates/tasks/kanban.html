@@ -9,16 +9,32 @@
         <h1>📋 Управление задачами</h1>
         
         <div class="kanban-controls">
-            <form method="get" class="filter-form">
-                <div class="form-group">
-                    {{ filter_form.user_filter.label_tag }}
-                    {{ filter_form.user_filter }}
+            <!-- ЗАМЕНА: кнопки сотрудников вместо выпадающего списка -->
+            <div class="employee-filter">
+                <label class="filter-label">👥 Фильтр по сотрудникам:</label>
+                <div class="employee-buttons">
+                    <form method="get" class="employee-filter-form">
+                        <input type="hidden" name="user_filter" id="user-filter-input">
+                        
+                        <button type="button" class="employee-btn {% if not selected_user %}active{% endif %}" 
+                                onclick="setEmployeeFilter('')">
+                            👁️ Все
+                        </button>
+                        
+                        {% for emp in request.user.get_team_users %}
+                        <button type="button" class="employee-btn {% if selected_user == emp.id|stringformat:'i' %}active{% endif %}" 
+                                onclick="setEmployeeFilter('{{ emp.id }}')">
+                            {% if emp.avatar %}
+                                <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}" class="employee-avatar-mini">
+                            {% else %}
+                                <span class="avatar-emoji">👤</span>
+                            {% endif %}
+                            {{ emp.get_display_name }}
+                        </button>
+                        {% endfor %}
+                    </form>
                 </div>
-                <button type="submit" class="btn btn-filter">Применить</button>
-                {% if selected_user %}
-                    <a href="{% url 'dashboard' %}" class="btn btn-clear">Сбросить</a>
-                {% endif %}
-            </form>
+            </div>
             
             {% if request.user.role in 'boss,manager' %}
             <a href="{% url 'create_task' %}" class="btn btn-primary">
@@ -26,6 +42,7 @@
             </a>
             {% endif %}
         </div>
+    </div>
     </div>
 
     <!-- Статистика -->
@@ -495,6 +512,209 @@
     opacity: 0.9;
     transform: translateY(-1px);
 }
+.employee-filter {
+    margin-bottom: 20px;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #333;
+}
+
+.employee-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 800px;
+}
+
+.employee-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: #333;
+}
+
+.employee-btn:hover {
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+}
+
+.employee-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.employee-avatar-mini {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-emoji {
+    font-size: 0.9rem;
+}
+
+/* Стили для сумм в статистике */
+.stat-amount {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #28a745;
+}
+
+/* Стили для заголовков колонок с суммами */
+.column-title {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.column-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.8rem;
+}
+
+.amount-summary {
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Адаптивность для кнопок сотрудников */
+@media (max-width: 768px) {
+    .employee-buttons {
+        gap: 6px;
+    }
+    
+    .employee-btn {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .employee-btn span {
+        display: none; /* Скрываем текст на мобильных */
+    }
+    
+    .employee-btn::after {
+        content: attr(title);
+    }
+}
+/* ДОБАВЛЯЕМ В КОНЕЦ СУЩЕСТВУЮЩЕГО CSS */
+
+/* Стили для фильтра сотрудников */
+.employee-filter {
+    margin-bottom: 20px;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: 600;
+    color: #333;
+}
+
+.employee-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 800px;
+}
+
+.employee-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.85rem;
+    text-decoration: none;
+    color: #333;
+}
+
+.employee-btn:hover {
+    border-color: #007bff;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,123,255,0.2);
+}
+
+.employee-btn.active {
+    background: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.employee-avatar-mini {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.avatar-emoji {
+    font-size: 0.9rem;
+}
+
+/* Стили для сумм в статистике */
+.stat-amount {
+    margin-top: 5px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #28a745;
+}
+
+/* Стили для заголовков колонок с суммами */
+.column-title {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.column-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.8rem;
+}
+
+.amount-summary {
+    color: #28a745;
+    font-weight: 600;
+}
+
+/* Адаптивность для кнопок сотрудников */
+@media (max-width: 768px) {
+    .employee-buttons {
+        gap: 6px;
+    }
+    
+    .employee-btn {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .employee-btn span:last-child {
+        display: none; /* Скрываем имя на мобильных, оставляем только аватар */
+    }
+}
 </style>
 
 <script>
@@ -533,5 +753,24 @@ function enableDragAndDrop() {
 setInterval(() => {
     // Можно добавить автообновление через AJAX
 }, 30000);
+</script>
+
+<script>
+function setEmployeeFilter(employeeId) {
+    // Устанавливаем значение в скрытое поле
+    document.getElementById('user-filter-input').value = employeeId;
+    
+    // Отправляем форму
+    document.querySelector('.employee-filter-form').submit();
+}
+
+// Добавляем title для мобильных устройств
+document.addEventListener('DOMContentLoaded', function() {
+    const employeeBtns = document.querySelectorAll('.employee-btn');
+    employeeBtns.forEach(btn => {
+        const text = btn.textContent.trim();
+        btn.setAttribute('title', text);
+    });
+});
 </script>
 {% endblock %}

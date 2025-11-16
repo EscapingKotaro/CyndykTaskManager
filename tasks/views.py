@@ -640,6 +640,20 @@ def task_kanban(request):
     page_active = request.GET.get('page_active', 1)
     page_submitted = request.GET.get('page_submitted', 1)
     
+    
+    # Рассчитываем суммы для каждой колонки
+    proposed_sum = proposed_tasks.aggregate(
+        total=models.Sum('payment_amount')
+    )['total'] or 0
+    
+    active_sum = active_tasks.aggregate(
+        total=models.Sum('payment_amount')
+    )['total'] or 0
+    
+    submitted_sum = submitted_tasks.aggregate(
+        total=models.Sum('payment_amount')
+    )['total'] or 0
+    
     context = {
         'proposed_tasks': paginator_proposed.get_page(page_proposed),
         'active_tasks': paginator_active.get_page(page_active),
@@ -647,10 +661,13 @@ def task_kanban(request):
         'completed_count': completed_count,
         'filter_form': filter_form,
         'selected_user': user_filter,
+        'proposed_sum': proposed_sum,
+        'active_sum': active_sum,
+        'submitted_sum': submitted_sum,
     }
     
     return render(request, 'tasks/kanban.html', context)
-
+   
 @login_required
 def change_password(request):
     if request.method == 'POST':
