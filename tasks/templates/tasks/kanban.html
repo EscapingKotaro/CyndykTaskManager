@@ -21,44 +21,65 @@
     </div>
 
     <div class="employee-filter">
-                <label class="filter-label">👥 Фильтр по сотрудникам:</label>
-                <div class="employee-buttons">
-                    <form method="get" class="employee-filter-form">
-                        <input type="hidden" name="user_filter" id="user-filter-input">
-                        
-                        <button type="button" class="employee-btn {% if not selected_user %}active{% endif %}" 
-                                onclick="setEmployeeFilter('')">
-                            👁️ Все
-                        </button>
-                        
-                        {% for emp in request.user.get_team_users %}
-                        <button type="button" class="employee-btn {% if selected_user == emp.id|stringformat:'i' %}active{% endif %}" 
-                                onclick="setEmployeeFilter('{{ emp.id }}')">
+    <label class="filter-label">👥 Фильтр по сотрудникам:</label>
+    <div class="employee-buttons-container">
+        <form method="get" class="employee-filter-form">
+            <input type="hidden" name="user_filter" id="user-filter-input">
+            
+            <div class="employee-grid">
+                <button type="button" class="employee-card-filter {% if not selected_user %}active{% endif %}" 
+                        onclick="setEmployeeFilter('')">
+                    <div class="employee-card-content">
+                        <div class="employee-avatar-wrapper">
+                            <div class="avatar-emoji-large">👁️</div>
+                        </div>
+                        <div class="employee-name">Все задачи</div>
+                    </div>
+                </button>
+                
+                {% for emp in request.user.get_team_users %}
+                <button type="button" class="employee-card-filter {% if selected_user == emp.id|stringformat:'i' %}active{% endif %}" 
+                        onclick="setEmployeeFilter('{{ emp.id }}')">
+                    <div class="employee-card-content">
+                        <div class="employee-avatar-wrapper">
                             {% if emp.avatar %}
-                                <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}" class="employee-avatar-mini">
+                                <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}" class="employee-avatar">
                             {% else %}
-                                <span class="avatar-emoji">👤</span>
+                                <div class="avatar-emoji-large">👤</div>
                             {% endif %}
-                            {{ emp.get_display_name }}
-                        </button>
-                        {% endfor %}
-                    </form>
-                </div>
+                        </div>
+                        <div class="employee-name">{{ emp.get_display_name }}</div>
+                        {% if emp.tags %}
+                        <div class="employee-tags">
+                            {% for tag in emp.get_tags_list|slice:":2" %}
+                            <span class="employee-tag">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </button>
+                {% endfor %}
             </div>
+        </form>
+    </div>
+</div>
 
     <!-- Статистика -->
     <div class="kanban-stats">
         <div class="stat-card">
             <span class="stat-number">{{ proposed_tasks.paginator.count }}</span>
             <span class="stat-label">Предложено</span>
+            <div class="stat-amount">{{ proposed_sum }} руб.</div>
         </div>
         <div class="stat-card">
             <span class="stat-number">{{ active_tasks.paginator.count }}</span>
             <span class="stat-label">Активные</span>
+            <div class="stat-amount">{{ active_sum }} руб.</div>
         </div>
         <div class="stat-card">
             <span class="stat-number">{{ submitted_tasks.paginator.count }}</span>
             <span class="stat-label">На проверке</span>
+            <div class="stat-amount">{{ submitted_sum }} руб.</div>
         </div>
         <div class="stat-card completed">
             <span class="stat-number">{{ completed_count }}</span>
@@ -714,6 +735,195 @@
     
     .employee-btn span:last-child {
         display: none; /* Скрываем имя на мобильных, оставляем только аватар */
+    }
+}
+
+.employee-filter {
+    width: 100%;
+    margin-bottom: 25px;
+}
+
+.filter-label {
+    display: block;
+    margin-bottom: 15px;
+    font-weight: 600;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.employee-buttons-container {
+    width: 100%;
+}
+
+.employee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    width: 100%;
+}
+
+.employee-card-filter {
+    width: 100%;
+    height: 100px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+    text-align: left;
+}
+
+.employee-card-filter:hover {
+    border-color: #007bff;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,123,255,0.15);
+}
+
+.employee-card-filter.active {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+}
+
+.employee-card-content {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 8px;
+}
+
+.employee-avatar-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.employee-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e9ecef;
+}
+
+.employee-card-filter.active .employee-avatar {
+    border-color: white;
+}
+
+.avatar-emoji-large {
+    font-size: 1.8rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.employee-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.employee-card-filter.active .employee-name {
+    color: white;
+}
+
+.employee-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.employee-tag {
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.65rem;
+    color: #6c757d;
+    border: 1px solid #e9ecef;
+}
+
+.employee-card-filter.active .employee-tag {
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border-color: rgba(255,255,255,0.3);
+}
+
+/* Адаптивность */
+@media (max-width: 1200px) {
+    .employee-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .employee-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 10px;
+    }
+    
+    .employee-card-filter {
+        height: 90px;
+    }
+    
+    .employee-card-content {
+        padding: 12px;
+        gap: 6px;
+    }
+    
+    .employee-avatar {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .avatar-emoji-large {
+        font-size: 1.5rem;
+    }
+    
+    .employee-name {
+        font-size: 0.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .employee-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    }
+    
+    .employee-card-filter {
+        height: 85px;
+    }
+    
+    .employee-card-content {
+        padding: 10px;
+    }
+    
+    .employee-tags {
+        display: none; /* Скрываем теги на очень маленьких экранах */
+    }
+}
+
+/* Плавная анимация при переключении */
+.employee-card-filter {
+    animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 </style>
