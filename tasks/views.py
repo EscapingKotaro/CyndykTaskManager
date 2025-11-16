@@ -532,8 +532,8 @@ def submit_task(request, task_id):
 # Админ подтверждает выполнение задачи и начисляет деньги
 @login_required
 def complete_task(request, task_id):
-    if not request.user.is_staff:
-        return redirect('dashboard')
+  #  if not request.user.is_staff:
+ #       return redirect('dashboard')
     
     task = get_object_or_404(
     Task.objects.filter(
