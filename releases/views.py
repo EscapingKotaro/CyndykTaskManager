@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils import timezone
 from .models import GameRelease
-from .forms import GameReleaseForm
+from .forms import *
 from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.http import JsonResponse
