@@ -3,7 +3,10 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
-    path('', views.dashboard, name='dashboard'),
+   # path('', views.dashboard, name='dashboard'),
+  #  path('kanban/', views.task_kanban, name='task_kanban'),
+    path('', views.task_kanban, name='dashboard'),
+
     path('login/', auth_views.LoginView.as_view(template_name='tasks/login.html'), name='login'),
     path('logout/', views.custom_logout, name='logout'),  
     path('create-employee/', views.create_employee, name='create_employee'),
@@ -30,12 +33,13 @@ urlpatterns = [
     path('tasks/<int:task_id>/', views.task_detail, name='task_detail'),
     path('tasks/<int:task_id>/edit/', views.edit_task, name='edit_task'),
     path('tasks/<int:task_id>/delete/', views.delete_task, name='delete_task'),
+    path('task/<int:task_id>/action/', views.task_action, name='task_action'),
     path('navigation-buttons/', views.navigation_buttons, name='navigation_buttons'),
     path('navigation-buttons/<int:button_id>/edit/', views.edit_navigation_button, name='edit_navigation_button'),
     path('navigation-buttons/<int:button_id>/delete/', views.delete_navigation_button, name='delete_navigation_button'),
     path('employee/<int:user_id>/edit/', views.edit_employee, name='edit_employee'),
 
-    path('kanban/', views.task_kanban, name='task_kanban'),
+    
 
    # path('kanban/', views.employee_kanban, name='employee_kanban'),
    # path('kanban/team/', views.manager_team_kanban, name='team_kanban'),

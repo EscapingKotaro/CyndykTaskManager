@@ -144,7 +144,7 @@ def edit_task(request, task_id):
         if form.is_valid():
             updated_task = form.save()
             messages.success(request, f'✅ Задача "{updated_task.title}" успешно обновлена!')
-            return redirect('task_management')
+            return redirect('dashboard')
         else:
             messages.error(request, '❌ Пожалуйста, исправьте ошибки в форме.')
     else:
@@ -170,7 +170,7 @@ def delete_task(request, task_id):
         task_title = task.title
         task.delete()
         messages.success(request, f'✅ Задача "{task_title}" успешно удалена!')
-        return redirect('task_management')
+        return redirect('dashboard')
     
     return render(request, 'tasks/delete_task.html', {'task': task})
 
@@ -475,7 +475,7 @@ def create_task(request):
             else:
                 messages.success(request, '✅ Задача создана!')
                 
-            return redirect('task_management')
+            return redirect('dashboard')
     else:
         form = TaskForm(request=request)
     
@@ -491,7 +491,7 @@ def approve_task(request, task_id):
             request.user.role != 'boss' and
             request.user != task.assigned_to.manager):
             messages.error(request, 'У вас нет прав подтверждать эту задачу')
-            return redirect('task_management')
+            return redirect('dashboard')
         
         if task.status == 'proposed':
             task.status = 'created'
@@ -503,7 +503,7 @@ def approve_task(request, task_id):
     except Task.DoesNotExist:
         messages.error(request, 'Задача не найдена')
     
-    return redirect('task_management')
+    return redirect('dashboard')
 
 @login_required
 def start_task(request, task_id):
@@ -552,10 +552,54 @@ def complete_task(request, task_id):
         employee.balance += task.payment_amount
         employee.save()
         
-        return redirect('task_management')
+        return redirect('dashboard')
     
     return render(request, 'tasks/complete_task.html', {'task': task})
 
+# views.py
+@login_required
+def task_action(request, task_id):
+    """Обработка клика по задаче - переход к следующему статусу"""
+    task = get_object_or_404(Task, id=task_id)
+    
+    # Проверяем права на просмотр
+    if not task.can_view(request.user):
+        messages.error(request, 'У вас нет прав для просмотра этой задачи')
+        return redirect('dashboard')
+    
+    # Определяем следующее действие в зависимости от статуса и прав
+    if task.status == 'proposed':
+        if (request.user.role == 'boss' or 
+            request.user == task.controlled_by or 
+            request.user == task.assigned_to.manager):
+            # Подтверждение предложенной задачи
+            task.status = 'created'
+            task.save()
+            messages.success(request, '✅ Задача подтверждена!')
+        else:
+            messages.info(request, 'Задача ожидает подтверждения руководством')
+    
+    elif task.status == 'created' and task.assigned_to == request.user:
+        # Начало работы над задачей
+        task.status = 'in_progress'
+        task.started_date = timezone.now()
+        task.save()
+        messages.success(request, '🚀 Работа над задачей начата!')
+    
+    elif task.status == 'in_progress' and task.assigned_to == request.user:
+        # Переход к сдаче на проверку
+        return redirect('submit_task', task_id=task.id)
+    
+    elif task.status == 'submitted':
+        if (request.user.role == 'boss' or 
+            request.user == task.controlled_by or 
+            request.user == task.created_by):
+            # Завершение задачи
+            return redirect('complete_task', task_id=task.id)
+        else:
+            messages.info(request, 'Задача ожидает проверки руководством')
+    
+    return redirect('dashboard')
 # views.py
 from django.db.models import Q
 from django.core.paginator import Paginator
