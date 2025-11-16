@@ -57,3 +57,50 @@ class GameReleaseForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+# forms.py - добавь эту форму
+class GameReleaseFilterForm(forms.Form):
+    # Фильтр по статусу публикации
+    is_published = forms.ChoiceField(
+        choices=[
+            ('', 'Все статусы'),
+            ('published', 'Опубликованные'),
+            ('not_published', 'Скрытые')
+        ],
+        required=False,
+        label='Статус публикации'
+    )
+    
+    # Фильтр по платформе
+    platform = forms.ChoiceField(
+        choices=[('', 'Все платформы')] + GameRelease.PLATFORM_CHOICES,
+        required=False,
+        label='Платформа'
+    )
+    
+    # Фильтр по площадке
+    marketplace = forms.ChoiceField(
+        choices=[('', 'Все площадки')] + GameRelease.MARKETPLACE_CHOICES,
+        required=False,
+        label='Площадка'
+    )
+    
+    # Фильтр по языку
+    language = forms.ChoiceField(
+        choices=[('', 'Все языки')] + GameRelease.LANGUAGE_CHOICES,
+        required=False,
+        label='Язык'
+    )
+    
+    # Сортировка
+    sort_by = forms.ChoiceField(
+        choices=[
+            ('release_date', 'По дате релиза'),
+            ('-release_date', 'По дате релиза (убыв.)'),
+            ('title', 'По названию'),
+            ('-title', 'По названию (убыв.)'),
+        ],
+        required=False,
+        initial='release_date',
+        label='Сортировка'
+    )

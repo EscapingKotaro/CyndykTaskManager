@@ -77,7 +77,7 @@ def release_list(request):
     games = GameRelease.objects.all()
     
     # Применяем фильтры
-    form = GameReleaseForm(request.GET or None)
+    form = GameReleaseFilterForm(request.GET or None)
     
     platform = form.cleaned_data.get('platform')
     marketplace = form.cleaned_data.get('marketplace')
