@@ -556,7 +556,56 @@ def complete_task(request, task_id):
     
     return render(request, 'tasks/complete_task.html', {'task': task})
 
+# views.py
+from django.db.models import Q
+from django.core.paginator import Paginator
 
+@login_required
+def task_kanban(request):
+    # Получаем задачи которые пользователь может видеть
+    if request.user.role in ['boss', 'manager']:
+        tasks = Task.objects.filter(
+            Q(assigned_to__manager=request.user.manager) |
+            Q(created_by=request.user) |
+            Q(controlled_by=request.user)
+        ).distinct()
+    else:
+        tasks = Task.objects.filter(assigned_to=request.user)
+    
+    # Фильтрация по сотруднику
+    filter_form = TaskFilterForm(request.GET or None, request=request)
+    user_filter = request.GET.get('user_filter')
+    
+    if user_filter:
+        tasks = tasks.filter(assigned_to_id=user_filter)
+    
+    # Группируем задачи по статусам
+    proposed_tasks = tasks.filter(status='proposed').order_by('due_date')
+    active_tasks = tasks.filter(status__in=['created', 'in_progress']).order_by('due_date')
+    submitted_tasks = tasks.filter(status='submitted').order_by('due_date')
+    
+    # Завершенные задачи (для счетчика)
+    completed_count = tasks.filter(status='completed').count()
+    
+    # Пагинация для каждой колонки
+    paginator_proposed = Paginator(proposed_tasks, 20)
+    paginator_active = Paginator(active_tasks, 20) 
+    paginator_submitted = Paginator(submitted_tasks, 20)
+    
+    page_proposed = request.GET.get('page_proposed', 1)
+    page_active = request.GET.get('page_active', 1)
+    page_submitted = request.GET.get('page_submitted', 1)
+    
+    context = {
+        'proposed_tasks': paginator_proposed.get_page(page_proposed),
+        'active_tasks': paginator_active.get_page(page_active),
+        'submitted_tasks': paginator_submitted.get_page(page_submitted),
+        'completed_count': completed_count,
+        'filter_form': filter_form,
+        'selected_user': user_filter,
+    }
+    
+    return render(request, 'tasks/kanban.html', context)
 
 @login_required
 def change_password(request):

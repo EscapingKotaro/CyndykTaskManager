@@ -1,0 +1,96 @@
+<!-- tasks/_task_card.html -->
+<div class="task-card {{ task.get_priority_class }} {{ task.get_status_display_class }}" 
+     data-task-id="{{ task.id }}">
+    
+    <!-- Компактный вид -->
+    <div class="task-card-compact" onclick="toggleTaskDetails({{ task.id }})">
+        <div class="task-header">
+            <h4 class="task-title">{{ task.title }}</h4>
+            <span class="task-status-badge">{{ task.get_status_display }}</span>
+        </div>
+        
+        <div class="task-meta">
+            <div class="task-assignee">
+                👤 {{ task.assigned_to.get_display_name }}
+            </div>
+            <div class="task-due-date">
+                📅 {{ task.due_date|date:"d.m.Y" }}
+                {% if task.is_overdue %}
+                    <span class="overdue-badge">ПРОСРОЧЕНА</span>
+                {% elif task.is_urgent %}
+                    <span class="urgent-badge">СРОЧНО</span>
+                {% endif %}
+            </div>
+            {% if task.payment_amount > 0 %}
+            <div class="task-payment">
+                💰 {{ task.payment_amount }} руб.
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if task.tags %}
+        <div class="task-tags">
+            {% for tag in task.get_tags_list %}
+                <span class="tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Детальный вид (скрыт по умолчанию) -->
+    <div class="task-card-details" id="task-details-{{ task.id }}" style="display: none;">
+        <div class="task-description">
+            <strong>Описание:</strong>
+            <p>{{ task.description|linebreaksbr }}</p>
+        </div>
+        
+        <div class="task-full-meta">
+            <div class="meta-row">
+                <span class="meta-label">Создана:</span>
+                <span>{{ task.created_by.get_display_name }} ({{ task.created_date|date:"d.m.Y H:i" }})</span>
+            </div>
+            {% if task.controlled_by %}
+            <div class="meta-row">
+                <span class="meta-label">На контроле:</span>
+                <span>{{ task.controlled_by.get_display_name }}</span>
+            </div>
+            {% endif %}
+            {% if task.started_date %}
+            <div class="meta-row">
+                <span class="meta-label">Начата:</span>
+                <span>{{ task.started_date|date:"d.m.Y H:i" }}</span>
+            </div>
+            {% endif %}
+            {% if task.submitted_date %}
+            <div class="meta-row">
+                <span class="meta-label">Сдана:</span>
+                <span>{{ task.submitted_date|date:"d.m.Y H:i" }}</span>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="task-actions">
+            {% if task.status == 'proposed' and task.can_edit request.user %}
+            <form method="post" action="{% url 'approve_task' task.id %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm">✅ Подтвердить</button>
+            </form>
+            {% endif %}
+            
+            {% if task.status == 'created' and task.assigned_to == request.user %}
+            <form method="post" action="{% url 'start_task' task.id %}" class="inline-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary btn-sm">🚀 Начать работу</button>
+            </form>
+            {% endif %}
+            
+            {% if task.status == 'in_progress' and task.assigned_to == request.user %}
+            <a href="{% url 'submit_task' task.id %}" class="btn btn-warning btn-sm">📤 Сдать на проверку</a>
+            {% endif %}
+            
+            {% if task.status == 'submitted' and task.can_edit request.user %}
+            <a href="{% url 'complete_task' task.id %}" class="btn btn-success btn-sm">✅ Завершить</a>
+            {% endif %}
+        </div>
+    </div>
+</div>

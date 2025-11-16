@@ -172,7 +172,47 @@ class Task(models.Model):
     def is_urgent(self):
         """Срочная ли задача (менее 2 дней)"""
         return 0 <= self.days_until_due <= 2
-
+    
+    
+    def can_view(self, user):
+        """Может ли пользователь видеть эту задачу"""
+        if user.role in ['boss', 'manager']:
+            return (self.assigned_to.manager == user.manager or 
+                    self.created_by == user or 
+                    self.controlled_by == user)
+        else:
+            return self.assigned_to == user
+    
+    def can_edit(self, user):
+        """Может ли пользователь редактировать задачу"""
+        if user.role == 'boss':
+            return True
+        elif user.role == 'manager':
+            return (self.created_by == user or 
+                    self.controlled_by == user or
+                    self.assigned_to.manager == user)
+        else:
+            return self.assigned_to == user and self.status == 'proposed'
+    
+    def get_status_display_class(self):
+        """Возвращает CSS класс для статуса"""
+        status_classes = {
+            'proposed': 'status-proposed',
+            'created': 'status-created',
+            'in_progress': 'status-in-progress', 
+            'submitted': 'status-submitted',
+            'completed': 'status-completed'
+        }
+        return status_classes.get(self.status, '')
+    
+    def get_priority_class(self):
+        """CSS класс для приоритета на основе сроков"""
+        if self.is_overdue:
+            return 'priority-overdue'
+        elif self.is_urgent:
+            return 'priority-urgent'
+        return 'priority-normal'
+        
 class Payment(models.Model):
     employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments_received', 
                                 limit_choices_to={'is_staff': False})

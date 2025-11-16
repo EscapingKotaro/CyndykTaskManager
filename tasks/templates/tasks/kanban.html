@@ -1,0 +1,454 @@
+<!-- tasks/kanban.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="kanban-container">
+    <!-- Заголовок и фильтры -->
+    <div class="kanban-header">
+        <h1>📋 Управление задачами</h1>
+        
+        <div class="kanban-controls">
+            <form method="get" class="filter-form">
+                <div class="form-group">
+                    {{ filter_form.user_filter.label_tag }}
+                    {{ filter_form.user_filter }}
+                </div>
+                <button type="submit" class="btn btn-filter">Применить</button>
+                {% if selected_user %}
+                    <a href="{% url 'task_kanban' %}" class="btn btn-clear">Сбросить</a>
+                {% endif %}
+            </form>
+            
+            {% if request.user.role in 'boss,manager' %}
+            <a href="{% url 'create_task' %}" class="btn btn-primary">
+                ➕ Создать задачу
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="kanban-stats">
+        <div class="stat-card">
+            <span class="stat-number">{{ proposed_tasks.paginator.count }}</span>
+            <span class="stat-label">Предложено</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ active_tasks.paginator.count }}</span>
+            <span class="stat-label">Активные</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ submitted_tasks.paginator.count }}</span>
+            <span class="stat-label">На проверке</span>
+        </div>
+        <div class="stat-card completed">
+            <span class="stat-number">{{ completed_count }}</span>
+            <span class="stat-label">Завершено</span>
+        </div>
+    </div>
+
+    <!-- Канбан доски -->
+    <div class="kanban-board">
+        <!-- Колонка 1: Предложенные -->
+        <div class="kanban-column">
+            <div class="column-header proposed">
+                <h3>🟡 Предложено</h3>
+                <span class="task-count">{{ proposed_tasks.paginator.count }}</span>
+            </div>
+            <div class="tasks-list" id="proposed-column">
+                {% for task in proposed_tasks %}
+                    {% include 'tasks/_task_card.html' with task=task %}
+                {% empty %}
+                    <div class="empty-state">Нет предложенных задач</div>
+                {% endfor %}
+            </div>
+            {% if proposed_tasks.has_other_pages %}
+            <div class="pagination">
+                {% if proposed_tasks.has_previous %}
+                    <a href="?page_proposed={{ proposed_tasks.previous_page_number }}{% if selected_user %}&user_filter={{ selected_user }}{% endif %}">← Назад</a>
+                {% endif %}
+                <span>Страница {{ proposed_tasks.number }} из {{ proposed_tasks.paginator.num_pages }}</span>
+                {% if proposed_tasks.has_next %}
+                    <a href="?page_proposed={{ proposed_tasks.next_page_number }}{% if selected_user %}&user_filter={{ selected_user }}{% endif %}">Вперед →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Колонка 2: Активные -->
+        <div class="kanban-column">
+            <div class="column-header active">
+                <h3>🔵 Активные</h3>
+                <span class="task-count">{{ active_tasks.paginator.count }}</span>
+            </div>
+            <div class="tasks-list" id="active-column">
+                {% for task in active_tasks %}
+                    {% include 'tasks/_task_card.html' with task=task %}
+                {% empty %}
+                    <div class="empty-state">Нет активных задач</div>
+                {% endfor %}
+            </div>
+            {% if active_tasks.has_other_pages %}
+            <div class="pagination">
+                {% if active_tasks.has_previous %}
+                    <a href="?page_active={{ active_tasks.previous_page_number }}{% if selected_user %}&user_filter={{ selected_user }}{% endif %}">← Назад</a>
+                {% endif %}
+                <span>Страница {{ active_tasks.number }} из {{ active_tasks.paginator.num_pages }}</span>
+                {% if active_tasks.has_next %}
+                    <a href="?page_active={{ active_tasks.next_page_number }}{% if selected_user %}&user_filter={{ selected_user }}{% endif %}">Вперед →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Колонка 3: На проверке -->
+        <div class="kanban-column">
+            <div class="column-header submitted">
+                <h3>🟡 На проверке</h3>
+                <span class="task-count">{{ submitted_tasks.paginator.count }}</span>
+            </div>
+            <div class="tasks-list" id="submitted-column">
+                {% for task in submitted_tasks %}
+                    {% include 'tasks/_task_card.html' with task=task %}
+                {% empty %}
+                    <div class="empty-state">Нет задач на проверке</div>
+                {% endfor %}
+            </div>
+            {% if submitted_tasks.has_other_pages %}
+            <div class="pagination">
+                {% if submitted_tasks.has_previous %}
+                    <a href="?page_submitted={{ submitted_tasks.previous_page_number }}{% if selected_user %}&user_filter={{ selected_user }}{% endif %}">← Назад</a>
+                {% endif %}
+                <span>Страница {{ submitted_tasks.number }} из {{ submitted_tasks.paginator.num_pages }}</span>
+                {% if submitted_tasks.has_next %}
+                    <a href="?page_submitted={{ submitted_tasks.next_page_number }}{% if selected_user %}&user_filter={{ selected_user }}{% endif %}">Вперед →</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* tasks/css/kanban.css */
+.kanban-container {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.kanban-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.kanban-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.filter-form {
+    display: flex;
+    align-items: end;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 0;
+}
+
+.kanban-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-left: 4px solid #007bff;
+}
+
+.stat-card.completed {
+    border-left-color: #28a745;
+}
+
+.stat-number {
+    display: block;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    align-items: start;
+}
+
+.kanban-column {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    min-height: 600px;
+}
+
+.column-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid;
+}
+
+.column-header.proposed { border-bottom-color: #ffc107; }
+.column-header.active { border-bottom-color: #007bff; }
+.column-header.submitted { border-bottom-color: #ffc107; }
+
+.column-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+.task-count {
+    background: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.tasks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 500px;
+}
+
+.task-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 4px solid #ddd;
+}
+
+.task-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
+}
+
+.task-card.priority-overdue {
+    border-left-color: #dc3545;
+    background: #fff5f5;
+}
+
+.task-card.priority-urgent {
+    border-left-color: #fd7e14;
+    background: #fff9f0;
+}
+
+.task-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.task-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    flex: 1;
+    margin-right: 10px;
+}
+
+.task-status-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e9ecef;
+    white-space: nowrap;
+}
+
+.task-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.overdue-badge, .urgent-badge {
+    font-size: 0.7rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    margin-left: 5px;
+}
+
+.overdue-badge {
+    background: #dc3545;
+    color: white;
+}
+
+.urgent-badge {
+    background: #fd7e14;
+    color: white;
+}
+
+.task-tags {
+    margin-top: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.tag {
+    background: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    color: #495057;
+}
+
+.task-card-details {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.task-description {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.task-full-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+    font-size: 0.85rem;
+}
+
+.meta-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.meta-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.task-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.inline-form {
+    margin: 0;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.empty-state {
+    text-align: center;
+    color: #999;
+    padding: 40px 20px;
+    font-style: italic;
+}
+
+.pagination {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .kanban-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .kanban-controls {
+        justify-content: center;
+    }
+    
+    .kanban-board {
+        grid-template-columns: 1fr;
+    }
+    
+    .filter-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+</style>
+
+<script>
+// tasks/js/kanban.js
+function toggleTaskDetails(taskId) {
+    const detailsElement = document.getElementById(`task-details-${taskId}`);
+    const isVisible = detailsElement.style.display === 'block';
+    
+    detailsElement.style.display = isVisible ? 'none' : 'block';
+    
+    // Закрываем другие открытые карточки
+    if (!isVisible) {
+        document.querySelectorAll('.task-card-details').forEach(element => {
+            if (element.id !== `task-details-${taskId}`) {
+                element.style.display = 'none';
+            }
+        });
+    }
+}
+
+// Закрытие по клику вне карточки
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.task-card')) {
+        document.querySelectorAll('.task-card-details').forEach(element => {
+            element.style.display = 'none';
+        });
+    }
+});
+
+// Drag and drop (опционально, для будущего)
+function enableDragAndDrop() {
+    // Можно добавить функциональность перетаскивания между колонками
+}
+
+// Автообновление каждые 30 секунд
+setInterval(() => {
+    // Можно добавить автообновление через AJAX
+}, 30000);
+</script>
+{% endblock %}

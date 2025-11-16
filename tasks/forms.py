@@ -403,3 +403,20 @@ class NavigationButtonForm(forms.ModelForm):
             'icon': 'Можно использовать эмодзи или текст',
             'color': 'Выберите цвет кнопки',
         }
+
+# forms.py
+from django import forms
+
+class TaskFilterForm(forms.Form):
+    user_filter = forms.ModelChoiceField(
+        queryset=CustomUser.objects.none(),
+        required=False,
+        empty_label="Все сотрудники",
+        label="Фильтр по сотруднику"
+    )
+    
+    def __init__(self, *args, **kwargs):
+        request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+        if request and request.user.is_authenticated:
+            self.fields['user_filter'].queryset = request.user.get_team_users()
