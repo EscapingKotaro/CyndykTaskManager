@@ -10,7 +10,17 @@
         
         <div class="kanban-controls">
             <!-- ЗАМЕНА: кнопки сотрудников вместо выпадающего списка -->
-            <div class="employee-filter">
+            
+            
+            {% if request.user.role in 'boss,manager' %}
+            <a href="{% url 'create_task' %}" class="btn btn-primary">
+                ➕ Создать задачу
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="employee-filter">
                 <label class="filter-label">👥 Фильтр по сотрудникам:</label>
                 <div class="employee-buttons">
                     <form method="get" class="employee-filter-form">
@@ -35,14 +45,6 @@
                     </form>
                 </div>
             </div>
-            
-            {% if request.user.role in 'boss,manager' %}
-            <a href="{% url 'create_task' %}" class="btn btn-primary">
-                ➕ Создать задачу
-            </a>
-            {% endif %}
-        </div>
-    </div>
 
     <!-- Статистика -->
     <div class="kanban-stats">
