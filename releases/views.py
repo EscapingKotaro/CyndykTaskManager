@@ -78,15 +78,15 @@ def release_list(request):
     
     # Применяем фильтры
     form = GameReleaseFilterForm(request.GET or None)
-    
-    platform = form.cleaned_data.get('platform')
-    marketplace = form.cleaned_data.get('marketplace')
-    language = form.cleaned_data.get('language')
-    is_published = form.cleaned_data.get('is_published')
-    sort_by = form.cleaned_data.get('sort_by') or 'release_date'
+    if form.is_valid():
+        platform = form.cleaned_data.get('platform')
+        marketplace = form.cleaned_data.get('marketplace')
+        language = form.cleaned_data.get('language')
+        is_published = form.cleaned_data.get('is_published')
+        sort_by = form.cleaned_data.get('sort_by') or 'release_date'
         
         # Фильтр по платформе
-    if form.is_valid():
+    
         if platform:
             games = games.filter(platforms__icontains=platform)
             
