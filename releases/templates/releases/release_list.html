@@ -14,8 +14,20 @@
 </div>
 
 <div class="card">
-    <h2>Список релизов ({{ games.paginator.count }})</h2>
-    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2>Список релизов ({{ games.paginator.count }})</h2>
+        
+        <!-- Фильтр по статусу публикации -->
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="checkbox" id="hideUnpublished" 
+                       {% if request.GET.hide_unpublished %}checked{% endif %}
+                       onchange="toggleUnpublishedFilter()">
+                Скрыть неопубликованные
+            </label>
+        </div>
+    </div>
+
     {% if games %}
     <div style="overflow-x: auto;">
         <table class="table">
@@ -897,5 +909,30 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+</script>
+<script>
+function toggleUnpublishedFilter() {
+    const hideUnpublished = document.getElementById('hideUnpublished').checked;
+    const url = new URL(window.location.href);
+    
+    if (hideUnpublished) {
+        url.searchParams.set('hide_unpublished', 'true');
+    } else {
+        url.searchParams.delete('hide_unpublished');
+    }
+    
+    // Сбрасываем на первую страницу при изменении фильтра
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+
+// При загрузке страницы проверяем параметр
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hideUnpublished = urlParams.get('hide_unpublished');
+    if (hideUnpublished) {
+        document.getElementById('hideUnpublished').checked = true;
+    }
+});
 </script>
 {% endblock %}
