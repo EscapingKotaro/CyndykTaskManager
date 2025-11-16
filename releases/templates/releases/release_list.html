@@ -13,19 +13,86 @@
     </div>
 </div>
 
+<!-- 🔥 ФОРМА ФИЛЬТРОВ -->
+<div class="card">
+    <h3>🔍 Фильтры</h3>
+    <form method="get" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; align-items: end;">
+        
+        <!-- Фильтр по статусу публикации -->
+        <div>
+            <label for="id_is_published" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Статус публикации:</label>
+            <select name="is_published" id="id_is_published" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">Все статусы</option>
+                <option value="published" {% if request.GET.is_published == 'published' %}selected{% endif %}>Опубликованные</option>
+                <option value="not_published" {% if request.GET.is_published == 'not_published' %}selected{% endif %}>Скрытые</option>
+            </select>
+        </div>
+
+        <!-- Фильтр по платформе -->
+        <div>
+            <label for="id_platform" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Платформа:</label>
+            <select name="platform" id="id_platform" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">Все платформы</option>
+                <option value="PS4" {% if request.GET.platform == 'PS4' %}selected{% endif %}>PlayStation 4</option>
+                <option value="PS5" {% if request.GET.platform == 'PS5' %}selected{% endif %}>PlayStation 5</option>
+                <option value="SWITCH" {% if request.GET.platform == 'SWITCH' %}selected{% endif %}>Nintendo Switch</option>
+                <option value="SWITCH2" {% if request.GET.platform == 'SWITCH2' %}selected{% endif %}>Nintendo Switch 2</option>
+                <option value="XBOX_ONE" {% if request.GET.platform == 'XBOX_ONE' %}selected{% endif %}>Xbox One</option>
+                <option value="XBOX_SERIES" {% if request.GET.platform == 'XBOX_SERIES' %}selected{% endif %}>Xbox Series X/S</option>
+            </select>
+        </div>
+
+        <!-- Фильтр по площадке -->
+        <div>
+            <label for="id_marketplace" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Площадка:</label>
+            <select name="marketplace" id="id_marketplace" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">Все площадки</option>
+                <option value="AVITO" {% if request.GET.marketplace == 'AVITO' %}selected{% endif %}>Avito</option>
+                <option value="TELEGRAM" {% if request.GET.marketplace == 'TELEGRAM' %}selected{% endif %}>Telegram</option>
+                <option value="DIFMARK" {% if request.GET.marketplace == 'DIFMARK' %}selected{% endif %}>Difmark</option>
+                <option value="WILDBERRIES" {% if request.GET.marketplace == 'WILDBERRIES' %}selected{% endif %}>Wildberries</option>
+                <option value="DIGISELLER" {% if request.GET.marketplace == 'DIGISELLER' %}selected{% endif %}>Digiseller</option>
+                <option value="GGSEL" {% if request.GET.marketplace == 'GGSEL' %}selected{% endif %}>GGSel</option>
+                <option value="FUNPAY" {% if request.GET.marketplace == 'FUNPAY' %}selected{% endif %}>Funpay</option>
+                <option value="DARKSTORE" {% if request.GET.marketplace == 'DARKSTORE' %}selected{% endif %}>DarkStore</option>
+            </select>
+        </div>
+
+        <!-- Фильтр по языку -->
+        <div>
+            <label for="id_language" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Язык:</label>
+            <select name="language" id="id_language" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="">Все языки</option>
+                <option value="RUSSIAN" {% if request.GET.language == 'RUSSIAN' %}selected{% endif %}>Русский</option>
+                <option value="ENGLISH" {% if request.GET.language == 'ENGLISH' %}selected{% endif %}>Английский</option>
+                <option value="UNKNOW" {% if request.GET.language == 'UNKNOW' %}selected{% endif %}>Неизвестно</option>
+            </select>
+        </div>
+
+        <!-- Сортировка -->
+        <div>
+            <label for="id_sort_by" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Сортировка:</label>
+            <select name="sort_by" id="id_sort_by" style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                <option value="release_date" {% if request.GET.sort_by == 'release_date' %}selected{% endif %}>По дате релиза</option>
+                <option value="-release_date" {% if request.GET.sort_by == '-release_date' %}selected{% endif %}>По дате релиза (убыв.)</option>
+                <option value="title" {% if request.GET.sort_by == 'title' %}selected{% endif %}>По названию</option>
+                <option value="-title" {% if request.GET.sort_by == '-title' %}selected{% endif %}>По названию (убыв.)</option>
+            </select>
+        </div>
+
+        <!-- Кнопки -->
+        <div style="display: flex; gap: 0.5rem;">
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">Применить фильтры</button>
+            <a href="{% url 'releases:release_list' %}" class="btn btn-secondary" style="white-space: nowrap;">Сбросить</a>
+        </div>
+    </form>
+</div>
+
 <div class="card">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
         <h2>Список релизов ({{ games.paginator.count }})</h2>
         
-        <!-- Фильтр по статусу публикации -->
-        <div style="display: flex; align-items: center; gap: 1rem;">
-            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                <input type="checkbox" id="hideUnpublished" 
-                       {% if request.GET.hide_unpublished %}checked{% endif %}
-                       onchange="toggleUnpublishedFilter()">
-                Скрыть неопубликованные
-            </label>
-        </div>
+        
     </div>
 
     {% if games %}
@@ -910,29 +977,5 @@ function getCookie(name) {
     return cookieValue;
 }
 </script>
-<script>
-function toggleUnpublishedFilter() {
-    const hideUnpublished = document.getElementById('hideUnpublished').checked;
-    const url = new URL(window.location.href);
-    
-    if (hideUnpublished) {
-        url.searchParams.set('hide_unpublished', 'true');
-    } else {
-        url.searchParams.delete('hide_unpublished');
-    }
-    
-    // Сбрасываем на первую страницу при изменении фильтра
-    url.searchParams.delete('page');
-    window.location.href = url.toString();
-}
 
-// При загрузке страницы проверяем параметр
-document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const hideUnpublished = urlParams.get('hide_unpublished');
-    if (hideUnpublished) {
-        document.getElementById('hideUnpublished').checked = true;
-    }
-});
-</script>
 {% endblock %}
