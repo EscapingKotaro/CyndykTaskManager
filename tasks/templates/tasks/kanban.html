@@ -17,36 +17,27 @@
         <form method="get" class="employee-filter-form">
             <input type="hidden" name="user_filter" id="user-filter-input">
             
-            <div class="employee-grid">
+            <div class="employee-grid" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; width: 100%;">
                 <button type="button" class="employee-card-filter {% if not selected_user %}active{% endif %}" 
-                        onclick="setEmployeeFilter('')">
-                    <div class="employee-card-content">
-                        <div class="employee-avatar-wrapper">
-                            <div class="avatar-emoji-large">👁️</div>
-                        </div>
-                        <div class="employee-name">Все задачи</div>
+                        onclick="setEmployeeFilter('')" style="width: 100%; height: 80px; background: white; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; padding: 0; text-align: center;">
+                    <div style="padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 5px;">
+                        <div style="font-size: 1.5rem;">👁️</div>
+                        <div style="font-size: 0.8rem; font-weight: 600;">Все</div>
                     </div>
                 </button>
                 
                 {% for emp in request.user.get_team_users %}
                 <button type="button" class="employee-card-filter {% if selected_user == emp.id|stringformat:'i' %}active{% endif %}" 
-                        onclick="setEmployeeFilter('{{ emp.id }}')">
-                    <div class="employee-card-content">
-                        <div class="employee-avatar-wrapper">
+                        onclick="setEmployeeFilter('{{ emp.id }}')" style="width: 100%; height: 80px; background: white; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; padding: 0; text-align: center;">
+                    <div style="padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 5px;">
+                        <div>
                             {% if emp.avatar %}
-                                <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}" class="employee-avatar">
+                                <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
                             {% else %}
-                                <div class="avatar-emoji-large">👤</div>
+                                <div style="font-size: 1.5rem;">👤</div>
                             {% endif %}
                         </div>
-                        <div class="employee-name">{{ emp.get_display_name }}</div>
-                        {% if emp.tags %}
-                        <div class="employee-tags">
-                            {% for tag in emp.get_tags_list|slice:":2" %}
-                            <span class="employee-tag">{{ tag }}</span>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+                        <div style="font-size: 0.7rem; font-weight: 600; line-height: 1.2;">{{ emp.get_display_name }}</div>
                     </div>
                 </button>
                 {% endfor %}
