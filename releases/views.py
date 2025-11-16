@@ -86,28 +86,29 @@ def release_list(request):
     sort_by = form.cleaned_data.get('sort_by') or 'release_date'
         
         # Фильтр по платформе
-    if platform:
-        games = games.filter(platforms__icontains=platform)
-        
-        # Фильтр по площадке
-    if marketplace:
-        games = games.filter(
-                Q(marketplace_platforms__icontains=marketplace) |
-                Q(marketplace_platforms__has_key=marketplace)
-            )
-        
-        # Фильтр по языку
-    if language:
-        games = games.filter(languages__icontains=language)
-        
-        # Фильтр по статусу публикации
-    if is_published == 'published':
-        games = games.filter(is_published=True)
-    elif is_published == 'not_published':
-        games = games.filter(is_published=False)
-        
-        # Сортировка
-    games = games.order_by(sort_by)
+    if form.is_valid():
+        if platform:
+            games = games.filter(platforms__icontains=platform)
+            
+            # Фильтр по площадке
+        if marketplace:
+            games = games.filter(
+                    Q(marketplace_platforms__icontains=marketplace) |
+                    Q(marketplace_platforms__has_key=marketplace)
+                )
+            
+            # Фильтр по языку
+        if language:
+            games = games.filter(languages__icontains=language)
+            
+            # Фильтр по статусу публикации
+        if is_published == 'published':
+            games = games.filter(is_published=True)
+        elif is_published == 'not_published':
+            games = games.filter(is_published=False)
+            
+            # Сортировка
+        games = games.order_by(sort_by)
     
     # Статистика
     total_games = games.count()
