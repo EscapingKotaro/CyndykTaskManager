@@ -30,7 +30,7 @@
         
         {% if task.tags %}
         <div class="task-tags">
-            {% for tag in task.get_tags_list %}
+            {% for tag in task.tags.split %}
                 <span class="tag">{{ tag }}</span>
             {% endfor %}
         </div>
@@ -70,11 +70,13 @@
         </div>
         
         <div class="task-actions">
-            {% if task.status == 'proposed' and task.can_edit request.user %}
-            <form method="post" action="{% url 'approve_task' task.id %}" class="inline-form">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-success btn-sm">✅ Подтвердить</button>
-            </form>
+            {% if task.status == 'proposed' %}
+                {% if request.user.role == 'boss' or request.user == task.controlled_by or request.user == task.assigned_to.manager %}
+                <form method="post" action="{% url 'approve_task' task.id %}" class="inline-form">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-sm">✅ Подтвердить</button>
+                </form>
+                {% endif %}
             {% endif %}
             
             {% if task.status == 'created' and task.assigned_to == request.user %}
@@ -88,8 +90,10 @@
             <a href="{% url 'submit_task' task.id %}" class="btn btn-warning btn-sm">📤 Сдать на проверку</a>
             {% endif %}
             
-            {% if task.status == 'submitted' and task.can_edit request.user %}
-            <a href="{% url 'complete_task' task.id %}" class="btn btn-success btn-sm">✅ Завершить</a>
+            {% if task.status == 'submitted' %}
+                {% if request.user.role == 'boss' or request.user == task.controlled_by or request.user == task.created_by %}
+                <a href="{% url 'complete_task' task.id %}" class="btn btn-success btn-sm">✅ Завершить</a>
+                {% endif %}
             {% endif %}
         </div>
     </div>
