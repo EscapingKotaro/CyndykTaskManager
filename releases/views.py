@@ -79,36 +79,35 @@ def release_list(request):
     # Применяем фильтры
     form = GameReleaseForm(request.GET or None)
     
-    if form.is_valid():
-        platform = form.cleaned_data.get('platform')
-        marketplace = form.cleaned_data.get('marketplace')
-        language = form.cleaned_data.get('language')
-        is_published = form.cleaned_data.get('is_published')
-        sort_by = form.cleaned_data.get('sort_by') or 'release_date'
+    platform = form.cleaned_data.get('platform')
+    marketplace = form.cleaned_data.get('marketplace')
+    language = form.cleaned_data.get('language')
+    is_published = form.cleaned_data.get('is_published')
+    sort_by = form.cleaned_data.get('sort_by') or 'release_date'
         
         # Фильтр по платформе
-        if platform:
-            games = games.filter(platforms__icontains=platform)
+    if platform:
+        games = games.filter(platforms__icontains=platform)
         
         # Фильтр по площадке
-        if marketplace:
-            games = games.filter(
+    if marketplace:
+        games = games.filter(
                 Q(marketplace_platforms__icontains=marketplace) |
                 Q(marketplace_platforms__has_key=marketplace)
             )
         
         # Фильтр по языку
-        if language:
-            games = games.filter(languages__icontains=language)
+    if language:
+        games = games.filter(languages__icontains=language)
         
         # Фильтр по статусу публикации
-        if is_published == 'published':
-            games = games.filter(is_published=True)
-        elif is_published == 'not_published':
-            games = games.filter(is_published=False)
+    if is_published == 'published':
+        games = games.filter(is_published=True)
+    elif is_published == 'not_published':
+        games = games.filter(is_published=False)
         
         # Сортировка
-        games = games.order_by(sort_by)
+    games = games.order_by(sort_by)
     
     # Статистика
     total_games = games.count()
