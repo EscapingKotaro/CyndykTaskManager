@@ -899,7 +899,7 @@ class KanbanBoard {
 // Функция для открытия модального окна с деталями задачи
 async function openTaskModal(taskId) {
     try {
-        const response = await fetch(`/tasks/${taskId}/details/`);
+        const response = await fetch(`/task/${taskId}/details/`);
         const html = await response.text();
         
         document.getElementById('modal-body').innerHTML = html;
