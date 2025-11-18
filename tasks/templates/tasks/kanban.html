@@ -1479,61 +1479,9 @@ animateCompleteTask(taskCard) {
         const modal = document.getElementById('task-modal');
         modal.style.display = 'none';
     }
-}
 
-// Функция для открытия модального окна с деталями задачи
-async function openTaskModal(taskId) {
-    try {
-        const response = await fetch(`/task/${taskId}/details/`);
-        const html = await response.text();
-        
-        document.getElementById('modal-body').innerHTML = html;
-        document.getElementById('task-modal').style.display = 'block';
-        
-    } catch (error) {
-        console.error('Error loading task details:', error);
-        document.getElementById('modal-body').innerHTML = '<p>Ошибка загрузки данных</p>';
-        document.getElementById('task-modal').style.display = 'block';
-    }
-}
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    new KanbanBoard();
-});
-
-// Добавляем CSS анимации для уведомлений
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
-    
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
-        }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-    
-    .notification {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-`;
-document.head.appendChild(style);
-
-// Функция для открытия модального окна с завершенными задачами
+    // Функция для открытия модального окна с завершенными задачами
 async function openCompletedTasksModal() {
     try {
         // Показываем лоадер
@@ -1593,6 +1541,61 @@ setupEventListeners() {
         }
     });
 }
+}
+
+// Функция для открытия модального окна с деталями задачи
+async function openTaskModal(taskId) {
+    try {
+        const response = await fetch(`/task/${taskId}/details/`);
+        const html = await response.text();
+        
+        document.getElementById('modal-body').innerHTML = html;
+        document.getElementById('task-modal').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading task details:', error);
+        document.getElementById('modal-body').innerHTML = '<p>Ошибка загрузки данных</p>';
+        document.getElementById('task-modal').style.display = 'block';
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    new KanbanBoard();
+});
+
+// Добавляем CSS анимации для уведомлений
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .notification {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+`;
+document.head.appendChild(style);
+
+
 </script>
 
 
