@@ -1481,6 +1481,40 @@ animateCompleteTask(taskCard) {
     }
 
 
+
+
+
+// Обновляем setupEventListeners для нового модала
+setupEventListeners() {
+    // Закрытие модальных окон
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+    
+    // Закрытие по клику вне модала
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    });
+}
+}
+
+// Функция для закрытия модального окна с завершенными задачами
+function closeCompletedTasksModal() {
+    document.getElementById('completed-tasks-modal').style.display = 'none';
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    new KanbanBoard();
+});
+
     // Функция для открытия модального окна с завершенными задачами
 async function openCompletedTasksModal() {
     try {
@@ -1517,31 +1551,6 @@ async function openCompletedTasksModal() {
     }
 }
 
-// Функция для закрытия модального окна с завершенными задачами
-function closeCompletedTasksModal() {
-    document.getElementById('completed-tasks-modal').style.display = 'none';
-}
-
-// Обновляем setupEventListeners для нового модала
-setupEventListeners() {
-    // Закрытие модальных окон
-    document.querySelectorAll('.close').forEach(closeBtn => {
-        closeBtn.addEventListener('click', (e) => {
-            const modal = e.target.closest('.modal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        });
-    });
-    
-    // Закрытие по клику вне модала
-    window.addEventListener('click', (e) => {
-        if (e.target.classList.contains('modal')) {
-            e.target.style.display = 'none';
-        }
-    });
-}
-}
 
 // Функция для открытия модального окна с деталями задачи
 async function openTaskModal(taskId) {
@@ -1558,11 +1567,6 @@ async function openTaskModal(taskId) {
         document.getElementById('task-modal').style.display = 'block';
     }
 }
-
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    new KanbanBoard();
-});
 
 // Добавляем CSS анимации для уведомлений
 const style = document.createElement('style');
