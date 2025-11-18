@@ -46,6 +46,11 @@ def update_task_status(request):
         # Проверяем права
         if not task.can_view(request.user):
             return JsonResponse({'success': False, 'error': 'Нет прав'})
+
+        if new_status=='active' and  task.status=="proposed":
+            new_status='created'
+        elif new_status=='active':
+            new_status='in_progress'
         
         # Проверяем валидность перехода статусов
         valid_transitions = {
