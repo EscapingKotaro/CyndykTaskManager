@@ -7,27 +7,31 @@
     <!-- Заголовок -->
     <div class="kanban-header">
         <h1>📋 Канбан доска</h1>
-        <div class="kanban-controls">
-            <form method="get" class="filter-form">
-                <select name="user_filter" onchange="this.form.submit()" class="user-filter">
-                    <option value="">Все сотрудники</option>
-                    {% for emp in request.user.get_team_users %}
-                    <option value="{{ emp.id }}" {% if selected_user == emp.id|stringformat:'i' %}selected{% endif %}>
-                        {{ emp.get_display_name }}
-                    </option>
-                    {% endfor %}
-                </select>
-                {% if selected_user %}
-                <a href="{% url 'dashboard' %}" class="btn-clear">✕</a>
-                {% endif %}
-            </form>
-            
-            {% if request.user.role in 'boss,manager' %}
-            <a href="{% url 'create_task' %}" class="btn-primary">
-                ➕ Новая задача
-            </a>
-            {% endif %}
-        </div>
+        <!-- ОБНОВЛЯЕМ HTML для красоты -->
+<div class="kanban-controls">
+    <form method="get" class="filter-form">
+        <select name="user_filter" onchange="this.form.submit()" class="user-filter">
+            <option value="">👥 Все сотрудники</option>
+            {% for emp in request.user.get_team_users %}
+            <option value="{{ emp.id }}" {% if selected_user == emp.id|stringformat:'i' %}selected{% endif %}>
+                👤 {{ emp.get_display_name }}
+            </option>
+            {% endfor %}
+        </select>
+        {% if selected_user %}
+        <a href="{% url 'task_kanban' %}" class="btn-clear" title="Сбросить фильтр">
+            ✕
+        </a>
+        {% endif %}
+    </form>
+    
+    {% if request.user.role in 'boss,manager' %}
+    <a href="{% url 'create_task' %}" class="btn-primary">
+        <span>➕</span>
+        <span>Новая задача</span>
+    </a>
+    {% endif %}
+</div>
     </div>
 
     <!-- Статистика -->
@@ -701,6 +705,256 @@
     animation: successPulse 0.6s ease;
 }
 
+/* ДОБАВЛЯЕМ В CSS */
+.kanban-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-form {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 8px 16px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.user-filter {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    min-width: 180px;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+}
+
+.user-filter option {
+    background: #2d3748;
+    color: white;
+    padding: 8px;
+}
+
+.user-filter:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+}
+
+.btn-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.btn-clear:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #00b4db, #0083b0);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 180, 219, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 180, 219, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* Адаптивность для контролов */
+@media (max-width: 768px) {
+    .kanban-controls {
+        justify-content: center;
+        width: 100%;
+    }
+    
+    .filter-form {
+        order: 2;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-primary {
+        order: 1;
+    }
+    
+    .user-filter {
+        min-width: 150px;
+        flex: 1;
+    }
+}
+
+
+
+
+
+/* ОБНОВЛЯЕМ СТИЛИ КОЛОНОК */
+.kanban-column {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    min-height: 600px;
+    max-height: 75vh; /* ФИКСИРОВАННАЯ ВЫСОТА */
+    display: flex;
+    flex-direction: column;
+}
+
+.column-header {
+    margin-bottom: 20px;
+    flex-shrink: 0; /* Заголовок не скроллится */
+}
+
+.tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1; /* Занимает все доступное пространство */
+    overflow-y: auto; /* ВЕРТИКАЛЬНЫЙ СКРОЛЛ */
+    overflow-x: hidden;
+    min-height: 200px;
+    max-height: calc(75vh - 120px); /* Высота минус заголовок и отступы */
+}
+
+/* Стилизация скроллбара */
+.tasks-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tasks-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 3px;
+}
+
+.tasks-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+}
+
+.tasks-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Для Firefox */
+.tasks-container {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
+}
+
+/* Empty state в скроллящемся контейнере */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #999;
+    text-align: center;
+    flex: 1;
+    min-height: 200px;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Адаптивность высоты */
+@media (max-width: 1200px) {
+    .kanban-column {
+        max-height: 70vh;
+    }
+    
+    .tasks-container {
+        max-height: calc(70vh - 120px);
+    }
+}
+
+@media (max-width: 768px) {
+    .kanban-column {
+        max-height: 60vh;
+        min-height: 500px;
+    }
+    
+    .tasks-container {
+        max-height: calc(60vh - 120px);
+    }
+}
+
+/* Улучшаем внешний вид при скролле */
+.kanban-board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    gap: 24px;
+    align-items: start; /* Важно для выравнивания колонок */
+}
+
+/* Плавный скролл */
+.tasks-container {
+    scroll-behavior: smooth;
+}
+
+/* Индикатор переполнения */
+.tasks-container:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(transparent, rgba(255,255,255,0.9));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.tasks-container.scrollable:after {
+    opacity: 1;
+}
+
 </style>
 
 <script>
@@ -1169,5 +1423,37 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+</script>
+
+
+<script>
+
+    // ДОБАВЛЯЕМ В kanban-dragdrop.js
+setupScrollIndicators() {
+    const containers = document.querySelectorAll('.tasks-container');
+    
+    containers.forEach(container => {
+        const checkScroll = () => {
+            if (container.scrollHeight > container.clientHeight) {
+                container.classList.add('scrollable');
+            } else {
+                container.classList.remove('scrollable');
+            }
+        };
+        
+        // Проверяем при загрузке
+        checkScroll();
+        
+        // И при изменении размера
+        new ResizeObserver(checkScroll).observe(container);
+    });
+}
+
+// Обновляем init
+init() {
+    this.setupDragAndDrop();
+    this.setupEventListeners();
+    this.setupScrollIndicators(); // ДОБАВЛЯЕМ ЭТУ СТРОЧКУ
+}
 </script>
 {% endblock %}
