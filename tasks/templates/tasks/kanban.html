@@ -56,13 +56,19 @@
                 <div class="stat-amount">{{ submitted_sum }} ₽</div>
             </div>
         </div>
-        <div class="stat-card completed">
-            <div class="stat-icon">✅</div>
-            <div class="stat-content">
-                <div class="stat-number">{{ completed_count }}</div>
-                <div class="stat-label">Завершено</div>
-            </div>
+        <div class="stat-card completed drop-zone-completed" 
+         data-status="completed"
+         id="completed-drop-zone">
+        <div class="stat-icon">✅</div>
+        <div class="stat-content">
+            <div class="stat-number">{{ completed_count }}</div>
+            <div class="stat-label">Завершено</div>
+            <div class="drop-hint">Перетащите сюда для завершения</div>
         </div>
+        <div class="completed-animation">
+            <div class="checkmark">✓</div>
+        </div>
+    </div>
     </div>
 
     <!-- Канбан доски -->
@@ -619,333 +625,255 @@
     }
 }
 
+/* ДОБАВЛЯЕМ В CSS */
+.stat-card.completed.drop-zone-completed {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+}
+
+.stat-card.completed.drop-zone-completed:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+}
+
+.stat-card.completed.drop-zone-completed.drop-zone-active {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border-color: #28a745;
+    transform: scale(1.05);
+}
+
+.stat-card.completed.drop-zone-completed.drop-zone-active .stat-number,
+.stat-card.completed.drop-zone-completed.drop-zone-active .stat-label {
+    color: white;
+}
+
+.drop-hint {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 4px;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.stat-card.completed.drop-zone-completed.drop-zone-active .drop-hint {
+    color: white;
+    opacity: 1;
+    font-weight: 600;
+}
+
+.completed-animation {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.stat-card.completed.drop-zone-completed.drop-zone-active .completed-animation {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+.checkmark {
+    font-size: 2rem;
+    color: white;
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Анимация при успешном завершении */
+@keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.success-animation {
+    animation: successPulse 0.6s ease;
+}
+
 </style>
 
 <script>
-// static/js/kanban-dragdrop.js
-class KanbanBoard {
-    constructor() {
-        this.currentDraggedElement = null;
-        this.init();
-    }
+// ОБНОВЛЯЕМ kanban-dragdrop.js
+setupDragAndDrop() {
+    const taskCards = document.querySelectorAll('.task-card');
+    const columns = document.querySelectorAll('.kanban-column');
+    const completedZone = document.getElementById('completed-drop-zone');
 
-    init() {
-        this.setupDragAndDrop();
-        this.setupEventListeners();
-    }
-
-    setupDragAndDrop() {
-        const taskCards = document.querySelectorAll('.task-card');
-        const columns = document.querySelectorAll('.kanban-column');
-
-        // Настройка перетаскиваемых элементов
-        taskCards.forEach(card => {
-            card.setAttribute('draggable', 'true');
-            
-            card.addEventListener('dragstart', (e) => {
-                this.handleDragStart(e, card);
-            });
-            
-            card.addEventListener('dragend', (e) => {
-                this.handleDragEnd(e, card);
-            });
-        });
-
-        // Настройка зон сброса
-        columns.forEach(column => {
-            column.addEventListener('dragover', (e) => {
-                this.handleDragOver(e, column);
-            });
-            
-            column.addEventListener('dragenter', (e) => {
-                this.handleDragEnter(e, column);
-            });
-            
-            column.addEventListener('dragleave', (e) => {
-                this.handleDragLeave(e, column);
-            });
-            
-            column.addEventListener('drop', (e) => {
-                this.handleDrop(e, column);
-            });
-        });
-    }
-
-    handleDragStart(e, card) {
-        this.currentDraggedElement = card;
-        card.classList.add('dragging');
+    // Настройка перетаскиваемых элементов
+    taskCards.forEach(card => {
+        card.setAttribute('draggable', 'true');
         
-        // Устанавливаем данные для переноса
-        e.dataTransfer.setData('text/plain', card.dataset.taskId);
-        e.dataTransfer.effectAllowed = 'move';
-        
-        // Создаем полупрозрачное изображение для перетаскивания
-        setTimeout(() => {
-            card.style.opacity = '0.4';
-        }, 0);
-    }
-
-    handleDragEnd(e, card) {
-        card.classList.remove('dragging');
-        card.style.opacity = '1';
-        
-        // Убираем подсветку со всех колонок
-        document.querySelectorAll('.kanban-column').forEach(col => {
-            col.classList.remove('drop-zone');
+        card.addEventListener('dragstart', (e) => {
+            this.handleDragStart(e, card);
         });
         
-        this.currentDraggedElement = null;
-    }
+        card.addEventListener('dragend', (e) => {
+            this.handleDragEnd(e, card);
+        });
+    });
 
-    handleDragOver(e, column) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-    }
-
-    handleDragEnter(e, column) {
-        e.preventDefault();
-        column.classList.add('drop-zone');
-    }
-
-    handleDragLeave(e, column) {
-        // Проверяем, что мы действительно вышли из колонки, а не перешли в дочерний элемент
-        if (!column.contains(e.relatedTarget)) {
-            column.classList.remove('drop-zone');
-        }
-    }
-
-    async handleDrop(e, column) {
-        e.preventDefault();
-        
-        const taskId = e.dataTransfer.getData('text/plain');
-        const newStatus = column.dataset.status;
-        const taskCard = this.currentDraggedElement;
-        
-        if (!taskId || !newStatus || !taskCard) return;
-
-        // Убираем подсветку
-        column.classList.remove('drop-zone');
-
-        // Определяем целевой контейнер
-        const targetContainer = column.querySelector('.tasks-container');
-        
-        try {
-            // Показываем анимацию перемещения
-            this.animateTaskMove(taskCard, targetContainer);
-
-            // Отправляем запрос на сервер
-            const response = await this.updateTaskStatus(taskId, newStatus);
-            
-            if (response.success) {
-                // Обновляем данные карточки
-                taskCard.dataset.status = newStatus;
-                
-                // Показываем уведомление
-                this.showNotification('Статус задачи обновлен', 'success');
-                
-            } else {
-                // Возвращаем карточку на место в случае ошибки
-                this.returnTaskToOriginalPosition(taskCard);
-                this.showNotification('Ошибка: ' + response.error, 'error');
-            }
-            
-        } catch (error) {
-            console.error('Error updating task status:', error);
-            this.returnTaskToOriginalPosition(taskCard);
-            this.showNotification('Ошибка обновления статуса', 'error');
-        }
-    }
-
-    animateTaskMove(taskCard, targetContainer) {
-        // Создаем клон для анимации
-        const clone = taskCard.cloneNode(true);
-        const rect = taskCard.getBoundingClientRect();
-        
-        clone.style.position = 'fixed';
-        clone.style.left = rect.left + 'px';
-        clone.style.top = rect.top + 'px';
-        clone.style.width = rect.width + 'px';
-        clone.style.height = rect.height + 'px';
-        clone.style.zIndex = '1000';
-        clone.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-        
-        document.body.appendChild(clone);
-        
-        // Скрываем оригинал
-        taskCard.style.visibility = 'hidden';
-        
-        // Вычисляем конечную позицию
-        setTimeout(() => {
-            const targetRect = targetContainer.getBoundingClientRect();
-            clone.style.left = targetRect.left + 'px';
-            clone.style.top = targetRect.top + 'px';
-            clone.style.transform = 'scale(0.95)';
-            clone.style.opacity = '0.7';
-        }, 10);
-        
-        // Завершаем анимацию
-        setTimeout(() => {
-            clone.remove();
-            taskCard.style.visibility = 'visible';
-            
-            // Перемещаем карточку в целевой контейнер
-            if (targetContainer !== taskCard.parentNode) {
-                targetContainer.appendChild(taskCard);
-            }
-        }, 400);
-    }
-
-    returnTaskToOriginalPosition(taskCard) {
-        taskCard.style.visibility = 'visible';
-        // Здесь можно добавить анимацию возврата
-    }
-
-    async updateTaskStatus(taskId, newStatus) {
-        const csrfToken = this.getCSRFToken();
-        
-        const response = await fetch('/task/update-status/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({
-                task_id: taskId,
-                new_status: newStatus
-            })
+    // Настройка колонок
+    columns.forEach(column => {
+        column.addEventListener('dragover', (e) => {
+            this.handleDragOver(e, column);
         });
         
-        return await response.json();
-    }
-
-    getCSRFToken() {
-        const name = 'csrftoken';
-        let cookieValue = null;
-        
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
-            }
-        }
-        return cookieValue;
-    }
-
-    showNotification(message, type = 'info') {
-        // Создаем уведомление
-        const notification = document.createElement('div');
-        notification.className = `notification notification-${type}`;
-        notification.textContent = message;
-        
-        // Стили для уведомления
-        Object.assign(notification.style, {
-            position: 'fixed',
-            top: '20px',
-            right: '20px',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            color: 'white',
-            fontWeight: '500',
-            zIndex: '1001',
-            animation: 'slideInRight 0.3s ease'
+        column.addEventListener('dragenter', (e) => {
+            this.handleDragEnter(e, column);
         });
         
-        if (type === 'success') {
-            notification.style.background = 'linear-gradient(135deg, #00b894, #00a085)';
-        } else if (type === 'error') {
-            notification.style.background = 'linear-gradient(135deg, #d63031, #c23616)';
-        } else {
-            notification.style.background = 'linear-gradient(135deg, #0984e3, #0767b1)';
-        }
-        
-        document.body.appendChild(notification);
-        
-        // Удаляем уведомление через 3 секунды
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.3s ease';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 300);
-        }, 3000);
-    }
-
-    setupEventListeners() {
-        // Закрытие модального окна
-        document.querySelector('.close')?.addEventListener('click', () => {
-            this.closeModal();
+        column.addEventListener('dragleave', (e) => {
+            this.handleDragLeave(e, column);
         });
         
-        // Закрытие модального окна по клику вне его
-        window.addEventListener('click', (e) => {
-            const modal = document.getElementById('task-modal');
-            if (e.target === modal) {
-                this.closeModal();
-            }
+        column.addEventListener('drop', (e) => {
+            this.handleDrop(e, column);
         });
-    }
+    });
 
-    closeModal() {
-        const modal = document.getElementById('task-modal');
-        modal.style.display = 'none';
+    // Настройка зоны завершения
+    if (completedZone) {
+        completedZone.addEventListener('dragover', (e) => {
+            this.handleDragOver(e, completedZone);
+        });
+        
+        completedZone.addEventListener('dragenter', (e) => {
+            this.handleDragEnterCompleted(e, completedZone);
+        });
+        
+        completedZone.addEventListener('dragleave', (e) => {
+            this.handleDragLeaveCompleted(e, completedZone);
+        });
+        
+        completedZone.addEventListener('drop', (e) => {
+            this.handleDropCompleted(e, completedZone);
+        });
     }
 }
 
-// Функция для открытия модального окна с деталями задачи
-async function openTaskModal(taskId) {
+handleDragEnterCompleted(e, completedZone) {
+    e.preventDefault();
+    completedZone.classList.add('drop-zone-active');
+}
+
+handleDragLeaveCompleted(e, completedZone) {
+    if (!completedZone.contains(e.relatedTarget)) {
+        completedZone.classList.remove('drop-zone-active');
+    }
+}
+
+async handleDropCompleted(e, completedZone) {
+    e.preventDefault();
+    
+    const taskId = e.dataTransfer.getData('text/plain');
+    const taskCard = this.currentDraggedElement;
+    
+    if (!taskId || !taskCard) return;
+
+    // Убираем подсветку
+    completedZone.classList.remove('drop-zone-active');
+
     try {
-        const response = await fetch(`/task/${taskId}/details/`);
-        const html = await response.text();
+        // Показываем анимацию
+        this.animateCompleteTask(taskCard);
+
+        // Отправляем запрос на сервер
+        const response = await this.updateTaskStatus(taskId, 'completed');
         
-        document.getElementById('modal-body').innerHTML = html;
-        document.getElementById('task-modal').style.display = 'block';
+        if (response.success) {
+            // Удаляем карточку из DOM
+            setTimeout(() => {
+                taskCard.remove();
+                
+                // Обновляем счетчик завершенных
+                this.updateCompletedCounter();
+                
+                // Проверяем нужно ли показать empty-state в исходной колонке
+                this.checkEmptyColumns();
+            }, 600);
+            
+            this.showNotification('✅ Задача завершена! Деньги начислены.', 'success');
+            
+        } else {
+            this.showNotification('❌ Ошибка: ' + response.error, 'error');
+        }
         
     } catch (error) {
-        console.error('Error loading task details:', error);
-        document.getElementById('modal-body').innerHTML = '<p>Ошибка загрузки данных</p>';
-        document.getElementById('task-modal').style.display = 'block';
+        console.error('Error completing task:', error);
+        this.showNotification('❌ Ошибка завершения задачи', 'error');
     }
 }
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
-    new KanbanBoard();
-});
+animateCompleteTask(taskCard) {
+    // Анимация завершения задачи
+    taskCard.style.transition = 'all 0.5s ease';
+    taskCard.style.transform = 'scale(0.8)';
+    taskCard.style.opacity = '0';
+    
+    // Анимация зоны завершения
+    const completedZone = document.getElementById('completed-drop-zone');
+    completedZone.classList.add('success-animation');
+    
+    setTimeout(() => {
+        completedZone.classList.remove('success-animation');
+    }, 600);
+}
 
-// Добавляем CSS анимации для уведомлений
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideInRight {
-        from {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-        to {
-            transform: translateX(0);
-            opacity: 1;
-        }
-    }
+updateCompletedCounter() {
+    const completedZone = document.getElementById('completed-drop-zone');
+    const counter = completedZone.querySelector('.stat-number');
+    const currentCount = parseInt(counter.textContent);
+    counter.textContent = currentCount + 1;
     
-    @keyframes slideOutRight {
-        from {
-            transform: translateX(0);
-            opacity: 1;
+    // Анимация обновления счетчика
+    counter.style.transform = 'scale(1.2)';
+    setTimeout(() => {
+        counter.style.transform = 'scale(1)';
+    }, 300);
+}
+
+checkEmptyColumns() {
+    // Проверяем все колонки и добавляем empty-state если нужно
+    document.querySelectorAll('.kanban-column').forEach(column => {
+        const container = column.querySelector('.tasks-container');
+        const tasks = container.querySelectorAll('.task-card');
+        const emptyState = container.querySelector('.empty-state');
+        
+        if (tasks.length === 0 && !emptyState) {
+            const status = column.dataset.status;
+            const emptyIcons = {
+                'proposed': '📝',
+                'active': '⚡', 
+                'submitted': '👀'
+            };
+            
+            const emptyTexts = {
+                'proposed': 'Нет предложенных задач',
+                'active': 'Нет активных задач',
+                'submitted': 'Нет задач на проверке'
+            };
+            
+            const emptyHtml = `
+                <div class="empty-state">
+                    <div class="empty-icon">${emptyIcons[status]}</div>
+                    <p>${emptyTexts[status]}</p>
+                </div>
+            `;
+            
+            container.innerHTML = emptyHtml;
         }
-        to {
-            transform: translateX(100%);
-            opacity: 0;
-        }
-    }
-    
-    .notification {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    }
-`;
-document.head.appendChild(style);
+    });
+}
 </script>
 {% endblock %}
