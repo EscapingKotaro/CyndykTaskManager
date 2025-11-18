@@ -2,6 +2,7 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
 from django.db.models import Q, Sum
+import random
 
 class CustomUser(AbstractUser):
     ROLE_CHOICES = [
