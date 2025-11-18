@@ -71,10 +71,10 @@
                 
                 {% if emp.tags %}
                 <div class="employee-tags">
-                    {% for tag in emp.get_tags_list %}
-                    <span class="tag">{{ tag }}</span>
-                    {% endfor %}
-                </div>
+    {% for tag in emp.get_tags_list %}
+    <span class="tag {% cycle 'tag-primary' 'tag-success' 'tag-warning' 'tag-info' 'tag-danger' %}">{{ tag }}</span>
+    {% endfor %}
+</div>
                 {% endif %}
             </div>
             
@@ -89,7 +89,85 @@
         </div>
         {% endfor %}
     </div>
+
 </div>
+
+<style>
+.employee-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.tag {
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: lowercase;
+    transition: all 0.3s ease;
+    cursor: default;
+    border: 1px solid transparent;
+}
+
+/* Цветовые варианты тегов */
+.tag-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+}
+
+.tag-success {
+    background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+    color: white;
+}
+
+.tag-warning {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+    color: #212529;
+}
+
+.tag-info {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+}
+
+.tag-danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    color: white;
+}
+
+.tag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Альтернативный вариант - градиентные теги */
+.tag-gradient-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tag-gradient-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.tag-gradient-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.tag-gradient-4 {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.tag-gradient-5 {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+</style>
 
 <style>
 .employee-grid {
