@@ -704,8 +704,19 @@
 </style>
 
 <script>
-// ОБНОВЛЯЕМ kanban-dragdrop.js
-setupDragAndDrop() {
+// static/js/kanban-dragdrop.js
+class KanbanBoard {
+    constructor() {
+        this.currentDraggedElement = null;
+        this.init();
+    }
+
+    init() {
+        this.setupDragAndDrop();
+        this.setupEventListeners();
+    }
+
+    setupDragAndDrop() {
     const taskCards = document.querySelectorAll('.task-card');
     const columns = document.querySelectorAll('.kanban-column');
     const completedZone = document.getElementById('completed-drop-zone');
@@ -815,21 +826,6 @@ async handleDropCompleted(e, completedZone) {
     }
 }
 
-animateCompleteTask(taskCard) {
-    // Анимация завершения задачи
-    taskCard.style.transition = 'all 0.5s ease';
-    taskCard.style.transform = 'scale(0.8)';
-    taskCard.style.opacity = '0';
-    
-    // Анимация зоны завершения
-    const completedZone = document.getElementById('completed-drop-zone');
-    completedZone.classList.add('success-animation');
-    
-    setTimeout(() => {
-        completedZone.classList.remove('success-animation');
-    }, 600);
-}
-
 updateCompletedCounter() {
     const completedZone = document.getElementById('completed-drop-zone');
     const counter = completedZone.querySelector('.stat-number');
@@ -875,5 +871,303 @@ checkEmptyColumns() {
         }
     });
 }
+
+animateCompleteTask(taskCard) {
+    // Анимация завершения задачи
+    taskCard.style.transition = 'all 0.5s ease';
+    taskCard.style.transform = 'scale(0.8)';
+    taskCard.style.opacity = '0';
+    
+    // Анимация зоны завершения
+    const completedZone = document.getElementById('completed-drop-zone');
+    completedZone.classList.add('success-animation');
+    
+    setTimeout(() => {
+        completedZone.classList.remove('success-animation');
+    }, 600);
+}
+
+    handleDragStart(e, card) {
+        this.currentDraggedElement = card;
+        card.classList.add('dragging');
+        
+        // Устанавливаем данные для переноса
+        e.dataTransfer.setData('text/plain', card.dataset.taskId);
+        e.dataTransfer.effectAllowed = 'move';
+        
+        // Создаем полупрозрачное изображение для перетаскивания
+        setTimeout(() => {
+            card.style.opacity = '0.4';
+        }, 0);
+    }
+
+    handleDragEnd(e, card) {
+        card.classList.remove('dragging');
+        card.style.opacity = '1';
+        
+        // Убираем подсветку со всех колонок
+        document.querySelectorAll('.kanban-column').forEach(col => {
+            col.classList.remove('drop-zone');
+        });
+        
+        this.currentDraggedElement = null;
+    }
+
+    handleDragOver(e, column) {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    }
+
+    handleDragEnter(e, column) {
+        e.preventDefault();
+        column.classList.add('drop-zone');
+    }
+
+    handleDragLeave(e, column) {
+        // Проверяем, что мы действительно вышли из колонки, а не перешли в дочерний элемент
+        if (!column.contains(e.relatedTarget)) {
+            column.classList.remove('drop-zone');
+        }
+    }
+
+    async handleDrop(e, column) {
+    e.preventDefault();
+    
+    const taskId = e.dataTransfer.getData('text/plain');
+    const newStatus = column.dataset.status;
+    const taskCard = this.currentDraggedElement;
+    
+    if (!taskId || !newStatus || !taskCard) return;
+
+    // Убираем подсветку
+    column.classList.remove('drop-zone');
+
+    // Определяем целевой контейнер
+    const targetContainer = column.querySelector('.tasks-container');
+    
+    // УДАЛЯЕМ empty-state если он есть
+    const emptyState = targetContainer.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    try {
+        // Показываем анимацию перемещения
+        this.animateTaskMove(taskCard, targetContainer);
+
+        // Отправляем запрос на сервер
+        const response = await this.updateTaskStatus(taskId, newStatus);
+        
+        if (response.success) {
+            // Обновляем данные карточки
+            taskCard.dataset.status = newStatus;
+            
+            // Показываем уведомление
+            this.showNotification('Статус задачи обновлен', 'success');
+            
+        } else {
+            // Возвращаем карточку на место в случае ошибки
+            this.returnTaskToOriginalPosition(taskCard);
+            this.showNotification('Ошибка: ' + response.error, 'error');
+        }
+        
+    } catch (error) {
+        console.error('Error updating task status:', error);
+        this.returnTaskToOriginalPosition(taskCard);
+        this.showNotification('Ошибка обновления статуса: ' + error.message, 'error');
+    }
+}
+
+    animateTaskMove(taskCard, targetContainer) {
+        // Создаем клон для анимации
+        const clone = taskCard.cloneNode(true);
+        const rect = taskCard.getBoundingClientRect();
+        
+        clone.style.position = 'fixed';
+        clone.style.left = rect.left + 'px';
+        clone.style.top = rect.top + 'px';
+        clone.style.width = rect.width + 'px';
+        clone.style.height = rect.height + 'px';
+        clone.style.zIndex = '1000';
+        clone.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        document.body.appendChild(clone);
+        
+        // Скрываем оригинал
+        taskCard.style.visibility = 'hidden';
+        
+        // Вычисляем конечную позицию
+        setTimeout(() => {
+            const targetRect = targetContainer.getBoundingClientRect();
+            clone.style.left = targetRect.left + 'px';
+            clone.style.top = targetRect.top + 'px';
+            clone.style.transform = 'scale(0.95)';
+            clone.style.opacity = '0.7';
+        }, 10);
+        
+        // Завершаем анимацию
+        setTimeout(() => {
+            clone.remove();
+            taskCard.style.visibility = 'visible';
+            
+            // Перемещаем карточку в целевой контейнер
+            if (targetContainer !== taskCard.parentNode) {
+                targetContainer.appendChild(taskCard);
+            }
+        }, 400);
+    }
+
+    returnTaskToOriginalPosition(taskCard) {
+        taskCard.style.visibility = 'visible';
+        // Здесь можно добавить анимацию возврата
+    }
+
+    async updateTaskStatus(taskId, newStatus) {
+        const csrfToken = this.getCSRFToken();
+        
+        const response = await fetch('/task/update-status/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                task_id: taskId,
+                new_status: newStatus
+            })
+        });
+        
+        return await response.json();
+    }
+
+    getCSRFToken() {
+        const name = 'csrftoken';
+        let cookieValue = null;
+        
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    showNotification(message, type = 'info') {
+        // Создаем уведомление
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        // Стили для уведомления
+        Object.assign(notification.style, {
+            position: 'fixed',
+            top: '20px',
+            right: '20px',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            color: 'white',
+            fontWeight: '500',
+            zIndex: '1001',
+            animation: 'slideInRight 0.3s ease'
+        });
+        
+        if (type === 'success') {
+            notification.style.background = 'linear-gradient(135deg, #00b894, #00a085)';
+        } else if (type === 'error') {
+            notification.style.background = 'linear-gradient(135deg, #d63031, #c23616)';
+        } else {
+            notification.style.background = 'linear-gradient(135deg, #0984e3, #0767b1)';
+        }
+        
+        document.body.appendChild(notification);
+        
+        // Удаляем уведомление через 3 секунды
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.3s ease';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
+    }
+
+    setupEventListeners() {
+        // Закрытие модального окна
+        document.querySelector('.close')?.addEventListener('click', () => {
+            this.closeModal();
+        });
+        
+        // Закрытие модального окна по клику вне его
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('task-modal');
+            if (e.target === modal) {
+                this.closeModal();
+            }
+        });
+    }
+
+    closeModal() {
+        const modal = document.getElementById('task-modal');
+        modal.style.display = 'none';
+    }
+}
+
+// Функция для открытия модального окна с деталями задачи
+async function openTaskModal(taskId) {
+    try {
+        const response = await fetch(`/task/${taskId}/details/`);
+        const html = await response.text();
+        
+        document.getElementById('modal-body').innerHTML = html;
+        document.getElementById('task-modal').style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error loading task details:', error);
+        document.getElementById('modal-body').innerHTML = '<p>Ошибка загрузки данных</p>';
+        document.getElementById('task-modal').style.display = 'block';
+    }
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', () => {
+    new KanbanBoard();
+});
+
+// Добавляем CSS анимации для уведомлений
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInRight {
+        from {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateX(0);
+            opacity: 1;
+        }
+    }
+    
+    @keyframes slideOutRight {
+        from {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+    }
+    
+    .notification {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+`;
+document.head.appendChild(style);
 </script>
 {% endblock %}
