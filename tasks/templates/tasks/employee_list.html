@@ -48,12 +48,12 @@
                 {% endif %}
             </div>
             <div class="employee-avatar">
-                {% if emp.avatar %}
-                    <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}">
-                {% else %}
-                    <div class="avatar-placeholder">👤</div>
-                {% endif %}
-            </div>
+    <img src="{{ emp.get_avatar_url }}" alt="{{ emp.get_display_name }}" 
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <div class="avatar-placeholder" style="display: none;">
+        👤
+    </div>
+</div>
             
             <div class="employee-info">
                 <h3>{{ emp.get_display_name }}</h3>

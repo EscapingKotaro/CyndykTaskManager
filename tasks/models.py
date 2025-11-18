@@ -129,6 +129,64 @@ class CustomUser(AbstractUser):
         while current.manager is not None:
             current = current.manager
         return current
+
+    def get_avatar_url(self):
+        """
+        Возвращает URL аватарки в порядке приоритета:
+        1. Загруженная пользователем
+        2. Рандомная из списка
+        3. Emoji как запасной вариант
+        """
+        # 1. Если есть загруженная аватарка
+        if self.avatar:
+            return self.avatar.url
+        
+        # 2. Рандомная картинка из списка
+        random_avatars = [
+            "https://avatars.mds.yandex.net/i?id=20f3eb84d902a04de15ca1cbf412d1f6_l-16328642-images-thumbs&n=13",
+            "https://avatars.mds.yandex.net/i?id=cbd9c67872b9b58ecca3c19133f0fa77_l-4935775-images-thumbs&n=13",
+            "https://avatars.mds.yandex.net/i?id=eaf1470cd65cda6a2b32c41332ad45c0_l-4825130-images-thumbs&n=13",
+            "https://files.vgtimes.ru/posts/2022-08/poyavilsya-novyy-geympley-besplatnoy-actionrpg-kotoraya-pohozha-na-genshin-impact-v-settinge-buduschego-90304-m.webp?1659720507",
+            "https://i.pinimg.com/736x/c3/16/9b/c3169b57c0a7ebc39276036fdfda7228.jpg",
+            "https://avatars.mds.yandex.net/i?id=8ce1460d70c814dc53489febb0044447ed0e3186-4033947-images-thumbs&n=13",
+
+            "https://steamuserimages-a.akamaihd.net/ugc/1857181936430327473/BBF54B4CC69E36C71F03EA7FD69C2E5120A61401/?imw=512&amp;imh=460&amp;ima=fit&amp;impolicy=Letterbox&amp;imcolor=%23000000&amp;letterbox=true"
+        ]
+        
+        # Генерируем стабильный random на основе ID пользователя
+        if self.id:
+            random.seed(self.id)  # Для одинаковой картинки у одного пользователя
+            random_avatar = random.choice(random_avatars)
+            return random_avatar
+        
+        # 3. Emoji как запасной вариант
+        return None
+    
+    def get_avatar_display(self):
+        """
+        Возвращает HTML для отображения аватарки
+        """
+        avatar_url = self.get_avatar_url()
+        display_name = self.get_display_name()
+        
+        if avatar_url and avatar_url.startswith('http'):
+            return f'<img src="{avatar_url}" alt="{display_name}" class="avatar-img">'
+        else:
+            # Градиент на основе ID пользователя
+            gradients = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+                'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+            ]
+            
+            gradient_index = self.id % len(gradients) if self.id else 0
+            gradient = gradients[gradient_index]
+            
+            return f'<div class="avatar-placeholder" style="background: {gradient}">👤</div>'
 class Task(models.Model):
     STATUS_CHOICES = [
         ('proposed', '🟡 Предложена'),

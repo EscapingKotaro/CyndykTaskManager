@@ -108,12 +108,13 @@
             <div class="employee-card-select {% if forloop.first %}selected{% endif %}" 
                  data-employee-id="{{ emp.id }}">
                 <div class="employee-avatar-small">
-                    {% if emp.avatar %}
-                        <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}">
-                    {% else %}
-                        <div class="avatar-placeholder-small">👤</div>
-                    {% endif %}
-                </div>
+    <img src="{{ emp.get_avatar_url }}" alt="{{ emp.get_display_name }}" 
+         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+    <div class="avatar-placeholder-small" style="display: none;">
+        👤
+    </div>
+</div>
+
                 <div class="employee-info-small">
                     <strong>{{ emp.get_display_name }}</strong>
                     <div class="position-small">{{ emp.position|default:"Сотрудник" }}</div>
