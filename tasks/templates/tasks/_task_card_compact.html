@@ -1,59 +1,54 @@
-<!-- tasks/_task_card_compact.html -->
-<a href="{% url 'task_action' task.id %}" class="task-card-compact {{ task.get_priority_class }} {{ task.get_status_display_class }}">
-    
-    <!-- Всплывающая подсказка с деталями -->
-    <div class="task-tooltip">
-        <div class="tooltip-content">
-            <div class="tooltip-row">
-                <span class="tooltip-label">Создана:</span>
-                <span>{{ task.created_by.get_display_name }}</span>
+<!-- tasks/_task_card_modern.html -->
+<div class="task-card-content {{ task.get_priority_class }}">
+    <!-- Заголовок и исполнитель -->
+    <div class="task-main">
+        <h4 class="task-title">{{ task.title }}</h4>
+        <div class="task-assignee">
+            <div class="assignee-avatar">
+                {% if task.assigned_to.avatar %}
+                <img src="{{ task.assigned_to.avatar.url }}" alt="{{ task.assigned_to.get_display_name }}">
+                {% else %}
+                <div class="avatar-placeholder">👤</div>
+                {% endif %}
             </div>
-            <div class="tooltip-row">
-                <span class="tooltip-label">Срок:</span>
-                <span>{{ task.due_date|date:"d.m.Y" }}</span>
-            </div>
-            {% if task.controlled_by %}
-            <div class="tooltip-row">
-                <span class="tooltip-label">Контроль:</span>
-                <span>{{ task.controlled_by.get_display_name }}</span>
-            </div>
-            {% endif %}
-            {% if task.description %}
-            <div class="tooltip-row" style="white-space: normal; max-width: 250px;">
-                <span style="text-align: left;">{{ task.description|truncatewords:20 }}</span>
-            </div>
-            {% endif %}
+            <span class="assignee-name">{{ task.assigned_to.get_display_name }}</span>
         </div>
     </div>
-    
-    <!-- Основное содержимое карточки -->
-    <h4 class="task-title">{{ task.title }}</h4>
-    
-    <div class="task-meta-compact">
-        <div class="task-assignee-compact">
-            <span>👤</span>
-            <span>{{ task.assigned_to.get_display_name }}</span>
-        </div>
-        
-        <div class="task-due-date-compact">
-            <span>📅</span>
-            <span>{{ task.due_date|date:"d.m.Y" }}</span>
+
+    <!-- Мета-информация -->
+    <div class="task-meta">
+        <div class="meta-item deadline">
+            <span class="meta-icon">📅</span>
+            <span class="meta-text">{{ task.due_date|date:"d.m" }}</span>
+            {% if task.is_overdue %}
+            <span class="badge overdue">ПРОСРОЧЕНО</span>
+            {% elif task.is_urgent %}
+            <span class="badge urgent">СРОЧНО</span>
+            {% endif %}
         </div>
         
         {% if task.payment_amount > 0 %}
-        <div class="task-payment-compact">
-            <span>💰</span>
-            <span>{{ task.payment_amount }} руб.</span>
+        <div class="meta-item payment">
+            <span class="meta-icon">💰</span>
+            <span class="meta-text">{{ task.payment_amount }} ₽</span>
         </div>
         {% endif %}
     </div>
-    
-    <div class="task-badges">
-        <span class="status-badge">{{ task.get_status_display }}</span>
-        {% if task.is_overdue %}
-            <span class="priority-badge">ПРОСРОЧЕНА</span>
-        {% elif task.is_urgent %}
-            <span class="priority-badge">СРОЧНО</span>
-        {% endif %}
+
+    <!-- Теги -->
+    {% if task.tags %}
+    <div class="task-tags">
+        {% for tag in task.tags.split %}
+        <span class="tag">{{ tag }}</span>
+        {% endfor %}
     </div>
-</a>
+    {% endif %}
+
+    <!-- Кнопка деталей -->
+    <button class="btn-details" onclick="openTaskModal({{ task.id }})">
+        <span>Подробнее</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M9 18L15 12L9 6" stroke="currentColor" stroke-width="2"/>
+        </svg>
+    </button>
+</div>

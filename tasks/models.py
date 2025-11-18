@@ -212,6 +212,26 @@ class Task(models.Model):
         elif self.is_urgent:
             return 'priority-urgent'
         return 'priority-normal'
+    
+    def get_next_status(self):
+        """Возвращает следующий статус для Drag&Drop"""
+        status_flow = {
+            'proposed': 'created',
+            'created': 'in_progress', 
+            'in_progress': 'submitted',
+            'submitted': 'completed'
+        }
+        return status_flow.get(self.status)
+    
+    def get_previous_status(self):
+        """Возвращает предыдущий статус"""
+        status_flow = {
+            'created': 'proposed',
+            'in_progress': 'created',
+            'submitted': 'in_progress',
+            'completed': 'submitted'
+        }
+        return status_flow.get(self.status)
         
 class Payment(models.Model):
     employee = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='payments_received', 

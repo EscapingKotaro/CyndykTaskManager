@@ -14,6 +14,80 @@ from datetime import timedelta
 from django.contrib.auth import login  # ← Добавляем этот импорт
 from .utils import get_kanban_data, get_team_kanban_data
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
+import json
+
+
+# views.py
+@login_required
+def task_details(request, task_id):
+    """Возвращает HTML с деталями задачи для модального окна"""
+    task = get_object_or_404(Task, id=task_id)
+    
+    if not task.can_view(request.user):
+        return HttpResponse('Нет прав для просмотра этой задачи')
+    
+    return render(request, 'tasks/task_details.html', {'task': task})
+
+@csrf_exempt
+@require_http_methods(["POST"])
+@login_required
+def update_task_status(request):
+    """Обновление статуса задачи через Drag&Drop"""
+    try:
+        data = json.loads(request.body)
+        task_id = data.get('task_id')
+        new_status = data.get('new_status')
+        
+        task = Task.objects.get(id=task_id)
+        
+        # Проверяем права
+        if not task.can_view(request.user):
+            return JsonResponse({'success': False, 'error': 'Нет прав'})
+        
+        # Проверяем валидность перехода статусов
+        valid_transitions = {
+            'proposed': ['created'],
+            'created': ['proposed', 'in_progress'],
+            'in_progress': ['created', 'submitted'],
+            'submitted': ['in_progress', 'completed'],
+            'completed': ['submitted']
+        }
+        
+        if new_status not in valid_transitions.get(task.status, []):
+            return JsonResponse({'success': False, 'error': 'Неверный переход статуса'})
+        
+        # Обновляем статус
+        old_status = task.status
+        task.status = new_status
+        
+        # Автоматически проставляем даты
+        if new_status == 'in_progress' and not task.started_date:
+            task.started_date = timezone.now()
+        elif new_status == 'submitted' and not task.submitted_date:
+            task.submitted_date = timezone.now()
+        elif new_status == 'completed':
+            # Начисляем деньги при завершении
+            task.assigned_to.balance += task.payment_amount
+            task.assigned_to.save()
+        
+        task.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Статус обновлен',
+            'task_id': task_id,
+            'old_status': old_status,
+            'new_status': new_status
+        })
+        
+    except Task.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Задача не найдена'})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
 @login_required
 def navigation_buttons(request):
     """

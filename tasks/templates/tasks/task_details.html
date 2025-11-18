@@ -1,0 +1,49 @@
+<!-- tasks/task_details.html -->
+<div class="task-details">
+    <div class="detail-section">
+        <h4>Описание</h4>
+        <p>{{ task.description|linebreaksbr }}</p>
+    </div>
+    
+    <div class="detail-grid">
+        <div class="detail-item">
+            <strong>Исполнитель:</strong>
+            <span>{{ task.assigned_to.get_display_name }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>Создана:</strong>
+            <span>{{ task.created_by.get_display_name }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>Срок:</strong>
+            <span>{{ task.due_date|date:"d.m.Y" }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>Статус:</strong>
+            <span class="status-badge">{{ task.get_status_display }}</span>
+        </div>
+        {% if task.controlled_by %}
+        <div class="detail-item">
+            <strong>На контроле:</strong>
+            <span>{{ task.controlled_by.get_display_name }}</span>
+        </div>
+        {% endif %}
+        {% if task.payment_amount > 0 %}
+        <div class="detail-item">
+            <strong>Оплата:</strong>
+            <span class="payment-amount">{{ task.payment_amount }} ₽</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    {% if task.tags %}
+    <div class="detail-section">
+        <h4>Теги</h4>
+        <div class="tags-container">
+            {% for tag in task.tags.split %}
+            <span class="tag">{{ tag }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
