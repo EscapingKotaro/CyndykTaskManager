@@ -93,6 +93,34 @@ def update_task_status(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+
+# views.py
+@login_required
+def completed_tasks_modal(request):
+    """Возвращает HTML с завершенными задачами для модального окна"""
+    # Получаем завершенные задачи которые пользователь может видеть
+    if request.user.role in ['boss', 'manager']:
+        completed_tasks = Task.objects.filter(
+            status='completed',
+            assigned_to__manager=request.user.manager
+        ).select_related('assigned_to', 'created_by')
+    else:
+        completed_tasks = Task.objects.filter(
+            status='completed',
+            assigned_to=request.user
+        ).select_related('assigned_to', 'created_by')
+    
+    # Сортируем по дате завершения (submitted_date или created_date)
+    completed_tasks = completed_tasks.order_by('-submitted_date', '-created_date')
+    
+    context = {
+        'completed_tasks': completed_tasks,
+        'total_count': completed_tasks.count(),
+        'total_amount': completed_tasks.aggregate(Sum('payment_amount'))['payment_amount__sum'] or 0
+    }
+    
+    return render(request, 'tasks/completed_tasks_modal.html', context)
+
 @login_required
 def navigation_buttons(request):
     """

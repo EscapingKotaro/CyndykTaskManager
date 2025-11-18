@@ -17,6 +17,7 @@ urlpatterns = [
     path('task/<int:task_id>/approve/', views.approve_task, name='approve_task'),
     path('task/<int:task_id>/details/', views.task_details, name='task_details'),  
     path('task/update-status/', views.update_task_status, name='update_task_status'),
+    path('completed-tasks/', views.completed_tasks_modal, name='completed_tasks_modal'),
     path('change-password/', views.change_password, name='change_password'),
     path('change-password/<int:user_id>/', views.change_employee_password, name='change_employee_password'),
     path('make-payment/', views.make_payment, name='make_payment'),

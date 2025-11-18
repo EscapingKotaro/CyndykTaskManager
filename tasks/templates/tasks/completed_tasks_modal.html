@@ -1,0 +1,241 @@
+<!-- tasks/templates/tasks/completed_tasks_modal.html -->
+<div class="completed-tasks-modal">
+    <!-- Заголовок -->
+    <div class="modal-header mb-4">
+        <h4 class="text-dark mb-2">
+            <i class="fas fa-check-circle text-success me-2"></i>
+            Завершенные задачи
+        </h4>
+        <div class="stats-badge bg-success text-white">
+            {{ total_count }} задач
+        </div>
+    </div>
+
+    <!-- Общая статистика -->
+    <div class="stats-summary mb-4 p-3 bg-light rounded">
+        <div class="row text-center">
+            <div class="col-6">
+                <div class="stat-item">
+                    <div class="stat-number text-success">{{ total_count }}</div>
+                    <div class="stat-label">Всего завершено</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="stat-item">
+                    <div class="stat-number text-success">{{ total_amount }} ₽</div>
+                    <div class="stat-label">Общая сумма</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Список задач -->
+    <div class="tasks-list">
+        {% if completed_tasks %}
+            <div class="completed-tasks-container">
+                {% for task in completed_tasks %}
+                <div class="completed-task-card">
+                    <div class="task-main-info">
+                        <h6 class="task-title">{{ task.title }}</h6>
+                        <div class="task-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-user me-1"></i>
+                                {{ task.assigned_to.get_display_name }}
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-calendar me-1"></i>
+                                {{ task.due_date|date:"d.m.Y" }}
+                            </div>
+                            {% if task.payment_amount > 0 %}
+                            <div class="meta-item text-success">
+                                <i class="fas fa-coins me-1"></i>
+                                {{ task.payment_amount }} ₽
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="task-dates">
+                        <div class="date-item">
+                            <small class="text-muted">Завершено:</small>
+                            <div class="date-value">
+                                {% if task.submitted_date %}
+                                    {{ task.submitted_date|date:"d.m.Y H:i" }}
+                                {% else %}
+                                    {{ task.created_date|date:"d.m.Y H:i" }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if task.description %}
+                    <div class="task-description">
+                        <small class="text-muted">Описание:</small>
+                        <p class="mb-0">{{ task.description|truncatewords:20 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state text-center py-5">
+                <div class="empty-icon mb-3">
+                    <i class="fas fa-check-circle fa-3x text-muted"></i>
+                </div>
+                <h5 class="text-muted">Нет завершенных задач</h5>
+                <p class="text-muted">Здесь появятся задачи, которые вы завершите</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.completed-tasks-modal {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 1rem;
+}
+
+.stats-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.stats-summary {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+.stat-item {
+    padding: 10px;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.completed-tasks-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.completed-task-card {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    border-left: 4px solid #28a745;
+}
+
+.completed-task-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.task-main-info {
+    margin-bottom: 12px;
+}
+
+.task-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.task-meta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.task-dates {
+    margin-bottom: 8px;
+}
+
+.date-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.date-value {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.task-description {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #555;
+}
+
+.empty-state {
+    padding: 40px 20px;
+}
+
+.empty-icon {
+    opacity: 0.5;
+}
+
+/* Стилизация скроллбара */
+.completed-tasks-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.completed-tasks-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.completed-tasks-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.completed-tasks-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+@media (max-width: 768px) {
+    .task-meta {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .date-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+</style>

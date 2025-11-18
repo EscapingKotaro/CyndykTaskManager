@@ -60,19 +60,21 @@
                 <div class="stat-amount">{{ submitted_sum }} ₽</div>
             </div>
         </div>
-        <div class="stat-card completed drop-zone-completed" 
-         data-status="completed"
-         id="completed-drop-zone">
-        <div class="stat-icon">✅</div>
-        <div class="stat-content">
-            <div class="stat-number">{{ completed_count }}</div>
-            <div class="stat-label">Завершено</div>
-            <div class="drop-hint">Перетащите сюда для завершения</div>
-        </div>
-        <div class="completed-animation">
-            <div class="checkmark">✓</div>
-        </div>
+        <!-- ОБНОВЛЯЕМ блок статистики в kanban.html -->
+<div class="stat-card completed drop-zone-completed" 
+     data-status="completed"
+     id="completed-drop-zone"
+     onclick="openCompletedTasksModal()">
+    <div class="stat-icon">✅</div>
+    <div class="stat-content">
+        <div class="stat-number">{{ completed_count }}</div>
+        <div class="stat-label">Завершено</div>
+        <div class="drop-hint">Нажмите для просмотра</div>
     </div>
+    <div class="completed-animation">
+        <div class="checkmark">✓</div>
+    </div>
+</div>
     </div>
 
     <!-- Канбан доски -->
@@ -158,6 +160,8 @@
 </div>
 
 <!-- Модальное окно для деталей задачи -->
+<<!-- ДОБАВЛЯЕМ В kanban.html после существующего модала -->
+<!-- Модальное окно для деталей задачи -->
 <div id="task-modal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -165,6 +169,22 @@
             <span class="close">&times;</span>
         </div>
         <div class="modal-body" id="modal-body">
+            <!-- Контент подгружается через AJAX -->
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно для завершенных задач -->
+<div id="completed-tasks-modal" class="modal">
+    <div class="modal-content large-modal">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-check-circle text-success me-2"></i>
+                Завершенные задачи
+            </h3>
+            <span class="close" onclick="closeCompletedTasksModal()">&times;</span>
+        </div>
+        <div class="modal-body" id="completed-tasks-body">
             <!-- Контент подгружается через AJAX -->
         </div>
     </div>
@@ -1014,6 +1034,36 @@
     opacity: 1;
 }
 
+/* ДОБАВЛЯЕМ В CSS */
+.modal-content.large-modal {
+    max-width: 800px;
+    width: 90%;
+    max-height: 85vh;
+}
+
+.modal-content.large-modal .modal-body {
+    max-height: calc(85vh - 120px);
+    overflow-y: auto;
+}
+
+/* Обновляем стили для кликабельной статистики */
+.stat-card.completed {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.stat-card.completed:hover:not(.drop-zone-active) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(40, 167, 69, 0.2);
+}
+
+.stat-card.completed .drop-hint {
+    font-size: 0.75rem;
+    color: #6c757d;
+    margin-top: 4px;
+    opacity: 0.8;
+}
+
 </style>
 
 <script>
@@ -1513,6 +1563,69 @@ init() {
     this.setupDragAndDrop();
     this.setupEventListeners();
     this.setupScrollIndicators(); // ДОБАВЛЯЕМ ЭТУ СТРОЧКУ
+}
+
+// ДОБАВЛЯЕМ В kanban-dragdrop.js
+
+// Функция для открытия модального окна с завершенными задачами
+async function openCompletedTasksModal() {
+    try {
+        // Показываем лоадер
+        document.getElementById('completed-tasks-body').innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-success" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+                <p class="mt-2 text-muted">Загружаем завершенные задачи...</p>
+            </div>
+        `;
+        
+        document.getElementById('completed-tasks-modal').style.display = 'block';
+        
+        // Загружаем контент
+        const response = await fetch('completed-tasks/');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const html = await response.text();
+        document.getElementById('completed-tasks-body').innerHTML = html;
+        
+    } catch (error) {
+        console.error('Error loading completed tasks:', error);
+        document.getElementById('completed-tasks-body').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Ошибка загрузки завершенных задач: ${error.message}
+            </div>
+        `;
+    }
+}
+
+// Функция для закрытия модального окна с завершенными задачами
+function closeCompletedTasksModal() {
+    document.getElementById('completed-tasks-modal').style.display = 'none';
+}
+
+// Обновляем setupEventListeners для нового модала
+setupEventListeners() {
+    // Закрытие модальных окон
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.addEventListener('click', (e) => {
+            const modal = e.target.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    });
+    
+    // Закрытие по клику вне модала
+    window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
+            e.target.style.display = 'none';
+        }
+    });
 }
 </script>
 {% endblock %}
