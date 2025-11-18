@@ -133,12 +133,34 @@
 
 
                 
-                <div class="form-group">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
+
+<div class="form-group">
     <label for="id_due_date">📅 Срок выполнения:</label>
     {{ form.due_date }}
+    <div id="inlineCalendar"></div>
 </div>
 
-
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('id_due_date');
+    
+    flatpickr(dateInput, {
+        inline: true,  // 🔥 Главный параметр - календарь всегда виден
+        dateFormat: "Y-m-d",
+        defaultDate: "today",
+        position: "below",
+        static: true,
+        onChange: function(selectedDates, dateStr, instance) {
+            dateInput.value = dateStr;
+        }
+    });
+    
+    // Скрываем оригинальный инпут если хочешь
+    dateInput.style.display = 'none';
+});
+</script>
             </div>
             
             <!-- Контролер -->
@@ -229,27 +251,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     tagsInput.addEventListener('input', filterEmployeesByTags);
-});
-</script>
-
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.js"></script>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('id_due_date');
-    if (dateInput) {
-        flatpickr(dateInput, {
-            dateFormat: "Y-m-d",
-            defaultDate: "today",
-            // Авто-открытие календаря
-            openOn: "focus", // или "load" для открытия при загрузке
-            allowInput: true
-        });
-        
-        // Принудительно открываем
-        dateInput._flatpickr.open();
-    }
 });
 </script>
 {% endblock %}
