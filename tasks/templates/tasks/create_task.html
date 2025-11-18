@@ -100,32 +100,39 @@
             
             <div class="form-row">
                 <!-- Заменяем выпадающий список на этот блок -->
-<div class="employee-selection">
-    <label>👥 Выберите сотрудника:</label>
-    <div class="employee-cards">
-        {% for emp in form.assigned_to.field.queryset %}
-        <div class="employee-card-select" data-employee-id="{{ emp.id }}">
-            <div class="employee-avatar-small">
-                {% if emp.avatar %}
-                    <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}">
-                {% else %}
-                    <div class="avatar-placeholder-small">👤</div>
-                {% endif %}
-            </div>
-            <div class="employee-info-small">
-                <strong>{{ emp.get_display_name }}</strong>
-                {% if emp.tags %}
-                <div class="tags-small">
-                    {% for tag in emp.get_tags_list|slice:":3" %}
-                    <span class="tag-small">{{ tag }}</span>
-                    {% endfor %}
+<div class="form-row">
+    <div class="employee-selection">
+        <label>👥 Выберите сотрудника:</label>
+        <div class="employee-cards-scroll">
+            {% for emp in form.assigned_to.field.queryset %}
+            <div class="employee-card-select {% if forloop.first %}selected{% endif %}" 
+                 data-employee-id="{{ emp.id }}">
+                <div class="employee-avatar-small">
+                    {% if emp.avatar %}
+                        <img src="{{ emp.avatar.url }}" alt="{{ emp.get_display_name }}">
+                    {% else %}
+                        <div class="avatar-placeholder-small">👤</div>
+                    {% endif %}
                 </div>
-                {% endif %}
+                <div class="employee-info-small">
+                    <strong>{{ emp.get_display_name }}</strong>
+                    <div class="position-small">{{ emp.position|default:"Сотрудник" }}</div>
+                    {% if emp.tags %}
+                    <div class="tags-small">
+                        {% for tag in emp.get_tags_list|slice:":2" %}
+                        <span class="tag-small">{{ tag }}</span>
+                        {% endfor %}
+                        {% if emp.get_tags_list|length > 2 %}
+                        <span class="tag-more">+{{ emp.get_tags_list|length|add:"-2" }}</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <input type="radio" name="assigned_to" value="{{ emp.id }}" 
+                       class="employee-radio" {% if forloop.first %}checked{% endif %}>
             </div>
-            <input type="radio" name="assigned_to" value="{{ emp.id }}" 
-                   class="employee-radio" {% if forloop.first %}checked{% endif %}>
+            {% endfor %}
         </div>
-        {% endfor %}
     </div>
 </div>
 
