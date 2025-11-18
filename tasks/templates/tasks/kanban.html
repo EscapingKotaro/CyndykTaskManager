@@ -1532,40 +1532,6 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
-</script>
-
-
-<script>
-
-    // ДОБАВЛЯЕМ В kanban-dragdrop.js
-setupScrollIndicators() {
-    const containers = document.querySelectorAll('.tasks-container');
-    
-    containers.forEach(container => {
-        const checkScroll = () => {
-            if (container.scrollHeight > container.clientHeight) {
-                container.classList.add('scrollable');
-            } else {
-                container.classList.remove('scrollable');
-            }
-        };
-        
-        // Проверяем при загрузке
-        checkScroll();
-        
-        // И при изменении размера
-        new ResizeObserver(checkScroll).observe(container);
-    });
-}
-
-// Обновляем init
-init() {
-    this.setupDragAndDrop();
-    this.setupEventListeners();
-    this.setupScrollIndicators(); // ДОБАВЛЯЕМ ЭТУ СТРОЧКУ
-}
-
-// ДОБАВЛЯЕМ В kanban-dragdrop.js
 
 // Функция для открытия модального окна с завершенными задачами
 async function openCompletedTasksModal() {
@@ -1627,5 +1593,43 @@ setupEventListeners() {
         }
     });
 }
+</script>
+
+
+<script>
+
+    // ДОБАВЛЯЕМ В kanban-dragdrop.js
+setupScrollIndicators() {
+    const containers = document.querySelectorAll('.tasks-container');
+    
+    containers.forEach(container => {
+        const checkScroll = () => {
+            if (container.scrollHeight > container.clientHeight) {
+                container.classList.add('scrollable');
+            } else {
+                container.classList.remove('scrollable');
+            }
+        };
+        
+        // Проверяем при загрузке
+        checkScroll();
+        
+        // И при изменении размера
+        new ResizeObserver(checkScroll).observe(container);
+    });
+}
+
+
+// Обновляем init
+init() {
+    this.setupDragAndDrop();
+    this.setupEventListeners();
+    this.setupScrollIndicators(); // ДОБАВЛЯЕМ ЭТУ СТРОЧКУ
+}
+
+// ДОБАВЛЯЕМ В kanban-dragdrop.js
+
+
+
 </script>
 {% endblock %}
