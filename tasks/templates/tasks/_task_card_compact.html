@@ -4,15 +4,17 @@
     <div class="task-main">
         <h4 class="task-title">{{ task.title }}</h4>
         <div class="task-assignee">
-            <div class="assignee-avatar">
-                {% if task.assigned_to.avatar %}
-                <img src="{{ task.assigned_to.avatar.url }}" alt="{{ task.assigned_to.get_display_name }}">
-                {% else %}
-                <div class="avatar-placeholder">👤</div>
-                {% endif %}
-            </div>
-            <span class="assignee-name">{{ task.assigned_to.get_display_name }}</span>
-        </div>
+    <div class="assignee-avatar">
+        {% if task.assigned_to.avatar %}
+        <img src="{{ task.assigned_to.avatar.url }}" alt="{{ task.assigned_to.get_display_name }}"
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+        <div class="avatar-placeholder" style="display: none;">👤</div>
+        {% else %}
+        <div class="avatar-placeholder">👤</div>
+        {% endif %}
+    </div>
+    <span class="assignee-name">{{ task.assigned_to.get_display_name }}</span>
+</div>
     </div>
 
     <!-- Мета-информация -->

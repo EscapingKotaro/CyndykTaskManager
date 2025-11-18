@@ -183,7 +183,7 @@ class TaskForm(forms.ModelForm):
             
             # Фильтруем исполнителей (только не staff)
             if user.role == 'boss':
-                users = CustomUser.objects.filter(is_staff=False, is_active=True)
+                users = user.get_team_users().filter(is_staff=False, is_active=True)
             elif user.role == 'manager':
                 users = user.get_team_users().filter(is_staff=False, is_active=True)
             else:

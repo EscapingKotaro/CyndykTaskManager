@@ -803,7 +803,7 @@ class KanbanBoard {
     async updateTaskStatus(taskId, newStatus) {
         const csrfToken = this.getCSRFToken();
         
-        const response = await fetch('/tasks/update-status/', {
+        const response = await fetch('/task/update-status/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
