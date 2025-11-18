@@ -35,7 +35,7 @@
     
     <div class="employee-grid">
         {% for emp in subordinates %}
-        <div class="employee-card {% if emp.role == 'manager' %}employee-manager{% elif emp.role == 'boss' %}employee-boss{% elif emp.role == 'false_manager' %}employee-false-manager{% endif %}">
+        <div class="employee-card {% if emp.role == 'manager' %}employee-manager{% elif emp.role == 'boss' %}employee-boss{% else %}employee-false-manager{% endif %}">
             <div class="employee-role-badge">
                 {% if emp.role == 'boss' %}
                     👑 Босс
