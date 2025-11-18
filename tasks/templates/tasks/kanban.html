@@ -289,18 +289,7 @@
     gap: 24px;
 }
 
-.kanban-column {
-    background: rgba(255,255,255,0.95);
-    border-radius: 20px;
-    padding: 24px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
-    min-height: 600px;
-}
 
-.column-header {
-    margin-bottom: 24px;
-}
 
 .column-title {
     display: flex;
@@ -340,32 +329,8 @@
     font-weight: 600;
 }
 
-/* Контейнер задач */
-.tasks-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-height: 500px;
-}
 
-/* Карточка задачи */
-.task-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    cursor: grab;
-    position: relative;
-    overflow: hidden;
-}
 
-.task-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
-    border-color: #e9ecef;
-}
 
 .task-card:active {
     cursor: grabbing;
@@ -377,13 +342,8 @@
     box-shadow: 0 12px 40px rgba(0,0,0,0.2);
 }
 
-.task-card-content {
-    height: 100%;
-}
 
-.task-main {
-    margin-bottom: 16px;
-}
+
 
 .task-title {
     font-size: 1.1rem;
@@ -531,17 +491,8 @@
     border: 2px dashed #00b4db;
 }
 
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #999;
-}
 
-.empty-icon {
-    font-size: 3rem;
-    margin-bottom: 16px;
-    opacity: 0.5;
-}
+
 
 /* Модальное окно */
 .modal {
@@ -823,72 +774,75 @@
 
 
 
-
-/* ОБНОВЛЯЕМ СТИЛИ КОЛОНОК */
+/* ИСПРАВЛЯЕМ СТИЛИ КОЛОНОК */
 .kanban-column {
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     padding: 24px;
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    min-height: 600px;
-    max-height: 75vh; /* ФИКСИРОВАННАЯ ВЫСОТА */
+    height: 75vh; /* ФИКСИРОВАННАЯ ВЫСОТА */
     display: flex;
     flex-direction: column;
+    min-height: 600px;
 }
 
 .column-header {
     margin-bottom: 20px;
-    flex-shrink: 0; /* Заголовок не скроллится */
+    flex-shrink: 0;
 }
 
 .tasks-container {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    flex: 1; /* Занимает все доступное пространство */
-    overflow-y: auto; /* ВЕРТИКАЛЬНЫЙ СКРОЛЛ */
+    /* УБИРАЕМ flex: 1 */
+    overflow-y: auto;
     overflow-x: hidden;
+    height: calc(100% - 80px); /* Высота минус заголовок */
     min-height: 200px;
-    max-height: calc(75vh - 120px); /* Высота минус заголовок и отступы */
 }
 
-/* Стилизация скроллбара */
-.tasks-container::-webkit-scrollbar {
-    width: 6px;
+/* ОБНОВЛЯЕМ СТИЛИ КАРТОЧЕК */
+.task-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    cursor: grab;
+    position: relative;
+    overflow: hidden;
+    /* УБИРАЕМ ВСЯКИЕ flex свойства */
+    flex-shrink: 0; /* Не сжимается */
+    min-height: 140px; /* МИНИМАЛЬНАЯ ВЫСОТА */
 }
 
-.tasks-container::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 3px;
+.task-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    border-color: #e9ecef;
 }
 
-.tasks-container::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 3px;
+.task-card-content {
+    height: auto; /* Автоматическая высота */
+    display: flex;
+    flex-direction: column;
+    /* УБИРАЕМ height: 100% */
 }
 
-.tasks-container::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.3);
-}
-
-/* Для Firefox */
-.tasks-container {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(0, 0, 0, 0.2) rgba(0, 0, 0, 0.05);
-}
-
-/* Empty state в скроллящемся контейнере */
+/* Empty state занимает всю высоту */
 .empty-state {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: 40px 20px;
     color: #999;
     text-align: center;
-    flex: 1;
-    min-height: 200px;
+    height: 100%; /* Занимает всю высоту контейнера */
+    min-height: 300px;
 }
 
 .empty-icon {
@@ -896,6 +850,111 @@
     margin-bottom: 16px;
     opacity: 0.5;
 }
+
+/* Улучшаем внутреннюю структуру карточки */
+.task-main {
+    margin-bottom: 16px;
+    flex-shrink: 0; /* Не сжимается */
+}
+
+.task-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.8em; /* Минимальная высота для 2 строк */
+}
+
+.task-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+.task-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+.btn-details {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: #666;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0; /* Не сжимается */
+    margin-top: auto; /* Прижимаем к низу */
+}
+
+/* Адаптивность высоты */
+@media (max-width: 1200px) {
+    .kanban-column {
+        height: 70vh;
+    }
+    
+    .tasks-container {
+        height: calc(100% - 80px);
+    }
+}
+
+@media (max-width: 768px) {
+    .kanban-column {
+        height: 60vh;
+        min-height: 500px;
+    }
+    
+    .tasks-container {
+        height: calc(100% - 80px);
+    }
+    
+    .task-card {
+        min-height: 120px;
+        padding: 16px;
+    }
+}
+
+/* Убедимся что контент не сжимается */
+.task-assignee {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.assignee-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.task-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+    flex-shrink: 0;
+}
+
+
 
 .empty-state p {
     margin: 0;
