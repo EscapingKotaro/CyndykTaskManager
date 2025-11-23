@@ -122,6 +122,19 @@ class IGNReleaseParser:
             self._print_stats()
             
             print(f"✅ Парсинг завершен! Добавлено {len(new_games)} новых игр")
+
+
+            self._select_calendar_months()
+
+            games_data = self._parse_games_from_page()
+
+            new_games += self._save_to_database(games_data)
+            self.stats['games_saved'] = len(new_games)
+            self._print_stats()
+            
+            print(f"✅ Парсинг завершен! Добавлено {len(new_games)} новых игр")
+
+
             return new_games
             
         except Exception as e:
