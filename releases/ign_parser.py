@@ -342,9 +342,9 @@ class IGNReleaseParser:
                 'playstation-5': 'PS5',
                 'xbox-one': 'XBOX_ONE',
                 'xbox-series': 'XBOX_SERIES',
-                'switch': 'SWITCH',
                 'switch-2': 'SWITCH2',
                 'switch2': 'SWITCH2',
+                'switch': 'SWITCH',
             }
             
             for key, platform in platform_map.items():
