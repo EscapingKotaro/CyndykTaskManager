@@ -161,9 +161,9 @@ class IGNReleaseParser:
             current_year = timezone.now().year
             
             # Месяцы которые нужно проверить (текущий и следующий)
-            months_to_check = [current_month, current_month + 1]
+            months_to_check = [current_month + 1]
             if current_month == 12:  # Если декабрь, добавляем январь следующего года
-                months_to_check = [12, 1]
+                months_to_check = [1]
             
             # 3. Для каждого нужного месяца:
             for month_num in months_to_check:
