@@ -234,7 +234,7 @@ class IGNReleaseParser:
                             print(f"    ⏩ Пропускаем (неподходящие платформы): {game_data['title']} - {game_data.get('platforms', [])}")
                             self.stats['invalid_platform_skipped'] += 1
                     else:
-                        print(f"    ⏩ Пропускаем (дата вне диапазона): {game_data['title']} - {game_data['release_date']}")
+                       # print(f"    ⏩ Пропускаем (дата вне диапазона): {game_data['title']} - {game_data['release_date']}")
                         self.stats['too_far_skipped'] += 1
                         
                 except Exception as e:
@@ -281,7 +281,7 @@ class IGNReleaseParser:
             if date_elem:
                 date_text = date_elem.get_text(strip=True)
                 game_data['release_date'] = self._parse_date(date_text)
-                print(date_text,game_data['release_date'])
+               # print(date_text,game_data['release_date'])
             else:
                 element_text = element.text.strip()
                 date_match = re.search(r'([A-Za-z]{3,10}\s+\d{1,2},\s+\d{4})', element_text)
@@ -334,6 +334,7 @@ class IGNReleaseParser:
             class_str = ' '.join(icon.get('class', []))
             alt_text = icon.get('alt', '').lower()
             src = icon.get('src', '').lower()
+            data_cy=icon.get('data-cy', '').lower()
             
             # Определяем платформу по различным признакам
             platform_map = {
@@ -349,7 +350,7 @@ class IGNReleaseParser:
             }
             
             for key, platform in platform_map.items():
-                if (key in class_str or key in alt_text or key in src) and platform in ALLOWED_PLATFORMS:
+                if (key in data_cy or key in class_str or key in alt_text or key in src) and platform in ALLOWED_PLATFORMS:
                     platforms.append(platform)
                     break
         
