@@ -234,7 +234,7 @@ class IGNReleaseParser:
                             print(f"    ⏩ Пропускаем (неподходящие платформы): {game_data['title']} - {game_data.get('platforms', [])}")
                             self.stats['invalid_platform_skipped'] += 1
                     else:
-                        #print(f"    ⏩ Пропускаем (дата вне диапазона): {game_data['title']} - {game_data['release_date']}")
+                        print(f"    ⏩ Пропускаем (дата вне диапазона): {game_data['title']} - {game_data['release_date']}")
                         self.stats['too_far_skipped'] += 1
                         
                 except Exception as e:
