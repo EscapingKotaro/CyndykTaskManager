@@ -281,6 +281,7 @@ class IGNReleaseParser:
             if date_elem:
                 date_text = date_elem.get_text(strip=True)
                 game_data['release_date'] = self._parse_date(date_text)
+                print(date_text,game_data['release_date'])
             else:
                 element_text = element.text.strip()
                 date_match = re.search(r'([A-Za-z]{3,10}\s+\d{1,2},\s+\d{4})', element_text)
