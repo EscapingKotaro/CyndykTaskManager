@@ -292,7 +292,8 @@ class IGNReleaseParser:
                     return None
             
             # Платформы
-            platforms_elem = soup.find('div', class_=re.compile(r'platforms'))
+            platforms_elem = soup.find(['div', 'span'], class_=re.compile(r'platforms'))
+
             if platforms_elem:
                 platforms = self._parse_platforms_from_element(platforms_elem)
                 game_data['platforms'] = platforms
@@ -330,10 +331,6 @@ class IGNReleaseParser:
         
         # Ищем контейнеры платформ
         platform_containers = platforms_elem.find_all('span', class_='platform-icon')
-
-        print()
-        print(platforms_elem)
-        print()
         
         for container in platform_containers:
             data_cy = container.get('data-cy', '').lower()
