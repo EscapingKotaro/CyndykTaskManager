@@ -319,24 +319,22 @@ class IGNReleaseParser:
             print(f"❌ Ошибка парсинга элемента: {e}")
             return None
     
+ 
+
     def _parse_platforms_from_element(self, platforms_elem):
         """Парсит платформы из HTML элемента - только нужные нам платформы"""
         platforms = []
         
-        # Ищем иконки платформ
-        platform_icons = platforms_elem.find_all(['span', 'img'], class_=re.compile(r'platform|icon', re.I))
-        
         # Наши допустимые платформы
         ALLOWED_PLATFORMS = ['PS4', 'PS5', 'SWITCH', 'SWITCH2', 'XBOX_ONE', 'XBOX_SERIES']
         
-        for icon in platform_icons:
-            # Проверяем классы и атрибуты для определения платформы
-            class_str = ' '.join(icon.get('class', []))
-            alt_text = icon.get('alt', '').lower()
-            src = icon.get('src', '').lower()
-            data_cy=icon.get('data-cy', '').lower()
+        # Ищем контейнеры платформ
+        platform_containers = platforms_elem.find_all('span', class_='platform-icon')
+        
+        for container in platform_containers:
+            data_cy = container.get('data-cy', '').lower()
             
-            # Определяем платформу по различным признакам
+            # Определяем платформу по data-cy
             platform_map = {
                 'ps4': 'PS4',
                 'playstation-4': 'PS4',
@@ -347,12 +345,23 @@ class IGNReleaseParser:
                 'switch-2': 'SWITCH2',
                 'switch2': 'SWITCH2',
                 'switch': 'SWITCH',
+                'nintendo-switch': 'SWITCH',
+                'nintendo-switch-2': 'SWITCH2',
+                
             }
             
             for key, platform in platform_map.items():
-                if (key in data_cy or key in class_str or key in alt_text or key in src) and platform in ALLOWED_PLATFORMS:
+                if key in data_cy and platform in ALLOWED_PLATFORMS:
                     platforms.append(platform)
                     break
+            
+            # Альтернативный вариант: проверить также классы у img внутри
+            if not platforms or platforms[-1] != platform:  # если не нашли через data-cy
+                img = container.find('img')
+                if img:
+                    class_str = ' '.join(img.get('class', []))
+                    if 'icon-nintendo-switch' in class_str:
+                        platforms.append('SWITCH')
         
         # Убираем дубликаты
         platforms = list(set(platforms))
