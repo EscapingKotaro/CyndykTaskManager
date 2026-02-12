@@ -332,6 +332,9 @@ class IGNReleaseParser:
         platform_containers = platforms_elem.find_all('span', class_='platform-icon')
         
         for container in platform_containers:
+            print()
+            print(container)
+            print()
             data_cy = container.get('data-cy', '').lower()
             
             # Определяем платформу по data-cy
