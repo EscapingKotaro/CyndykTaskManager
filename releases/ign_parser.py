@@ -11,7 +11,8 @@ from django.utils import timezone
 from django.core.files import File
 from tempfile import NamedTemporaryFile
 from .models import GameRelease
-
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 
 class IGNReleaseParser:
     """
