@@ -145,17 +145,45 @@ class IGNReleaseParser:
         finally:
             self.driver.quit()
 
+    def _close_cookie_banner(self):
+        """Закрывает баннер с куками, если он есть"""
+        try:
+            # Пробуем найти кнопку принятия кук
+            # Обычно это "Accept All" или "Принять все"
+            cookie_accept_btn = WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.XPATH, 
+                    "//button[contains(text(), 'Accept')] | \
+                    //button[contains(text(), 'Accept All')] | \
+                    //button[contains(text(), 'Принять')] | \
+                    //button[contains(@id, 'accept')] | \
+                    //button[contains(@class, 'accept')]"
+                ))
+            )
+            cookie_accept_btn.click()
+            print("✅ Закрыли баннер с куками")
+            time.sleep(1)  # Даём время анимации
+            
+        except Exception:
+            # Если баннера нет или он уже закрыт - просто продолжаем
+            print("ℹ️ Баннера с куками нет или он уже закрыт")
+            pass
+
     def _select_calendar_months(self):
         """Открывает календарь и выбирает месяцы для парсинга (адаптировано под новую версию сайта)"""
         try:
             print("🗓️ Работаем с календарем...")
-
+            
+            # 0. Сначала закрываем баннер с куками, если он есть
+            self._close_cookie_banner()
+            
             # 1. Находим и кликаем на кнопку календаря, чтобы открыть меню
-            # Используем более надежный селектор по data-cy (как в твоём HTML)
-            calendar_btn = self.driver.find_element(By.XPATH, "//button[contains(@class, 'calendar-dropdown')]")
+            # Добавляем ожидание, что кнопка станет кликабельной
+            calendar_btn = WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'calendar-dropdown')]"))
+            )
             calendar_btn.click()
             print("✅ Открыли календарь")
-            time.sleep(2)  # Ждём анимации
+            time.sleep(2)
 
             # 2. Получаем текущую дату из системы
             # ВНИМАНИЕ: Сейчас на сайте Февраль 2026.
