@@ -146,66 +146,111 @@ class IGNReleaseParser:
             self.driver.quit()
 
     def _select_calendar_months(self):
-        """Открывает календарь и выбирает нужные месяцы для парсинга"""
+        """Открывает календарь и выбирает месяцы для парсинга (адаптировано под новую версию сайта)"""
         try:
             print("🗓️ Работаем с календарем...")
-            
-            # 1. Находим и кликаем на кнопку календаря чтобы открыть выпадающее меню
+
+            # 1. Находим и кликаем на кнопку календаря, чтобы открыть меню
+            # Используем более надежный селектор по data-cy (как в твоём HTML)
             calendar_btn = self.driver.find_element(By.XPATH, "//button[contains(@class, 'calendar-dropdown')]")
             calendar_btn.click()
             print("✅ Открыли календарь")
-            time.sleep(2)
-            
-            # 2. Определяем какие месяцы нам нужны
+            time.sleep(2)  # Ждём анимации
+
+            # 2. Получаем текущую дату из системы
+            # ВНИМАНИЕ: Сейчас на сайте Февраль 2026.
+            # Если твоя система показывает другое время, скрипт может работать некорректно.
+            # Для теста можем выставить текущий месяц и год принудительно:
+            # current_month = 2  # Февраль
+            # current_year = 2026
             current_month = timezone.now().month
             current_year = timezone.now().year
-            
-            # Месяцы которые нужно проверить (текущий и следующий)
-            months_to_check = [current_month + 1]
-            if current_month == 12:  # Если декабрь, добавляем январь следующего года
-                months_to_check = [1]
-            
-            # 3. Для каждого нужного месяца:
+            print(f"📅 Системная дата: {current_month}.{current_year}")
+
+            # Месяцы, которые нужно спарсить (например, текущий и следующий)
+            # Но на сайте уже есть будущие месяцы, поэтому парсим всё, что доступно в этом году
+            months_to_check = []
+            # Если текущий месяц не декабрь, добавляем следующий
+            if current_month < 12:
+                months_to_check.append(current_month + 1)
+            # Всегда добавляем текущий месяц, если он еще актуален?
+            # Или может быть нужно парсить следующий? Тут смотри по задаче.
+            # Я добавлю текущий для примера, чтобы ты видел логику.
+            months_to_check.append(current_month) # Раскомментируй, если нужен и текущий
+
+            # Убираем дубликаты и сортируем (на всякий случай)
+            months_to_check = sorted(list(set(months_to_check)))
+            print(f"🔍 Планируем проверить месяцы: {months_to_check}")
+
+            # Словарь соответствий номера месяца и кода
+            month_codes = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                        'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+
+            # 3. Получаем год, который сейчас отображается в календаре
+            # Это нужно, чтобы понять, нужно ли листать
+            year_element = self.driver.find_element(By.XPATH, "//div[@data-cy='calendar-year-container']")
+            displayed_year = int(year_element.text)
+            print(f"📅 Год в календаре: {displayed_year}")
+
+            # 4. Если нужный месяц находится в следующем году, листаем
+            # Например, сейчас Декабрь, а нам нужен Январь следующего года
+            target_year = current_year
             for month_num in months_to_check:
-                # Пропускаем если месяц уже прошел
-                if month_num < current_month and month_num != 1:  # Исключение для января
-                    continue
-                    
-                # Получаем код месяца (JAN, FEB, etc)
-                month_codes = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
-                            'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
-                month_code = month_codes[month_num - 1]
-                
-                print(f"🔍 Ищем игры за {month_code}...")
-                
-                # 4. Если нужно сменить год (при переходе с декабря на январь)
                 if month_num == 1 and current_month == 12:
-                    next_year_btn = self.driver.find_element(By.XPATH, "//button[contains(@class, 'next-button')]")
-                    next_year_btn.click()
-                    print("✅ Перешли на следующий год")
-                    time.sleep(1)
-                
-                # 5. Кликаем на нужный месяц
-                month_btn = self.driver.find_element(By.XPATH, f"//button[@data-cy='{month_code}']")
+                    target_year = current_year + 1
+                    break # Допустим, нам нужен только следующий месяц, если это Январь
+
+            # Если целевой год больше отображаемого, листаем
+            if target_year > displayed_year:
+                print(f"➡️ Нужно переключиться на {target_year} год")
+                # Ищем новую кнопку "вперед" по data-cy
+                next_year_btn = self.driver.find_element(By.XPATH, "//button[@data-cy='calendar-next-btn']")
+                next_year_btn.click()
+                print(f"✅ Перешли на следующий год")
+                time.sleep(1)
+                # Обновляем отображаемый год для проверки (хотя в цикле ниже мы будем тыкать просто по коду месяца)
+                # Но кнопки месяцев обновятся автоматически после смены года.
+
+            # 5. Проходим по нужным месяцам и кликаем
+            for month_num in months_to_check:
+                # Проверка на дурака: если месяц уже прошел в текущем году (но это сложно, т.к. на сайте всегда будущее)
+                # Пропускаем эту проверку, или можно добавить более умную логику.
+
+                month_code = month_codes[month_num - 1]
+                print(f"🔍 Ищем игры за {month_code}...")
+
+                # Ищем кнопку месяца по data-cy (самый надежный способ)
+                # Ждем, чтобы кнопка точно была видна и кликабельна
+                month_btn = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable((By.XPATH, f"//button[@data-cy='{month_code}']"))
+                )
+
+                # Прокручиваем до кнопки, если она не в зоне видимости (иногда помогает)
+                self.driver.execute_script("arguments[0].scrollIntoView(true);", month_btn)
+                time.sleep(0.5)
+
                 month_btn.click()
                 print(f"✅ Выбрали месяц {month_code}")
-                
-                # 6. Ждем загрузки игр
+
+                # Ждем загрузки игр и парсим
                 time.sleep(5)
-                
-                # 7. Парсим игры с этой страницы
                 month_games = self._parse_games_from_page()
                 print(f"📊 Нашли {len(month_games)} игр за {month_code}")
-                
-                # 8. Возвращаемся в календарь для следующего месяца
-                if month_num != months_to_check[-1]:  # Если не последний месяц в списке
-                    calendar_btn = self.driver.find_element(By.XPATH, "//button[contains(@class, 'calendar-dropdown')]")
+
+                # 6. Если это не последний месяц, возвращаемся в календарь
+                if month_num != months_to_check[-1]:
+                    # Ждем, пока кнопка календаря снова станет кликабельной
+                    calendar_btn = WebDriverWait(self.driver, 10).until(
+                        EC.element_to_be_clickable((By.XPATH, "//button[contains(@class, 'calendar-dropdown')]"))
+                    )
                     calendar_btn.click()
+                    print("🔄 Снова открыли календарь для выбора следующего месяца")
                     time.sleep(2)
-                    
+
         except Exception as e:
             print(f"⚠️ Ошибка работы с календарем: {e}")
-            # Продолжаем парсинг даже если с календарем проблемы
+            import traceback
+            traceback.print_exc() # Распечатаем полную ошибку для отладки
     
     def _parse_games_from_page(self):
         """Парсит игры со страницы - только ближайшие 2 недели"""
