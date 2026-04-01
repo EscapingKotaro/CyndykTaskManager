@@ -12,4 +12,7 @@ urlpatterns = [
     path('game/<int:pk>/modal/', views.release_modal, name='release_modal'),
     path('game/<int:pk>/toggle-platform/', views.toggle_platform_publication, name='toggle_platform_publication'),
     path('game/<int:pk>/toggle-marketplace/', views.toggle_marketplace, name='toggle_marketplace'),  # НОВЫЙ URL
+
+
+    path('api/game-releases/', views.get_game_releases, name='get_game_releases'),
 ]
