@@ -9,6 +9,163 @@ from django.http import JsonResponse
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 
+
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.utils import timezone
+from django.db.models import Q
+from datetime import datetime, date
+
+
+def require_api_key(view_func):
+    """Декоратор для проверки API ключа"""
+    def wrapper(request, *args, **kwargs):
+        # Получаем API ключ из заголовков
+        api_key = request.headers.get('X-API-Key') or request.GET.get('api_key')
+        
+        if not api_key:
+            return JsonResponse({
+                'success': False,
+                'error': 'API key is required',
+                'code': 'MISSING_API_KEY'
+            }, status=401)
+        
+        try:
+            request.api_key = api_key
+            
+            if api_key!="vvgahbjcgt4uhcJWfwehirjfbkygh23457JKWER":
+                return JsonResponse({
+                    'success': False,
+                    'error': 'Invalid or inactive API key',
+                    'code': 'INVALID_API_KEY'
+                }, status=401)
+        
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': 'API key validation error',
+                'code': 'API_KEY_ERROR'
+            }, status=500)
+        
+        return view_func(request, *args, **kwargs)
+    
+    return wrapper
+
+def parse_release_date(date_str):
+    """
+    Парсит строку даты в объект date.
+    Поддерживаем форматы:
+    - "2026-03-31"
+    - "2026-03-31 00:00" (время игнорируется, т.к. поле DateField)
+    - "2026-03-31T00:00"
+    """
+    for fmt in ("%Y-%m-%d", "%Y-%m-%d %H:%M", "%Y-%m-%dT%H:%M"):
+        try:
+            dt = datetime.strptime(date_str, fmt)
+            return dt.date()  # возвращаем только дату
+        except ValueError:
+            continue
+    raise ValueError(f"Invalid date format: {date_str}. Use: YYYY-MM-DD")
+
+
+@require_http_methods(["GET"])
+@require_api_key
+def get_game_releases(request):
+    """
+    Возвращает опубликованные релизы игр за указанный период.
+    
+    Параметры:
+        - date_from: "2026-03-01" (начало диапазона, включительно)
+        - date_to: "2026-03-31" (конец диапазона, включительно)
+        - platform: "PS5" (опционально, фильтр по платформе)
+        - marketplace: "Avito" (опционально, фильтр по площадке)
+        - language: "Русский" (опционально, фильтр по языку)
+        - search: "God of War" (опционально, поиск по названию)
+    """
+    
+    date_from = request.GET.get('date_from')
+    date_to = request.GET.get('date_to')
+    
+    # Валидация обязательных параметров
+    if not date_from or not date_to:
+        return JsonResponse({
+            'success': False,
+            'error': 'Missing required parameters: date_from and date_to',
+            'code': 'MISSING_PARAMETERS'
+        }, status=400)
+    
+    # Парсинг дат
+    try:
+        dt_from = parse_release_date(date_from)
+        dt_to = parse_release_date(date_to)
+    except ValueError as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+            'code': 'INVALID_DATE_FORMAT'
+        }, status=400)
+    
+    # Базовый фильтр: опубликованные + диапазон дат
+    queryset = GameRelease.objects.filter(
+        is_published=True,
+        release_date__gte=dt_from,
+        release_date__lte=dt_to
+    )
+    
+    # 🔍 Опциональные фильтры
+    
+    # Платформа (ищем в JSONField platforms)
+    platform = request.GET.get('platform')
+    if platform:
+        queryset = queryset.filter(platforms__contains=[platform])
+    
+    # Площадка (ищем в JSONField marketplaces)
+    marketplace = request.GET.get('marketplace')
+    if marketplace:
+        queryset = queryset.filter(marketplaces__contains=[marketplace])
+    
+    # Язык (ищем в JSONField languages)
+    language = request.GET.get('language')
+    if language:
+        queryset = queryset.filter(languages__contains=[language])
+    
+    # Поиск по названию (регистронезависимый)
+    search = request.GET.get('search')
+    if search:
+        queryset = queryset.filter(title__icontains=search)
+    
+    # Формируем ответ
+    releases = []
+    for release in queryset.order_by('release_date'):
+        releases.append({
+            'id': release.id,
+            'title': release.title,
+            'icon': request.build_absolute_uri(release.icon.url) if release.icon else None,
+            'release_date': release.release_date.strftime("%Y-%m-%d"),
+            'platforms': release.platforms,
+            'marketplaces': release.marketplaces,
+            'languages': release.languages,
+            'marketplace_platforms': release.marketplace_platforms,
+            'description': release.description,
+            'price': str(release.price),  # Decimal → str для JSON
+            'created_at': release.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'updated_at': release.updated_at.strftime("%Y-%m-%d %H:%M:%S"),
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'count': len(releases),
+        'filters': {
+            'date_from': dt_from.strftime("%Y-%m-%d"),
+            'date_to': dt_to.strftime("%Y-%m-%d"),
+            'platform': platform,
+            'marketplace': marketplace,
+            'language': language,
+            'search': search,
+        },
+        'data': releases
+    }, status=200, json_dumps_params={'ensure_ascii': False})
+
 @login_required
 def toggle_marketplace(request, pk):
     """AJAX запрос для переключения площадки"""
