@@ -71,8 +71,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'tasks.auth_backends.AuthentikOIDCBackend',  # Путь к твоему файлу с бэкендом
-    'django.contrib.auth.backends.ModelBackend', # Оставь для локальных админов/superuser
     
 ]
 
@@ -125,6 +123,13 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    # Если OIDC уже настроен, оставь его первым
+    'tasks.auth_backends.AuthentikOIDCBackend', 
+    
+    # Стандартный бэкенд Django (обязательно должен быть!)
+    'django.contrib.auth.backends.ModelBackend',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
