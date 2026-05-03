@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'auth_api',
     'corsheaders',
     'releases',
+    'mozilla_django_oidc',
 ]
 
 
@@ -70,6 +71,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'tasks.auth_backends.AuthentikOIDCBackend',  # Путь к твоему файлу с бэкендом
+    'django.contrib.auth.backends.ModelBackend', # Оставь для локальных админов/superuser
+    
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -147,3 +151,21 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MAX_UPLOAD_SIZE = 4 * 1024 * 1024  # 10MB
 FILE_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE
 DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_UPLOAD_SIZE
+
+
+OIDC_RP_CLIENT_ID = 'ZjxcInz9MKhMXV757Zn6Sq0W1E0D1OIaHw853UEt'  # ⚠️ ВАЖНО: Создай НОВОЕ приложение в Authentik для этого проекта!
+OIDC_RP_CLIENT_SECRET = '4RUuBJ3TERKCZjg2A87w8TbWPQqyXAc4KaWSETk3LAXeLSP3xv7uGW36FIvaAXDw92hmKFuGQdfGMrFF5nW6pUrkZyJ83HofnqlDU6B5L8TCmuHwIwmiaYAzdLKDxkXU'
+
+OIDC_OP_AUTHORIZATION_ENDPOINT = "https://ldap.cyndykshop.ru/application/o/authorize/"
+OIDC_OP_TOKEN_ENDPOINT = "https://ldap.cyndykshop.ru/application/o/token/"
+OIDC_OP_USER_ENDPOINT = "https://ldap.cyndykshop.ru/application/o/userinfo/"
+OIDC_OP_JWKS_ENDPOINT = "https://ldap.cyndykshop.ru/application/o/apanel/jwks/" # Проверь путь, обычно /application/o/<provider>/jwks/
+
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_CREATE_USER = True
+
+LOGIN_REDIRECT_URL = '/' 
+LOGOUT_REDIRECT_URL = '/login/'
+
+# Опционально: если хочешь, чтобы logout разлогинивал и в Authentik тоже
+OIDC_OP_LOGOUT_URL_METHOD = 'tasks.auth_backends.logout_redirect' # См. ниже

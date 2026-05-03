@@ -23,7 +23,13 @@
             <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem;">
                 Войти
             </button>
+            
+            <br>
+            <a href="{% url 'oidc_authentication_init' %}" class="btn btn-primary">
+    Войти через Корпоративный портал (LDAP)
+</a>
         </form>
+        
     </div>
 </div>
 {% endblock %}

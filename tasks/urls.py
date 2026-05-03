@@ -41,6 +41,7 @@ urlpatterns = [
     path('navigation-buttons/<int:button_id>/edit/', views.edit_navigation_button, name='edit_navigation_button'),
     path('navigation-buttons/<int:button_id>/delete/', views.delete_navigation_button, name='delete_navigation_button'),
     path('employee/<int:user_id>/edit/', views.edit_employee, name='edit_employee'),
+    path('oidc/', include('mozilla_django_oidc.urls')),
 
     
 
