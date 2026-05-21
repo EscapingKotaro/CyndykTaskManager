@@ -168,6 +168,7 @@ OIDC_OP_JWKS_ENDPOINT = "https://ldap.cyndykshop.ru/application/o/apanel/jwks/" 
 
 OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_CREATE_USER = True
+OIDC_RP_SCOPES = 'openid email profile roles'
 
 LOGIN_REDIRECT_URL = '/' 
 LOGOUT_REDIRECT_URL = '/login/'
