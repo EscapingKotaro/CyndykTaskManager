@@ -1021,70 +1021,28 @@ legend {
                             📋 Управление
                         </button>
                         <div class="nav-dropdown-content">
-                            <a href="{% url 'dashboard' %}" class="nav-dropdown-item">📊 Панель управления</a>
                             <a href="{% url 'employee_list' %}" class="nav-dropdown-item">👥 Сотрудники</a>
-                            <a href="{% url 'task_management' %}" class="nav-dropdown-item">📋 Задачи</a>
-                            <a href="{% url 'invitation_list' %}" class="nav-dropdown-item">📨 Приглашения</a>
-                            <a href="{% url 'payment_history' %}" class="nav-dropdown-item">Выплаты</a>
                         </div>
                     </div>
 
-                    <div class="nav-dropdown">
-                        <button class="nav-dropdown-toggle">
-                            📅 Планирование
-                        </button>
-                        <div class="nav-dropdown-content">
-                            <a href="{% url 'calendar' %}" class="nav-dropdown-item">📅 Календарь</a>
-                            <a href="{% url 'create_task' %}" class="nav-dropdown-item">➕ Новая задача</a>
-                        </div>
-                    </div>
+                
 
                     
                     
                     <a href="http://147.45.74.73" class="nav-dropdown-toggle" style="text-decoration: none;">
                         Почты
-                    </a>
-                    <a href="{% url 'releases:release_list' %}" class="nav-dropdown-toggle" style="text-decoration: none;">
-                        Календарь релизов
                     </a>
 
                     {% else %}
-                    <!-- Меню сотрудника -->
-                    <a href="{% url 'dashboard' %}" class="nav-dropdown-toggle" style="text-decoration: none;">
-                        📋 Мои задачи
-                    </a>
                     <a href="http://147.45.74.73" class="nav-dropdown-toggle" style="text-decoration: none;">
                         Почты
                     </a>
-                    <a href="{% url 'releases:release_list' %}" class="nav-dropdown-toggle" style="text-decoration: none;">
-                        Календарь релизов
-                    </a>
                     
-                    <a href="{% url 'payment_history' %}" class="nav-dropdown-toggle">Выплаты</a>
+                    
                     {% endif %}
                     {% endif %}
                     <!-- Кастомные кнопки -->
                     {% load navigation_tags %}
-                    {% get_navigation_buttons user as nav_buttons %}
-                    {% if nav_buttons %}
-                    <div class="nav-dropdown">
-                        <button class="nav-dropdown-toggle">
-                            🔗 Быстрые ссылки
-                        </button>
-                        <div class="nav-dropdown-content">
-                            {% for button in nav_buttons %}
-                            <a href="{{ button.url }}" class="nav-dropdown-item" target="_blank">
-                                {{ button.icon }} {{ button.title }}
-                            </a>
-                            {% endfor %}
-                            <div style="border-top: 1px solid var(--border); margin: 0.5rem 0; padding-top: 0.5rem;">
-                                <a href="{% url 'navigation_buttons' %}" class="nav-dropdown-item">
-                                    ⚙️ Управление ссылками
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
 
                 <!-- Правая часть - пользователь -->
