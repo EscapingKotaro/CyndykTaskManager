@@ -5,7 +5,7 @@ from . import views
 urlpatterns = [
    # path('', views.dashboard, name='dashboard'),
   #  path('kanban/', views.task_kanban, name='task_kanban'),
-    path('', views.task_kanban, name='dashboard'),
+    path('', views.employee_list, name='dashboard'),
 
     path('login/', auth_views.LoginView.as_view(template_name='tasks/login.html'), name='login'),
     path('logout/', views.custom_logout, name='logout'),  
